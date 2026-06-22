@@ -1,0 +1,10 @@
+export { default as AdminCredentialsSettings } from './AdminCredentialsSettings.jsx';
+export { default as DeleteUserSettings }        from './DeleteUserSettings.jsx';
+export { default as DeveloperMessageSettings }  from './DeveloperMessageSettings.jsx';
+export { default as ProfilePictureSettings }    from './ProfilePictureSettings.jsx';
+export { default as PromocodeSettings }         from './PromocodeSettings.jsx';
+export { default as PromoteAccountSettings }    from './PromoteAccountSettings.jsx';
+export { default as PromotionRequestsAdmin }    from './PromotionRequestsAdmin.jsx';
+export { default as RestrictUserSettings }      from './RestrictUserSettings.jsx';
+export { default as SuspendUserSettings }       from './SuspendUserSettings.jsx';
+export { default as UnrestrictUserSettings }    from './UnrestrictUserSettings.jsx';

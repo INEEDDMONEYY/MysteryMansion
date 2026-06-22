@@ -1,6 +1,6 @@
 // Frontend UserContext file (updated with error timeout)
 import { createContext, useState, useEffect } from "react";
-import api, { setAuthToken, clearAuthData, getAuthToken } from "../utils/api";
+import api, { setAuthToken, clearAuthData, getAuthToken } from '@/shared/utils/api';
 
 export const UserContext = createContext();
 
@@ -50,7 +50,7 @@ export const UserProvider = ({ children }) => {
 
     const fetchUser = async () => {
       try {
-        const res = await api.get("/me");
+        const res = await api.get("/auth/me");
         if (didTimeout) return; // ignore if timed out
 
         const fetched = res.data?.user ?? res.data;
@@ -106,14 +106,14 @@ export const UserProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const res = await api.post("/signin", { email: email?.trim()?.toLowerCase(), password });
+      const res = await api.post("/auth/signin", { email: email?.trim()?.toLowerCase(), password });
       const { token, user: returnedUser } = res.data;
       setAuthToken(token);
       let authUser = returnedUser ?? res.data;
 
       // Hydrate from canonical user endpoint to ensure profilePic/restrictions are current
       try {
-        const meRes = await api.get("/me");
+        const meRes = await api.get("/auth/me");
         authUser = meRes.data?.user ?? meRes.data ?? authUser;
       } catch (meErr) {
         console.warn("/me hydration failed after login, using signin payload", meErr?.message || meErr);
@@ -131,7 +131,7 @@ export const UserProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await api.post("/logout");
+      await api.post("/auth/logout");
     } catch (err) {
       console.warn("Logout error:", err.message || err);
     }
@@ -164,7 +164,7 @@ export const UserProvider = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      const res = await api.get("/me");
+      const res = await api.get("/auth/me");
       const fetched = res.data?.user ?? res.data;
       setUser(fetched);
       persistUser(fetched);

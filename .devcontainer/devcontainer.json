@@ -1,0 +1,19 @@
+{
+  "name": "Mystery Mansion",
+  "forwardPorts": [5173, 5020],
+  "portsAttributes": {
+    "5173": {
+      "label": "Frontend (Vite)",
+      "onAutoForward": "openBrowser",
+      "visibility": "public"
+    },
+    "5020": {
+      "label": "Backend (Express)",
+      "onAutoForward": "notify",
+      "visibility": "public"
+    }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  }
+}

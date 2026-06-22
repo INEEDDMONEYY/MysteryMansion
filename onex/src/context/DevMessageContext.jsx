@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import api from "../utils/api";
+import api from '@/shared/utils/api';
 
 // 1️⃣ Create Context
 const DevMessageContext = createContext();

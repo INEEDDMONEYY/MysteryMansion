@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import api from '../utils/api';
+import api from '@/shared/utils/api';
 
 const ServerReadyContext = createContext(false);
 

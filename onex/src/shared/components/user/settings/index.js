@@ -1,0 +1,9 @@
+export { default as AgeSettings }             from './AgeSettings.jsx';
+export { default as AvailabilitySettings }    from './AvailabilitySettings.jsx';
+export { default as DeleteAccountSettings }   from './DeleteAccountSettings.jsx';
+export { default as EmailSettings }           from './EmailSettings.jsx';
+export { default as GenderSettings }          from './GenderSettings.jsx';
+export { default as MeetupServiceSettings }   from './MeetupServiceSettings.jsx';
+export { default as PhoneNumberSettings }     from './PhoneNumberSettings.jsx';
+export { default as RedeemPromoSettings }     from './RedeemPromoSettings.jsx';
+export { default as UpdateProfileSettings }   from './UpdateProfileSettings.jsx';

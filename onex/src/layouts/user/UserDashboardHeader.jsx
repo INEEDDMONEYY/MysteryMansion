@@ -1,0 +1,137 @@
+import { useRef, useState, useEffect } from 'react';
+import { Menu, Settings, User, ChevronDown, LogOut, ShieldAlert } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { UserContext } from '@/context/UserContext';
+import UserNotificationBell from '@/shared/components/Notifications/UserNotificationBell';
+
+const RESTRICTION_LABELS = {
+  'no-posting':  'Posting disabled',
+  'no-comments': 'Commenting disabled',
+  'read-only':   'Read-only access',
+};
+
+export default function UserDashboardHeader({ title, menuOpen, onMenuToggle }) {
+  const { user, logout } = useContext(UserContext);
+  const navigate = useNavigate();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const restriction = user?.roleRestriction || '';
+  const restrictionLabel = RESTRICTION_LABELS[restriction] || restriction;
+
+  const profilePic =
+    localStorage.getItem('profilePicture') ||
+    user?.profilePic ||
+    '';
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleSignOut = async () => {
+    setDropdownOpen(false);
+    navigate('/signout');
+    await logout?.();
+  };
+
+  return (
+    <header className="sticky top-0 z-30 bg-white border-b border-gray-200">
+      <div className="flex items-center justify-between px-4 md:px-6 py-3 gap-3">
+
+        {/* Left — hamburger + title */}
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            type="button"
+            onClick={onMenuToggle}
+            className="lg:hidden shrink-0 h-10 w-10 rounded-xl border border-gray-200 bg-gray-100 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          >
+            <Menu size={18} />
+          </button>
+
+          <div className="min-w-0">
+            <h1 className="text-lg md:text-xl font-semibold text-gray-900 truncate">{title}</h1>
+            {restriction && (
+              <p className="text-xs text-amber-600 hidden sm:flex items-center gap-1">
+                <ShieldAlert size={11} />
+                {restrictionLabel}
+              </p>
+            )}
+            {!restriction && (
+              <p className="text-xs text-gray-400 hidden sm:block">Welcome back</p>
+            )}
+          </div>
+        </div>
+
+        {/* Right — notifications + profile */}
+        <div className="flex items-center gap-2 shrink-0">
+          <UserNotificationBell />
+
+          {/* Profile dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen((o) => !o)}
+              className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 hover:bg-gray-100 transition-colors"
+            >
+              {profilePic ? (
+                <img src={profilePic} alt={user?.username} className="h-8 w-8 rounded-lg object-cover" />
+              ) : (
+                <div className="h-8 w-8 rounded-lg bg-gray-200 flex items-center justify-center text-gray-500">
+                  <User size={16} />
+                </div>
+              )}
+              <div className="hidden sm:block text-left">
+                <p className="text-sm font-medium text-gray-900 leading-none">{user?.username || 'User'}</p>
+                <p className="text-xs text-gray-400 mt-0.5">Member</p>
+              </div>
+              <ChevronDown
+                size={14}
+                className={`text-gray-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden z-50">
+                <button
+                  type="button"
+                  onClick={() => { setDropdownOpen(false); navigate('/user/profile'); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <Settings size={15} className="text-gray-400 shrink-0" />
+                  Profile Settings
+                </button>
+                {user?.username && (
+                  <button
+                    type="button"
+                    onClick={() => { setDropdownOpen(false); navigate(`/profile/${user.username}`); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <User size={15} className="text-gray-400 shrink-0" />
+                    View Profile
+                  </button>
+                )}
+                <div className="border-t border-gray-100" />
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors text-left"
+                >
+                  <LogOut size={15} className="text-red-400 shrink-0" />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}

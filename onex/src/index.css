@@ -40,7 +40,7 @@ header .nav-btn {
 }
 
 main {
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .logo {
@@ -150,23 +150,6 @@ button:hover {
     .main-bg-container {
         flex-direction: column;
     }
-    /*Signin/up queries*/
-    .signin-bg, .signup-bg {
-        padding: 50px;
-    }
-    form {
-        width: auto;
-    }
-
-    form, h1, h3 {
-        font-size: 1.5rem;
-    }
-    form, link {
-        font-size: 1rem;
-    }
-
-    form, h3 {
-        font-size: 1rem;
-    }
+    /*Signin/up queries — layout now handled by Tailwind flex/max-w-sm in each page component*/
 
 }

@@ -1,18 +1,10 @@
-import './index.css';
-import Home from './pages/homePage.jsx';
-import ScrollToTop from "./components/ScrollToTop.jsx";
+/**
+ * App.jsx — legacy entry point, no longer used as a route.
+ * Routing is handled in main.jsx via createBrowserRouter with layout routes.
+ * This file can be removed or repurposed during the redesign.
+ */
+import { Navigate } from 'react-router-dom';
 
-function App() {
-  return (
-    <>
-      <ScrollToTop />
-      <main>
-        <div>
-          <Home />
-        </div>
-      </main>
-    </>
-  );
+export default function App() {
+  return <Navigate to="/" replace />;
 }
-
-export default App;
