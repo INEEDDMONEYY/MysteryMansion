@@ -21,25 +21,32 @@ export default function AdminAnalytics() {
   const [userType, setUserType] = useState('all');
   const [activityType, setActivityType] = useState('all');
 
+  const fetchAnalytics = async (silent = false) => {
+    if (!silent) setLoading(true);
+    setError(null);
+    try {
+      const res = await api.get('/admin/analytics', {
+        params: { range: dateRange, userType, activityType },
+      });
+      setAnalytics(res?.data?.data || null);
+    } catch (err) {
+      console.error(err);
+      setError(err?.response?.data?.error || err.message || 'Unknown error');
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  // Initial + filter-change fetch
   useEffect(() => {
-    const fetchAnalytics = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Correct route: /api/admin/analytics (not /admin/settings/analytics)
-        const res = await api.get('/admin/analytics', {
-          params: { range: dateRange, userType, activityType },
-        });
-        setAnalytics(res?.data?.data || null);
-      } catch (err) {
-        console.error(err);
-        setError(err?.response?.data?.error || err.message || 'Unknown error');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchAnalytics();
-  }, [dateRange, userType, activityType]);
+  }, [dateRange, userType, activityType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 30-second silent refresh to keep "Active Now" live
+  useEffect(() => {
+    const iv = setInterval(() => fetchAnalytics(true), 30_000);
+    return () => clearInterval(iv);
+  }, [dateRange, userType, activityType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // "Active Now" = today's unique visitors (last item in traffic array)
   const todayUniqueVisitors = analytics?.traffic?.at(-1)?.uniqueVisitors ?? 0;
@@ -94,7 +101,7 @@ export default function AdminAnalytics() {
         <AnalyticsStatCard
           icon={Eye}
           label="Visits"
-          value={(analytics?.summary?.totalVisits ?? 0).toLocaleString()}
+          value={analytics?.summary?.totalVisits ?? 0}
           sub="Total in range"
           loading={loading}
           change={visitsGrowth}
@@ -102,7 +109,7 @@ export default function AdminAnalytics() {
         <AnalyticsStatCard
           icon={UserPlus}
           label="Sign Ups"
-          value={(analytics?.summary?.totalSignups ?? 0).toLocaleString()}
+          value={analytics?.summary?.totalSignups ?? 0}
           sub="New registrations"
           loading={loading}
           change={signupsGrowth}
@@ -117,7 +124,7 @@ export default function AdminAnalytics() {
         <AnalyticsStatCard
           icon={Activity}
           label="Active Now"
-          value={todayUniqueVisitors.toLocaleString()}
+          value={todayUniqueVisitors}
           sub="Today's visitors"
           loading={loading}
           change={activeGrowth}

@@ -1,6 +1,8 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import CountUp from 'react-countup';
 
 export default function AnalyticsStatCard({ icon: Icon, label, value, sub, loading, change }) {
+  const isNumeric = typeof value === 'number' && !Number.isNaN(value);
   // change: number | null — percentage change vs previous period
   const changeColor =
     change === null || change === undefined
@@ -29,6 +31,10 @@ export default function AnalyticsStatCard({ icon: Icon, label, value, sub, loadi
 
       {loading ? (
         <div className="h-8 w-20 bg-neutral-800 animate-pulse rounded-lg" />
+      ) : isNumeric ? (
+        <p className="text-2xl font-bold text-white">
+          <CountUp end={value} separator="," duration={1.5} useEasing />
+        </p>
       ) : (
         <p className="text-2xl font-bold text-white">{value ?? 0}</p>
       )}

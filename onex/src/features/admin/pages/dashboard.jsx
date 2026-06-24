@@ -4,6 +4,7 @@ import {
   TrendingUp, Tag, Megaphone, Percent, UserCheck,
   Activity, Calendar, Crown, AlertCircle,
 } from "lucide-react";
+import CountUp from "react-countup";
 import { useUser } from "@/context/useUser";
 import api from "@/shared/utils/api";
 import { setSEO } from "@/shared/utils/seo";
@@ -27,6 +28,10 @@ function StatCard({ icon: Icon, label, value, sub, loading, accent = 'neutral' }
       </div>
       {loading ? (
         <div className="h-8 w-16 bg-neutral-800 animate-pulse rounded-lg" />
+      ) : typeof value === 'number' ? (
+        <p className="text-3xl font-bold text-white">
+          <CountUp end={value} separator="," duration={1.2} useEasing />
+        </p>
       ) : (
         <p className="text-3xl font-bold text-white">{value ?? 0}</p>
       )}

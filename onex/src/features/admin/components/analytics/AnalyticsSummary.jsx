@@ -1,4 +1,5 @@
 import { Clock, Eye, UserPlus, TrendingUp } from 'lucide-react';
+import CountUp from 'react-countup';
 
 export default function AnalyticsSummary({ summary, session, loading }) {
   const browseSeconds = session?.averageBrowseSeconds || 0;
@@ -14,10 +15,10 @@ export default function AnalyticsSummary({ summary, session, loading }) {
       : '—';
 
   const rows = [
-    { icon: Clock,       label: 'Average Browse Time', value: browseTime },
-    { icon: Eye,         label: 'Total Visits',         value: totalVisits.toLocaleString() },
-    { icon: UserPlus,    label: 'Total Signups',        value: totalSignups.toLocaleString() },
-    { icon: TrendingUp,  label: 'Conversion Rate',      value: conversionRate },
+    { icon: Clock,       label: 'Average Browse Time', value: browseTime,  numValue: null },
+    { icon: Eye,         label: 'Total Visits',         value: null,        numValue: totalVisits },
+    { icon: UserPlus,    label: 'Total Signups',        value: null,        numValue: totalSignups },
+    { icon: TrendingUp,  label: 'Conversion Rate',      value: conversionRate, numValue: null },
   ];
 
   return (
@@ -27,7 +28,7 @@ export default function AnalyticsSummary({ summary, session, loading }) {
       </h2>
 
       <div className="flex-1 space-y-1">
-        {rows.map(({ icon: Icon, label, value }) => (
+        {rows.map(({ icon: Icon, label, value, numValue }) => (
           <div
             key={label}
             className="flex items-center justify-between gap-3 py-3 border-b border-neutral-800 last:border-0"
@@ -39,8 +40,12 @@ export default function AnalyticsSummary({ summary, session, loading }) {
               <span className="text-sm text-neutral-300 truncate">{label}</span>
             </div>
 
-            {loading ? (
+          {loading ? (
               <div className="h-5 w-14 bg-neutral-800 animate-pulse rounded" />
+            ) : numValue !== null ? (
+              <span className="text-sm font-semibold text-white shrink-0">
+                <CountUp end={numValue} separator="," duration={1.5} useEasing />
+              </span>
             ) : (
               <span className="text-sm font-semibold text-white shrink-0">{value}</span>
             )}
