@@ -4,10 +4,16 @@ import PromoteAccountSettings from "@/shared/components/admin/settings/PromoteAc
 import PromocodeSettings from "@/shared/components/admin/settings/PromocodeSettings";
 import PromotionRequestsAdmin from "@/shared/components/admin/settings/PromotionRequestsAdmin.jsx";
 
+const ACCOUNT_TYPE_LABELS = {
+  provider: { label: 'Provider', color: 'bg-pink-500/15 text-pink-400 border-pink-500/30' },
+  client:   { label: 'Client',   color: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
+};
+
 export default function AdminUserManagement() {
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState("");
+  const [accountTypeFilter, setAccountTypeFilter] = useState('all');
 
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
@@ -38,7 +44,9 @@ export default function AdminUserManagement() {
     });
   };
 
-  const sortedUsersForProfiles = [...users].sort((a, b) => {
+  const sortedUsersForProfiles = [...users]
+    .filter((u) => accountTypeFilter === 'all' || u.accountType === accountTypeFilter)
+    .sort((a, b) => {
     const aHasProfilePic = Boolean(a?.profilePic);
     const bHasProfilePic = Boolean(b?.profilePic);
     const aHasBio = Boolean(a?.bio?.trim());
@@ -199,6 +207,28 @@ export default function AdminUserManagement() {
           </div>
         </div>
 
+        {/* Account type filter tabs */}
+        <div className="flex gap-2 mb-4">
+          {[
+            { value: 'all',      label: `All (${users.length})` },
+            { value: 'provider', label: `Providers (${users.filter(u => u.accountType === 'provider').length})` },
+            { value: 'client',   label: `Clients (${users.filter(u => u.accountType === 'client').length})` },
+          ].map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setAccountTypeFilter(value)}
+              className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${
+                accountTypeFilter === value
+                  ? 'bg-neutral-100 text-neutral-900 border-neutral-100'
+                  : 'bg-transparent text-neutral-400 border-neutral-700 hover:border-neutral-500'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {usersLoading ? (
           <p className="text-neutral-500 text-sm">Loading user profiles...</p>
         ) : sortedUsersForProfiles.length > 0 ? (
@@ -224,6 +254,12 @@ export default function AdminUserManagement() {
                       hasCompleteProfile ? "bg-emerald-500/10 text-emerald-400" : "bg-neutral-700 text-neutral-400"
                     }`}>{hasCompleteProfile ? "Complete" : "Incomplete"}</span>
                   </div>
+                  {/* Account type badge */}
+                  {u?.accountType && ACCOUNT_TYPE_LABELS[u.accountType] && (
+                    <span className={`inline-block mb-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${ACCOUNT_TYPE_LABELS[u.accountType].color}`}>
+                      {ACCOUNT_TYPE_LABELS[u.accountType].label}
+                    </span>
+                  )}
                   <p className="line-clamp-2 text-xs text-neutral-400">{u?.bio?.trim() || "No bio added yet."}</p>
                   <p className="mt-2 text-xs text-neutral-500">{u?.email || "No email"}</p>
                 </article>

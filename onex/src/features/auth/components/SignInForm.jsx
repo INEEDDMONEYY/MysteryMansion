@@ -24,7 +24,8 @@ export default function SigninForm({ setLoading }) {
       const authUser = await login(normalizedEmail, password);
 
       if (authUser?.role === 'admin') navigate('/admin');
-      else navigate('/home');
+      else if (authUser?.accountType === 'client') navigate('/client/dashboard');
+      else navigate('/user/dashboard');
     } catch (err) {
       setError(err?.message || 'Sign in failed');
       setLoading(false); // ❌ Stop loader on error

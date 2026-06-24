@@ -2,7 +2,8 @@
 import express from 'express';
 import multer from 'multer';
 import * as postController from './controllers/postController.js';
-import { authMiddleware } from '../../common/middleware/authMiddleware.js';
+import { toggleLike, getLikeStatus } from './controllers/postLikeController.js';
+import { authMiddleware, optionalAuthMiddleware } from '../../common/middleware/authMiddleware.js';
 import { enforceRestriction } from '../../common/middleware/restrictionMiddleware.js';
 
 const router = express.Router();
@@ -100,6 +101,10 @@ router.delete('/:id/comments/:commentId', authMiddleware, enforceRestriction('co
 
 // Get single post
 router.get('/:id', postController.getPostById);
+
+// Like / unlike a post (auth required) + get like status (optional auth)
+router.post('/:id/like', authMiddleware, toggleLike);
+router.get('/:id/like/status', optionalAuthMiddleware, getLikeStatus);
 
 // Update post
 router.put('/:id', authMiddleware, enforceRestriction('post:update'), postController.updatePost);

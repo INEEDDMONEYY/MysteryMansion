@@ -155,6 +155,12 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Account type: provider (escort/advertiser) or client (browser/buyer)
+    accountType: {
+      type: String,
+      enum: ["provider", "client"],
+      default: "client",
+    },
     /* ----------------------------------------------------------- */
   },
   { timestamps: true },

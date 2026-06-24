@@ -1,33 +1,22 @@
-/**
- * UserLayout
- * Wraps all user dashboard pages: provides sidebar + header shell.
- * Components:
- *   UserSidebar          — left nav panel (src/layouts/user/UserSidebar.jsx)
- *   UserDashboardHeader  — top bar       (src/layouts/user/UserDashboardHeader.jsx)
- *   DevMessage           — broadcast banner (src/shared/components/DevMessage.jsx)
- * Public Navbar + Footer come from the parent MainLayout (not duplicated here).
- */
 import { useState, useEffect } from 'react';
-import { Outlet, useMatches, Navigate } from 'react-router-dom';
-import UserSidebar from './user/UserSidebar';
-import UserDashboardHeader from './user/UserDashboardHeader';
-import api from '@/shared/utils/api';
-import ScrollToTop from '@/shared/components/ScrollToTop';
+import { Outlet, useMatches } from 'react-router-dom';
 import { useContext } from 'react';
 import { UserContext } from '@/context/UserContext';
+import ClientSidebar from './client/ClientSidebar';
+import ClientDashboardHeader from './client/ClientDashboardHeader';
+import ScrollToTop from '@/shared/components/ScrollToTop';
+import api from '@/shared/utils/api';
 
-export default function UserLayout() {
+export default function ClientLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const { user } = useContext(UserContext);
 
-  // Derive page title from current route
   const matches = useMatches();
   const lastMatch = matches[matches.length - 1];
   const rawSegment = lastMatch?.pathname?.split('/').filter(Boolean).pop() ?? 'dashboard';
   const pageTitle = rawSegment.charAt(0).toUpperCase() + rawSegment.slice(1).replace(/-/g, ' ');
 
-  // Poll unread message count (shared between header badge and sidebar badge)
   useEffect(() => {
     if (!user?._id) { setUnreadMessages(0); return; }
 
@@ -46,33 +35,24 @@ export default function UserLayout() {
     return () => { active = false; clearInterval(id); };
   }, [user?._id]);
 
-  // Clients belong in /client/* — redirect them if they somehow reach /user/*
-  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-  if (storedUser?.accountType === 'client') {
-    return <Navigate to="/client/dashboard" replace />;
-  }
-
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-purple-50/30">
       <ScrollToTop />
 
-      {/* ── Sidebar (fixed, 280 px, hidden on mobile until open) ── */}
-      <UserSidebar
+      <ClientSidebar
         isOpen={menuOpen}
         onClose={() => setMenuOpen(false)}
         unreadMessages={unreadMessages}
       />
 
-      {/* ── Main column — offset by sidebar width on lg+ ── */}
       <div className="flex flex-col flex-1 lg:ml-[280px] min-w-0 overflow-hidden">
-        <UserDashboardHeader
+        <ClientDashboardHeader
           title={pageTitle}
           menuOpen={menuOpen}
           onMenuToggle={() => setMenuOpen((o) => !o)}
         />
 
-        {/* Scrollable page content */}
-        <div id="user-scroll" className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div id="client-scroll" className="flex-1 overflow-y-auto p-4 md:p-6">
           <Outlet />
         </div>
       </div>

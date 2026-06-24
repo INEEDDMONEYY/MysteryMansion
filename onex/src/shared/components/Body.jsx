@@ -94,6 +94,7 @@ function OnboardingGuide({ steps, onFinish }) {
 export default function Body() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isLoggedIn = !!user.username;
+  const isProvider = isLoggedIn && user.accountType !== 'client';
 
   const [location, setLocation] = useState(
     JSON.parse(localStorage.getItem("userLocation") || "null")
@@ -307,7 +308,7 @@ export default function Body() {
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 mt-4">
         <h3 className="text-lg font-semibold text-gray-900">New listings daily</h3>
         <LocationSet onLocationChange={setLocation} />
-        {isLoggedIn && (
+        {isProvider && (
           <div className="post-btn-div">
             <Link to="/post">
               <button

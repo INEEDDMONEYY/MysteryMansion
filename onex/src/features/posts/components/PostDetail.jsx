@@ -1,7 +1,7 @@
 // 📦 External Libraries
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { BadgeCheck, Star, Rocket, Send, Pencil, Trash2, X } from "lucide-react";
+import { BadgeCheck, Star, Rocket, Send, Pencil, Trash2, X, Heart } from "lucide-react";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import api from "@/shared/utils/api";
 import { UserContext } from "@/context/UserContext";
@@ -85,6 +85,11 @@ export default function PostDetail() {
   const [editingText, setEditingText] = useState("");
   const [commentBusyId, setCommentBusyId] = useState("");
   const [commentError, setCommentError] = useState("");
+
+  // ── Like state ───────────────────────────────────────────────────────────
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [likeBusy, setLikeBusy] = useState(false);
   const mediaItems = [
     ...(Array.isArray(post?.pictures)
       ? post.pictures.map((url) => ({ type: "image", url }))
@@ -202,6 +207,35 @@ export default function PostDetail() {
     loadComments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
+
+  // ── Fetch like status once post is loaded ────────────────────────────────
+  useEffect(() => {
+    if (!postId) return;
+    api.get(`/posts/${postId}/like/status`)
+      .then(({ data }) => {
+        setLiked(data.liked);
+        setLikeCount(data.likeCount ?? 0);
+      })
+      .catch(() => {});
+  }, [postId]);
+
+  const handleToggleLike = async () => {
+    if (!currentUserId) {
+      navigate('/signin');
+      return;
+    }
+    if (likeBusy) return;
+    setLikeBusy(true);
+    try {
+      const { data } = await api.post(`/posts/${postId}/like`);
+      setLiked(data.liked);
+      setLikeCount(data.likeCount ?? 0);
+    } catch (err) {
+      console.error('Failed to toggle like:', err);
+    } finally {
+      setLikeBusy(false);
+    }
+  };
 
   const handleCreateComment = async (e) => {
     e.preventDefault();
@@ -594,6 +628,35 @@ export default function PostDetail() {
           )}
         </div>
       )}
+
+      {/* ❤️ Like Button */}
+      <div className="flex items-center gap-3 mt-6 mb-2">
+        <button
+          type="button"
+          onClick={handleToggleLike}
+          disabled={likeBusy}
+          aria-label={liked ? 'Unlike this post' : 'Like this post'}
+          className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold shadow-sm border transition-all disabled:opacity-60
+            ${liked
+              ? 'bg-pink-600 border-pink-600 text-white hover:bg-pink-500'
+              : 'bg-white border-pink-300 text-pink-600 hover:bg-pink-50'
+            }`}
+        >
+          <Heart
+            size={16}
+            className={liked ? 'fill-white' : 'fill-none'}
+          />
+          {liked ? 'Liked' : 'Like'}
+          {likeCount > 0 && (
+            <span className={`ml-0.5 text-xs font-bold ${liked ? 'text-pink-100' : 'text-pink-500'}`}>
+              {likeCount}
+            </span>
+          )}
+        </button>
+        {!currentUserId && (
+          <p className="text-xs text-gray-400">Sign in to like and save this post</p>
+        )}
+      </div>
 
       {/* 🔘 Action Buttons */}
       <div className="flex flex-row justify-between items-center mt-8">

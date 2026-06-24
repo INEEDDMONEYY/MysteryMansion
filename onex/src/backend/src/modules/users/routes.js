@@ -11,6 +11,7 @@ import Profile from "../../models/Profiles.js";
 import PromoCode from "../../models/PromoCode.js";
 import Comment from "../../models/Comment.js";
 import AnalyticsEvent from "../../models/AnalyticsEvent.js";
+import { getLikedPosts } from "../posts/controllers/postLikeController.js";
 import { enforceRestriction } from "../../common/middleware/restrictionMiddleware.js";
 import { authMiddleware } from "../../common/middleware/authMiddleware.js";
 
@@ -345,5 +346,8 @@ router.get('/me/analytics', async (req, res) => {
     res.status(500).json({ error: 'Failed to load analytics.' });
   }
 });
+
+// GET /api/users/me/liked-posts
+router.get('/me/liked-posts', getLikedPosts);
 
 export default router;

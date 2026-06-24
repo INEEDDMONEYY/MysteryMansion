@@ -22,13 +22,13 @@ export default function Navbar() {
 
   const handleProfileClick = () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const role = user?.role;
+    const { role, accountType } = user;
 
-    role === "admin"
-      ? navigate("/admin")
-      : role === "user"
-      ? navigate("/user/dashboard")
-      : navigate("/signin");
+    if (role === "admin") return navigate("/admin");
+    if (role === "user") {
+      return navigate(accountType === "client" ? "/client/dashboard" : "/user/dashboard");
+    }
+    navigate("/signin");
   };
 
   return (

@@ -11,12 +11,14 @@ import { DevMessageProvider } from "@/context/DevMessageContext";
 import { ServerReadyProvider, useServerReady } from "@/context/ServerReadyContext";
 import { startAnalyticsTracking } from "@/shared/utils/analyticsTracker";
 import ProtectedRoute from "@/shared/components/ProtectedRoute";
+import ProviderOnlyRoute from "@/shared/components/ProviderOnlyRoute";
 
 // ── Layouts ──────────────────────────────────────────────────────────────────
-import MainLayout  from "@/layouts/MainLayout";
-import AuthLayout  from "@/layouts/AuthLayout";
-import UserLayout  from "@/layouts/UserLayout";
-import AdminLayout from "@/layouts/AdminLayout";
+import MainLayout   from "@/layouts/MainLayout";
+import AuthLayout   from "@/layouts/AuthLayout";
+import UserLayout   from "@/layouts/UserLayout";
+import AdminLayout  from "@/layouts/AdminLayout";
+import ClientLayout from "@/layouts/ClientLayout";
 
 // ── Public pages ─────────────────────────────────────────────────────────────
 const Home            = lazy(() => import("@/features/posts/pages/homePage"));
@@ -41,6 +43,7 @@ const Signout      = lazy(() => import("@/features/auth/pages/SignoutPage"));
 // ── User pages ────────────────────────────────────────────────────────────────
 const UserDashboard      = lazy(() => import("@/features/users/pages/dashboard"));
 const SavedPostsPage     = lazy(() => import("@/features/users/pages/SavedPostsPage"));
+const LikedPostsPage     = lazy(() => import("@/features/users/pages/LikedPostsPage"));
 const UserProfileSettings= lazy(() => import("@/features/users/pages/UserProfileSettings"));
 const UserMessages       = lazy(() => import("@/features/users/pages/UserMessages"));
 const ProfilePage        = lazy(() => import("@/features/users/pages/ProfilePage"));
@@ -58,6 +61,7 @@ const AdminBanners        = lazy(() => import("@/features/admin/pages/AdminBanne
 const AdminDiscounts      = lazy(() => import("@/features/admin/pages/AdminDiscountsPage"));
 const AdminEmailUsers     = lazy(() => import("@/features/admin/pages/AdminEmailUsersPage"));
 const UserNotifications   = lazy(() => import("@/features/users/pages/UserNotificationsPage"));
+const ClientDashboard     = lazy(() => import("@/features/clients/pages/ClientDashboard"));
 
 // ── Shared pages ──────────────────────────────────────────────────────────────
 const NotFoundPage = lazy(() => import("@/shared/pages/NotFoundPage"));
@@ -70,7 +74,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/",                    element: <Home /> },
       { path: "/home",                element: <Navigate to="/" replace /> },
-      { path: "/post",                element: <PostPage /> },
+      { path: "/post",                element: <ProviderOnlyRoute><PostPage /></ProviderOnlyRoute> },
       { path: "/posts/:postId",       element: <PostDetail /> },
       { path: "/user/:userId",        element: <UserProfileView /> },
       { path: "/profile/:username",   element: <ProfilePage /> },
@@ -110,6 +114,24 @@ const router = createBrowserRouter([
           { path: "/user/profilepage",      element: <ProfilePage /> },
           { path: "/user/activity",         element: <UserActivity /> },
           { path: "/user/notifications",    element: <UserNotifications /> },
+          { path: "/user/liked-posts",       element: <LikedPostsPage /> },
+        ],
+      },
+    ],
+  },
+
+  // ── Client routes — ProtectedRoute → ClientLayout ────────────────────────
+  {
+    element: <ProtectedRoute role="user" />,
+    children: [
+      {
+        element: <ClientLayout />,
+        children: [
+          { path: "/client/dashboard",     element: <ClientDashboard /> },
+          { path: "/client/liked-posts",   element: <LikedPostsPage /> },
+          { path: "/client/messages",      element: <UserMessages /> },
+          { path: "/client/profile",       element: <UserProfileSettings /> },
+          { path: "/client/notifications", element: <UserNotifications /> },
         ],
       },
     ],
@@ -266,13 +288,7 @@ During this time, users will not receive automated emails such as welcome messag
         </div>
       )}
       <Toaster position="top-right" toastOptions={{ duration: 6000 }} />
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-screen text-lg">
-            Loading...
-          </div>
-        }
-      >
+      <Suspense fallback={null}>
         <RouterProvider router={router} />
       </Suspense>
     </>

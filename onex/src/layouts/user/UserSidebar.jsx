@@ -12,7 +12,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   User, MessageSquareText, BarChart3, LogOut, Home,
-  Sparkles, LayoutDashboard, BookMarked,
+  Sparkles, LayoutDashboard, BookMarked, Heart,
 } from 'lucide-react';
 import { useContext } from 'react';
 import { UserContext } from '@/context/UserContext';
@@ -27,8 +27,9 @@ export default function UserSidebar({ isOpen, onClose, unreadMessages = 0 }) {
   // ── Base nav items — always visible ──────────────────────────────────────
   const navItems = [
     { to: '/user/dashboard',   label: 'Dashboard',    icon: LayoutDashboard, end: true },
-    { to: '/user/saved-posts', label: 'Posts',         icon: BookMarked },
-    { to: '/user/activity',    label: 'Activity',      icon: BarChart3 },
+    { to: '/user/saved-posts',  label: 'Posts',         icon: BookMarked },
+    { to: '/user/liked-posts',   label: 'Liked',          icon: Heart },
+    { to: '/user/activity',      label: 'Activity',       icon: BarChart3 },
     { to: '/user/profile',     label: 'Edit Profile',  icon: User },
     { to: '/user/messages',    label: 'Messages',      icon: MessageSquareText, badge: unreadMessages },
     { to: '/promote',          label: 'Promote',        icon: Sparkles },

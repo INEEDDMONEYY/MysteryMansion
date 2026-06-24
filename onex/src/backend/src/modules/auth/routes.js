@@ -30,7 +30,7 @@ const strongPasswordRegex =
 /* -------------------------- 🔑 Signup -------------------------- */
 router.post("/signup", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, accountType } = req.body;
     const normalizedUsername = normalizeUsername(username || "");
     const normalizedEmail = (email || "").trim().toLowerCase();
 
@@ -61,11 +61,14 @@ router.post("/signup", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const resolvedAccountType = accountType === "provider" ? "provider" : "client";
+
     const user = new User({
       username: normalizedUsername,
       email: normalizedEmail,
       password: hashedPassword,
       role: "user",
+      accountType: resolvedAccountType,
     });
 
     await user.save();

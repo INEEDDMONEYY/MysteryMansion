@@ -222,13 +222,7 @@ export const UserProvider = ({ children }) => {
           error,
         }}
       >
-        {!loading ? (
-          children
-        ) : (
-          <p className="text-center mt-10">
-            {error ? `Error: ${error}` : "Loading..."}
-          </p>
-        )}
+        {children}
       </UserContext.Provider>
     </>
   );

@@ -93,6 +93,37 @@ const adminOnlyMiddleware = (req, res, next) => {
 };
 
 /* ---------------------------------------------------------
+   🔓 OPTIONAL AUTH MIDDLEWARE
+   Attaches req.user if a valid token is present, but does
+   not reject requests that have no token.
+--------------------------------------------------------- */
+const optionalAuthMiddleware = async (req, res, next) => {
+  try {
+    const token =
+      req.header("Authorization")?.replace("Bearer ", "") ||
+      req.cookies?.token;
+
+    if (!token) return next();
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || env.JWT_SECRET);
+    } catch {
+      return next(); // bad token — just proceed unauthenticated
+    }
+
+    const userId = decoded.id || decoded._id;
+    if (userId) {
+      const user = await User.findById(userId).select("-password");
+      if (user) req.user = user;
+    }
+  } catch {
+    // silently skip
+  }
+  return next();
+};
+
+/* ---------------------------------------------------------
    EXPORT MIDDLEWARES
 --------------------------------------------------------- */
-export { authMiddleware, adminOnlyMiddleware };
+export { authMiddleware, adminOnlyMiddleware, optionalAuthMiddleware };

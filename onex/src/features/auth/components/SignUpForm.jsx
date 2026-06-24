@@ -3,9 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '@/context/useUser.jsx';
 import api from '@/shared/utils/api';
 
-export default function SignupForm() {
+export default function SignupForm({ accountType = 'client' }) {
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');          // ✅ NEW EMAIL STATE
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -18,9 +18,6 @@ export default function SignupForm() {
       .replace(/\u00A0/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
-
-  // Role removed from public signup — admins will have a separate form
-  const role = "user";
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -36,7 +33,7 @@ export default function SignupForm() {
 
     if (!passwordRegex.test(password)) {
       setError(
-        'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.'
+        'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.'
       );
       return;
     }
@@ -46,10 +43,12 @@ export default function SignupForm() {
         username: normalizedUsername,
         email: email.trim(),
         password,
-        role,
+        role: 'user',
+        accountType,
       });
       await login(email.trim().toLowerCase(), password);
-      navigate('/home');
+      if (accountType === 'client') navigate('/client/dashboard');
+      else navigate('/user/dashboard');
     } catch (err) {
       setError(err?.response?.data?.error || 'Server error: ' + (err?.message || ''));
     }
@@ -62,7 +61,7 @@ export default function SignupForm() {
       <input
         type="text"
         placeholder="Create a username"
-        className="border-2 border-pink-600 m-2 px-1 text-[1rem] text-black rounded-lg"
+        className="border-2 border-pink-600 m-2 px-2 py-1.5 text-[1rem] text-black bg-white placeholder-gray-500 rounded-lg w-full"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         autoCapitalize="none"
@@ -72,11 +71,11 @@ export default function SignupForm() {
         required
       />
 
-      {/* ✅ NEW EMAIL INPUT (requested) */}
+      {/* Email */}
       <input
         type="email"
         placeholder="Enter your email"
-        className="border-2 border-pink-600 m-2 px-1 text-[1rem] text-black rounded-lg"
+        className="border-2 border-pink-600 m-2 px-2 py-1.5 text-[1rem] text-black bg-white placeholder-gray-500 rounded-lg w-full"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         autoCapitalize="none"
@@ -90,7 +89,7 @@ export default function SignupForm() {
       <input
         type="password"
         placeholder="Enter your password"
-        className="border-2 border-pink-600 m-2 px-1 text-[1rem] text-black rounded-lg"
+        className="border-2 border-pink-600 m-2 px-2 py-1.5 text-[1rem] text-black bg-white placeholder-gray-500 rounded-lg w-full"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         autoCapitalize="none"
@@ -98,8 +97,6 @@ export default function SignupForm() {
         autoComplete="new-password"
         required
       />
-
-      {/* ❌ ROLE DROPDOWN REMOVED */}
 
       <button
         type="submit"
@@ -124,3 +121,4 @@ export default function SignupForm() {
     </form>
   );
 }
+
