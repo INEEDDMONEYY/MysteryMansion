@@ -18,36 +18,36 @@ function FAQForm({ initial, onSave, onCancel, saving }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Question</label>
+        <label className="block text-xs font-medium text-neutral-300 mb-1">Question</label>
         <input
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="e.g. How do I create my first post?"
           required
-          className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+          className="w-full border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
         />
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Answer</label>
+        <label className="block text-xs font-medium text-neutral-300 mb-1">Answer</label>
         <textarea
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           placeholder="Provide a clear, helpful answer…"
           required
           rows={4}
-          className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-pink-400"
+          className="w-full border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-pink-400"
         />
       </div>
       <div className="flex items-center gap-4">
         <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-700 mb-1">Sort order <span className="text-gray-400">(lower = first)</span></label>
+          <label className="block text-xs font-medium text-neutral-300 mb-1">Sort order <span className="text-neutral-500">(lower = first)</span></label>
           <input
             type="number"
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
             min={0}
-            className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+            className="w-full border border-neutral-700 bg-neutral-800 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
           />
         </div>
         <div className="flex items-center gap-2 mt-5">
@@ -56,8 +56,8 @@ function FAQForm({ initial, onSave, onCancel, saving }) {
             onClick={() => setIsActive((v) => !v)}
             className={`flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-xl border transition-colors ${
               isActive
-                ? 'border-green-300 bg-green-50 text-green-700'
-                : 'border-gray-300 bg-gray-50 text-gray-500'
+                ? 'border-green-500/40 bg-green-500/10 text-green-400'
+                : 'border-neutral-600 bg-neutral-800 text-neutral-400'
             }`}
           >
             {isActive ? <Eye size={13} /> : <EyeOff size={13} />}
@@ -77,7 +77,7 @@ function FAQForm({ initial, onSave, onCancel, saving }) {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-xl border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 rounded-xl border border-neutral-600 text-sm text-neutral-300 hover:bg-neutral-800 transition-colors"
           >
             Cancel
           </button>
