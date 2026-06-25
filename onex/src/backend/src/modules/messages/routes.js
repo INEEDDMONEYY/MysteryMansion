@@ -122,9 +122,14 @@ router.post("/", authMiddleware, enforceRestriction("message:send"), async (req,
       await User.findByIdAndUpdate(senderId, { $inc: { credits: -CREDITS_PER_MESSAGE } });
     }
 
-    // Block non-client regular users from messaging other users (original rule preserved)
-    if (req.user.role === 'user' && !isClientSender && recipients.some((p) => p.role !== 'admin')) {
-      return res.status(403).json({ error: 'Users can only message admins' });
+    // Providers (role=user, accountType=provider) may only message admins or clients — not other providers.
+    if (req.user.role === 'user' && !isClientSender) {
+      const hasProviderRecipient = recipients.some(
+        (p) => p.role === 'user' && p.accountType !== 'client'
+      );
+      if (hasProviderRecipient) {
+        return res.status(403).json({ error: 'Providers can only message admins or clients.' });
+      }
     }
 
     const message = await Message.create({
