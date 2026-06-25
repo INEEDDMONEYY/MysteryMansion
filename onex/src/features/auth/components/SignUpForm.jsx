@@ -3,11 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '@/context/useUser.jsx';
 import api from '@/shared/utils/api';
 
-export default function SignupForm({ accountType = 'client' }) {
+export default function SignupForm({ accountType = 'client', verifiedEmail = '', verificationToken = '' }) {
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError]       = useState('');
   const navigate = useNavigate();
   const { login } = useUser();
 
@@ -23,8 +22,8 @@ export default function SignupForm({ accountType = 'client' }) {
     e.preventDefault();
 
     const normalizedUsername = normalizeUsernameInput(username);
-    if (!normalizedUsername || !email.trim() || !password) {
-      setError('Username, email, and password are required.');
+    if (!normalizedUsername || !password) {
+      setError('Username and password are required.');
       return;
     }
 
@@ -41,12 +40,13 @@ export default function SignupForm({ accountType = 'client' }) {
     try {
       await api.post('/auth/signup', {
         username: normalizedUsername,
-        email: email.trim(),
+        email: verifiedEmail,
         password,
         role: 'user',
         accountType,
+        emailVerificationToken: verificationToken,
       });
-      await login(email.trim().toLowerCase(), password);
+      await login(verifiedEmail, password);
       if (accountType === 'client') navigate('/client/dashboard');
       else navigate('/user/dashboard');
     } catch (err) {
@@ -71,19 +71,11 @@ export default function SignupForm({ accountType = 'client' }) {
         required
       />
 
-      {/* Email */}
-      <input
-        type="email"
-        placeholder="Enter your email"
-        className="border-2 border-pink-600 m-2 px-2 py-1.5 text-[1rem] text-black bg-white placeholder-gray-500 rounded-lg w-full"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        autoCapitalize="none"
-        autoCorrect="off"
-        spellCheck={false}
-        autoComplete="email"
-        required
-      />
+      {/* Email — locked, shown as read-only confirmation */}
+      <div className="m-2 px-2 py-1.5 text-[1rem] text-gray-600 bg-gray-100 border-2 border-green-500 rounded-lg w-full flex items-center gap-2">
+        <span className="text-green-600 text-xs font-semibold shrink-0">✓ Verified</span>
+        <span className="truncate">{verifiedEmail}</span>
+      </div>
 
       {/* Password */}
       <input

@@ -4,6 +4,33 @@ import { sendEmail, FROM_ADDRESS } from '../utils/unosend.js';
 import env from "../../config/env.js";
 
 /**
+ * Sends a 6-digit email verification code to a prospective user.
+ */
+export async function sendVerificationCodeEmail({ to, code }) {
+  if (!to || !code) throw new Error("Missing required parameters: 'to' or 'code'");
+
+  await sendEmail({
+    from: FROM_ADDRESS,
+    to,
+    subject: "Your Mystery Mansion verification code",
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111; max-width: 480px;">
+        <h2 style="color: #111;">Verify your email</h2>
+        <p>Use the code below to verify your email address for <strong>Mystery Mansion</strong>. It expires in <strong>10 minutes</strong>.</p>
+        <div style="margin: 24px 0; text-align: center;">
+          <span style="display: inline-block; letter-spacing: 10px; font-size: 36px; font-weight: bold; background: #f4f4f5; padding: 16px 24px; border-radius: 8px; color: #111;">
+            ${code}
+          </span>
+        </div>
+        <p style="color: #555; font-size: 13px;">If you didn't request this, you can safely ignore this email. This code can only be used once.</p>
+        <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0;" />
+        <p style="font-size: 12px; color: #999;">© ${new Date().getFullYear()} Mystery Mansion. All rights reserved.</p>
+      </div>
+    `,
+  });
+}
+
+/**
  * Sends a welcome email to a new user
  */
 export async function sendWelcomeEmail({ to, username }) {

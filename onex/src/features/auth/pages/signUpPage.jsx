@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import SignupForm from '../components/SignUpForm';
+import EmailVerifyStep from '../components/EmailVerifyStep';
 import Logo from '@/assets/Logo.png';
 import { setSEO } from '@/shared/utils/seo';
 
@@ -73,8 +74,8 @@ function AccountTypeSelector({ onSelect }) {
   );
 }
 
-// ── Step 2: registration form ──────────────────────────────────────────────
-function SignupFormStep({ accountType, onBack }) {
+// ── Step 3: registration form ──────────────────────────────────────────────
+function SignupFormStep({ accountType, verifiedEmail, verificationToken, onBack }) {
   const label = accountType === 'provider' ? 'Provider' : 'Client';
   const accent = accountType === 'provider' ? 'border-pink-500' : 'border-purple-500';
   const badgeColor = accountType === 'provider'
@@ -97,7 +98,7 @@ function SignupFormStep({ accountType, onBack }) {
         <h3 className="text-black text-2xl sm:text-[2rem]">Sign Up</h3>
 
         <div className="w-full">
-          <SignupForm accountType={accountType} />
+          <SignupForm accountType={accountType} verifiedEmail={verifiedEmail} verificationToken={verificationToken} />
         </div>
 
         <button
@@ -118,6 +119,8 @@ export default function SignupPage() {
   const [accountType, setAccountType] = useState(
     typeParam === 'provider' || typeParam === 'client' ? typeParam : null
   );
+  const [verifiedEmail, setVerifiedEmail]           = useState(null);
+  const [verificationToken, setVerificationToken]   = useState(null);
 
   useEffect(() => {
     setSEO('Sign Up | Mystery Mansion', '', { robots: 'noindex, nofollow' });
@@ -126,16 +129,43 @@ export default function SignupPage() {
   const handleSelect = (type) => {
     setAccountType(type);
     setSearchParams({ type });
+    // Reset verification if user changes account type
+    setVerifiedEmail(null);
+    setVerificationToken(null);
   };
 
   const handleBack = () => {
     setAccountType(null);
     setSearchParams({});
+    setVerifiedEmail(null);
+    setVerificationToken(null);
+  };
+
+  const handleVerified = ({ email, verificationToken: token }) => {
+    setVerifiedEmail(email);
+    setVerificationToken(token);
   };
 
   if (!accountType) {
     return <AccountTypeSelector onSelect={handleSelect} />;
   }
 
-  return <SignupFormStep accountType={accountType} onBack={handleBack} />;
+  if (!verifiedEmail) {
+    return (
+      <EmailVerifyStep
+        accountType={accountType}
+        onVerified={handleVerified}
+        onBack={handleBack}
+      />
+    );
+  }
+
+  return (
+    <SignupFormStep
+      accountType={accountType}
+      verifiedEmail={verifiedEmail}
+      verificationToken={verificationToken}
+      onBack={() => { setVerifiedEmail(null); setVerificationToken(null); }}
+    />
+  );
 }

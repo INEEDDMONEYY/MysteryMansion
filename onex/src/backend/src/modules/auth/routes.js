@@ -9,11 +9,16 @@ import sendWelcomeEmail from "../../common/utils/sendWelcomeEmail.js";
 import sendResetEmail from "../../common/utils/sendResetEmail.js";
 import { ensureUserAdminConversation } from "../../common/utils/ensureAdminWelcomeConversation.js";
 import { createNotification } from "../notifications/notificationController.js";
+import { sendVerificationCode, confirmVerificationCode } from "./controllers/emailVerificationController.js";
 
 // 🔐 NEW: import combined middleware
 import { authMiddleware, adminOnlyMiddleware } from "../../common/middleware/authMiddleware.js";
 
 const router = express.Router();
+
+/* ── Email verification (pre-signup) ── */
+router.post('/email-verify/send',    sendVerificationCode);
+router.post('/email-verify/confirm', confirmVerificationCode);
 
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const normalizeUsername = (value = "") =>
@@ -30,7 +35,7 @@ const strongPasswordRegex =
 /* -------------------------- 🔑 Signup -------------------------- */
 router.post("/signup", async (req, res) => {
   try {
-    const { username, email, password, accountType } = req.body;
+    const { username, email, password, accountType, emailVerificationToken } = req.body;
     const normalizedUsername = normalizeUsername(username || "");
     const normalizedEmail = (email || "").trim().toLowerCase();
 
@@ -38,6 +43,19 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({
         error: "Username, email, and password are required"
       });
+    }
+
+    // Require a valid emailVerificationToken issued by /email-verify/confirm
+    if (!emailVerificationToken) {
+      return res.status(400).json({ error: "Email verification is required before signing up." });
+    }
+    try {
+      const payload = jwt.verify(emailVerificationToken, env.JWT_SECRET);
+      if (payload.purpose !== 'email-verify' || payload.email !== normalizedEmail) {
+        return res.status(400).json({ error: "Invalid or mismatched email verification token." });
+      }
+    } catch {
+      return res.status(400).json({ error: "Email verification token is expired or invalid. Please verify your email again." });
     }
 
     if (looksLikeEmail(normalizedUsername)) {
