@@ -107,6 +107,7 @@ export default function AdminMessages() {
         <ConversationList
           conversations={conversations}
           selectedId={selectedConversation?._id}
+          currentUserId={user?._id}
           onSelect={(id) => fetchMessages(id)}
           loading={loading}
         />
@@ -148,7 +149,7 @@ export default function AdminMessages() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto bg-neutral-950/50 p-3 sm:p-4">
           {selectedConversation ? (
-            <MessageList messages={messages} currentRole="admin" />
+            <MessageList messages={messages} currentUserId={user?._id} />
           ) : (
             <div className="flex items-center justify-center h-full text-neutral-500 text-sm text-center p-6">
               Select a conversation or start a new one to begin chatting.
@@ -161,8 +162,7 @@ export default function AdminMessages() {
           <div className="border-t border-neutral-800">
             <MessageInput
               onSend={handleSend}
-              senderRole={user?.role || "admin"}
-              placeholder={`Message ${conversationTitle}…`}
+              placeholder={`Message ${conversationTitle}\u2026`}
             />
           </div>
         )}

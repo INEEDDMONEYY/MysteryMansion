@@ -1,68 +1,60 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Send } from "lucide-react";
 
-/**
- * A reusable message input component that can be used in both
- * admin and user dashboards.
- *
- * Props:
- * - onSend(messageData): Function called when message is submitted
- * - senderRole: "admin" | "user" (used for message metadata or styling)
- * - placeholder?: Optional input placeholder text
- */
 export default function MessageInput({
   onSend,
-  senderRole = "user",
-  placeholder = "Type a message...",
+  placeholder = "Type a message…",
+  disabled = false,
 }) {
-  const [message, setMessage] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+  const inputRef = useRef(null);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!message.trim()) return;
-
-    setIsSending(true);
-
-    // Build message data (could include role, timestamp, etc.)
-    const messageData = {
-      sender: senderRole,
-      text: message.trim(),
-      timestamp: new Date().toISOString(),
-    };
-
+    e?.preventDefault();
+    const trimmed = text.trim();
+    if (!trimmed || sending || disabled) return;
+    setSending(true);
     try {
-      // Delegate sending logic to parent
-      await onSend?.(messageData);
-      setMessage("");
-    } catch (error) {
-      console.error("Error sending message:", error);
+      await onSend?.({ text: trimmed });
+      setText("");
+      inputRef.current?.focus();
+    } catch (err) {
+      console.error("MessageInput send error:", err);
     } finally {
-      setIsSending(false);
+      setSending(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center gap-2 p-2 border-t border-gray-200 bg-white"
+      className="flex items-end gap-2 px-4 py-3 bg-white border-t border-gray-100"
     >
-      <input
-        type="text"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
+      <textarea
+        ref={inputRef}
+        rows={1}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-black placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        disabled={isSending}
+        disabled={disabled || sending}
+        className="flex-1 resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent disabled:opacity-50 max-h-32 overflow-y-auto leading-relaxed"
+        style={{ minHeight: '42px' }}
       />
       <button
         type="submit"
-        disabled={isSending || !message.trim()}
-        className={`p-2 rounded-full text-white ${
-          isSending ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-        }`}
+        disabled={!text.trim() || sending || disabled}
+        className="shrink-0 w-10 h-10 rounded-full bg-pink-600 hover:bg-pink-500 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors"
       >
-        <Send size={18} />
+        <Send size={16} />
       </button>
     </form>
   );

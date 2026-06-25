@@ -4,6 +4,7 @@ import Conversation from "../../models/Conversation.js";
 import User from "../../models/User.js";
 import { authMiddleware } from "../../common/middleware/authMiddleware.js";
 import { enforceRestriction } from "../../common/middleware/restrictionMiddleware.js";
+import { createNotification } from "../notifications/notificationController.js";
 
 const router = express.Router();
 
@@ -146,6 +147,21 @@ router.post("/", authMiddleware, enforceRestriction("message:send"), async (req,
       "sender",
       "username role profilePic"
     );
+
+    // ── Notify non-admin recipients of the new message ───────────────────────────
+    const senderUsername = populated.sender?.username || 'Someone';
+    const userRecipients = recipients.filter((p) => p.role === 'user');
+    for (const recipient of userRecipients) {
+      createNotification({
+        audience: 'user',
+        type: 'message',
+        title: 'New message',
+        message: `${senderUsername} sent you a message.`,
+        userId: recipient._id,
+        meta: { conversationId: String(conversationId), senderId: String(senderId) },
+      }).catch(() => {}); // fire-and-forget, don't block the response
+    }
+
     res.status(201).json(populated);
   } catch (err) {
     console.error("❌ Failed to send message:", err);

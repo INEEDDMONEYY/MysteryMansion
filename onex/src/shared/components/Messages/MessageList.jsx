@@ -1,37 +1,33 @@
 import { useEffect, useRef } from "react";
 import MessageItem from "./MessageItem";
+import { MessageCircle } from "lucide-react";
 
-/**
- * Reusable MessageList component for both admin and user dashboards.
- *
- * Props:
- * - messages: Array of { sender: "admin" | "user", text: string, timestamp?: string, avatarUrl?: string }
- * - currentRole: "admin" | "user"  (the perspective of the logged-in user)
- * - className?: optional custom styling classes
- */
-export default function MessageList({ messages = [], currentRole = "user", className = "" }) {
+export default function MessageList({ messages = [], currentUserId, className = "" }) {
   const bottomRef = useRef(null);
 
-  // Auto-scroll to the newest message
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
     <div
-      className={`flex-1 overflow-y-auto p-4 bg-gray-50 ${className}`}
-      style={{ minHeight: "0px" }} // ensures proper flex scroll behavior
+      className={`flex-1 overflow-y-auto px-4 py-4 space-y-1 bg-gray-50 ${className}`}
+      style={{ minHeight: 0 }}
     >
       {messages.length > 0 ? (
         messages.map((msg) => (
-          <MessageItem key={msg._id || `${msg.createdAt}-${msg.text}`} message={msg} currentRole={currentRole} />
+          <MessageItem
+            key={msg._id || `${msg.createdAt}-${msg.text}`}
+            message={msg}
+            currentUserId={currentUserId}
+          />
         ))
       ) : (
-        <div className="text-center text-gray-400 mt-10">
-          <p>No messages yet. Start the conversation!</p>
+        <div className="flex flex-col items-center justify-center h-full text-center py-16 text-gray-400">
+          <MessageCircle size={40} className="mb-3 opacity-30" />
+          <p className="text-sm">No messages yet — say hello!</p>
         </div>
       )}
-
       <div ref={bottomRef} />
     </div>
   );

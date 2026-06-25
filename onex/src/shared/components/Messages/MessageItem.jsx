@@ -1,76 +1,36 @@
-import React from "react";
-
-/**
- * Reusable message item for both admin and user dashboards.
- *
- * Props:
- * - message: { sender: "admin" | "user", text: string, timestamp?: string, avatarUrl?: string }
- * - currentRole: "admin" | "user" (used to determine alignment)
- */
-export default function MessageItem({ message, currentRole = "user" }) {
-  const senderRole = message?.sender?.role || message?.senderRole || "user";
-  const senderName = message?.sender?.username || senderRole;
-  const senderAvatar = message?.sender?.profilePic || message?.avatarUrl || "";
-  const isOwnMessage = senderRole === currentRole;
+export default function MessageItem({ message, currentUserId }) {
+  const senderId   = String(message?.sender?._id || message?.sender || '');
+  const senderName   = message?.sender?.username || 'User';
+  const senderAvatar = message?.sender?.profilePic || '';
+  const isOwn        = senderId === String(currentUserId);
 
   const formattedTime = message?.createdAt
-    ? new Date(message.createdAt).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "";
+    ? new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : '';
 
   return (
-    <div
-      className={`flex items-end mb-3 ${
-        isOwnMessage ? "justify-end" : "justify-start"
-      }`}
-    >
-      {/* Avatar for other side */}
-      {!isOwnMessage && (
-        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold mr-2">
-          {senderAvatar ? (
-            <img
-              src={senderAvatar}
-              alt={`${senderName} avatar`}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-          ) : (
-            senderName.charAt(0).toUpperCase()
-          )}
-        </div>
-      )}
+    <div className={`flex items-end gap-2 mb-1 ${ isOwn ? 'flex-row-reverse' : 'flex-row' }`}>
 
-      {/* Message bubble */}
-      <div
-        className={`max-w-xs sm:max-w-md px-3 py-2 rounded-2xl shadow-sm ${
-          isOwnMessage
-            ? "bg-blue-600 text-white rounded-br-none"
-            : "bg-gray-100 text-gray-800 rounded-bl-none"
-        }`}
-      >
-        <p className="text-sm break-words">{message.text}</p>
+      {/* Avatar */}
+      <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+        {senderAvatar
+          ? <img src={senderAvatar} alt={senderName} className="w-full h-full object-cover" />
+          : senderName.charAt(0).toUpperCase()}
+      </div>
+
+      {/* Bubble */}
+      <div className={`max-w-[70%] px-3.5 py-2.5 rounded-2xl shadow-sm ${
+        isOwn
+          ? 'bg-pink-600 text-white rounded-br-sm'
+          : 'bg-white text-gray-900 border border-gray-100 rounded-bl-sm'
+      }`}>
+        <p className="text-sm leading-relaxed break-words">{message.text}</p>
         {formattedTime && (
-          <span className="block text-[10px] mt-1 opacity-70 text-right">
+          <span className={`block text-[10px] mt-1 text-right ${ isOwn ? 'text-pink-200' : 'text-gray-400' }`}>
             {formattedTime}
           </span>
         )}
       </div>
-
-      {/* Avatar for own messages */}
-      {isOwnMessage && (
-        <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-sm font-semibold ml-2">
-          {senderAvatar ? (
-            <img
-              src={senderAvatar}
-              alt={`${senderName} avatar`}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-          ) : (
-            senderName.charAt(0).toUpperCase()
-          )}
-        </div>
-      )}
     </div>
   );
 }
