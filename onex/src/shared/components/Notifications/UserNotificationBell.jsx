@@ -1,15 +1,36 @@
 import { useRef, useState } from 'react';
 import { Bell } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import useNotifications from '@/shared/hooks/useNotifications';
 import NotificationModal from '@/shared/components/Notifications/NotificationModal';
 
-/** Drop-in bell button + modal for the user dashboard header rightSlot. */
-export default function UserNotificationBell() {
+/**
+ * Drop-in bell button + modal for the user dashboard header.
+ * @param {string} viewAllHref  - path to the full notifications page
+ * @param {string} messagesPath - path to the messages page (for click-through)
+ */
+export default function UserNotificationBell({
+  viewAllHref = '/user/notifications',
+  messagesPath = '/user/messages',
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const navigate = useNavigate();
 
   const { notifications, unreadCount, loading, markAllRead, markOneRead } =
     useNotifications('user');
+
+  const handleItemClick = (n) => {
+    if (!n.read) markOneRead(n._id);
+    // Navigate to the conversation if meta includes one, else go to messages
+    if (n.type === 'message' || n.type === 'new_message') {
+      setOpen(false);
+      const dest = n.meta?.conversationId
+        ? `${messagesPath}?conv=${n.meta.conversationId}`
+        : messagesPath;
+      navigate(dest);
+    }
+  };
 
   return (
     <div className="relative" ref={ref}>
@@ -37,8 +58,9 @@ export default function UserNotificationBell() {
         loading={loading}
         markAllRead={markAllRead}
         markOneRead={markOneRead}
+        onItemClick={handleItemClick}
         title="Notifications"
-        viewAllHref="/user/notifications"
+        viewAllHref={viewAllHref}
       />
     </div>
   );

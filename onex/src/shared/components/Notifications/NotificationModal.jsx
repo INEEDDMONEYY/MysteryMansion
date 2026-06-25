@@ -8,22 +8,28 @@ const TYPE_META = {
   new_comment:        { icon: MessageSquare,  color: 'text-blue-400',    bg: 'bg-blue-400/10'    },
   new_review:         { icon: Star,           color: 'text-amber-400',   bg: 'bg-amber-400/10'   },
   browse_peak:        { icon: TrendingUp,     color: 'text-pink-400',    bg: 'bg-pink-400/10'    },
+  message:            { icon: MessageSquare,  color: 'text-violet-400',  bg: 'bg-violet-400/10'  },
   new_message:        { icon: MessageSquare,  color: 'text-violet-400',  bg: 'bg-violet-400/10'  },
   promo_approved:     { icon: TrendingUp,     color: 'text-amber-400',   bg: 'bg-amber-400/10'   },
   promo_expiring:     { icon: TrendingUp,     color: 'text-orange-400',  bg: 'bg-orange-400/10'  },
   account_restricted: { icon: Bell,           color: 'text-red-400',     bg: 'bg-red-400/10'     },
 };
 
-function NotificationItem({ n, onRead }) {
+function NotificationItem({ n, onRead, onItemClick }) {
   const meta  = TYPE_META[n.type] || { icon: Bell, color: 'text-neutral-400', bg: 'bg-neutral-400/10' };
   const Icon  = meta.icon;
   const timeAgo = n.createdAt
     ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })
     : '';
 
+  const handleClick = () => {
+    if (onItemClick) { onItemClick(n); return; }
+    if (!n.read) onRead(n._id);
+  };
+
   return (
     <button
-      onClick={() => !n.read && onRead(n._id)}
+      onClick={handleClick}
       className={`w-full text-left flex items-start gap-3 px-4 py-3 transition-colors hover:bg-neutral-800/60 ${
         n.read ? 'opacity-60' : ''
       }`}
@@ -59,6 +65,7 @@ export default function NotificationModal({
   loading,
   markAllRead,
   markOneRead,
+  onItemClick,
   title = 'Notifications',
   viewAllHref,
 }) {
@@ -123,7 +130,7 @@ export default function NotificationModal({
           </div>
         ) : (
           notifications.map((n) => (
-            <NotificationItem key={n._id} n={n} onRead={markOneRead} />
+            <NotificationItem key={n._id} n={n} onRead={markOneRead} onItemClick={onItemClick} />
           ))
         )}
       </div>

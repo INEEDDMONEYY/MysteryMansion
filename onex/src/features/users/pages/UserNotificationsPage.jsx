@@ -6,6 +6,7 @@ const TYPE_META = {
   welcome:            { icon: PartyPopper,    color: 'text-pink-400',    bg: 'bg-pink-400/10',    label: 'Welcome'         },
   new_comment:        { icon: MessageSquare,  color: 'text-blue-400',    bg: 'bg-blue-400/10',    label: 'New Comment'     },
   new_review:         { icon: Star,           color: 'text-amber-400',   bg: 'bg-amber-400/10',   label: 'New Review'      },
+  message:            { icon: MessageSquare,  color: 'text-violet-400',  bg: 'bg-violet-400/10',  label: 'New Message'     },
   new_message:        { icon: MessageSquare,  color: 'text-violet-400',  bg: 'bg-violet-400/10',  label: 'New Message'     },
   promo_approved:     { icon: TrendingUp,     color: 'text-amber-400',   bg: 'bg-amber-400/10',   label: 'Promo Approved'  },
   promo_expiring:     { icon: TrendingUp,     color: 'text-orange-400',  bg: 'bg-orange-400/10',  label: 'Promo Expiring'  },
