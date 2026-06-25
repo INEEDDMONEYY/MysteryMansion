@@ -94,20 +94,21 @@ export default function ClientCreditsPage() {
 
   const fetchData = async () => {
     setLoadingData(true);
-    try {
-      const [balRes, reqRes, pkgRes] = await Promise.all([
-        api.get('/credits/balance'),
-        api.get('/credits/requests'),
-        api.get('/credits/packages'),
-      ]);
-      setCredits(balRes.data.credits ?? 0);
-      setRequests(Array.isArray(reqRes.data) ? reqRes.data : []);
-      setPackages(Array.isArray(pkgRes.data) ? pkgRes.data : []);
-    } catch {
-      setCredits(0);
-    } finally {
-      setLoadingData(false);
+    const [balR, reqR, pkgR] = await Promise.allSettled([
+      api.get('/credits/balance'),
+      api.get('/credits/requests'),
+      api.get('/credits/packages'),
+    ]);
+    if (balR.status === 'fulfilled') {
+      setCredits(balR.value.data?.credits ?? 200);
     }
+    if (reqR.status === 'fulfilled') {
+      setRequests(Array.isArray(reqR.value.data) ? reqR.value.data : []);
+    }
+    if (pkgR.status === 'fulfilled') {
+      setPackages(Array.isArray(pkgR.value.data) ? pkgR.value.data : []);
+    }
+    setLoadingData(false);
   };
 
   const handleSelectPackage = (pkg) => {

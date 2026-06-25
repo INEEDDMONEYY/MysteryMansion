@@ -88,7 +88,7 @@ export default function ClientDashboard() {
   const { user } = useContext(UserContext);
   const [likedPosts, setLikedPosts]     = useState([]);
   const [unreadCount, setUnreadCount]   = useState(0);
-  const [credits, setCredits]           = useState(0);
+  const [credits, setCredits]           = useState(null);
   const [loading, setLoading]           = useState(true);
 
   useEffect(() => {
@@ -106,7 +106,8 @@ export default function ClientDashboard() {
         setUnreadCount(Number(msgR.value.data?.unreadCount) || 0);
       }
       if (credR.status === 'fulfilled') {
-        setCredits(Number(credR.value.data?.credits) || 0);
+        const val = credR.value.data?.credits;
+        setCredits(val != null ? Number(val) : 200);
       }
     }).finally(() => setLoading(false));
   }, []);
@@ -158,9 +159,9 @@ export default function ClientDashboard() {
           <Link to="/client/credits" className="block">
             <StatCard
               label="Credits"
-              value={credits}
+              value={credits ?? '—'}
               icon={Coins}
-              gradient={credits < 20
+              gradient={credits != null && credits < 20
                 ? 'bg-gradient-to-br from-red-400 to-rose-500'
                 : 'bg-gradient-to-br from-yellow-400 to-amber-500'}
             />
@@ -212,7 +213,7 @@ export default function ClientDashboard() {
       </div>
 
       {/* Buy Credits CTA */}
-      {credits < 100 && (
+      {credits != null && credits < 100 && (
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4">
           <div>
             <p className="text-white font-bold text-sm">
