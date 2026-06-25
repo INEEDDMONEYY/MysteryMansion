@@ -30,6 +30,9 @@ const env = {
   JWT_SECRET: process.env.JWT_SECRET,
 
   CLIENT_URL: (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, ""),
+  // Canonical frontend origin used for email image assets — must return 200 (no redirect).
+  // Defaults to CLIENT_URL but override with the primary domain if CLIENT_URL redirects.
+  EMAIL_ASSET_BASE: (process.env.EMAIL_ASSET_BASE || process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, ""),
 
   // ☁️ Cloudinary
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,

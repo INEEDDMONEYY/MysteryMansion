@@ -1,47 +1,36 @@
 import { sendEmail, FROM_ADDRESS } from './unosend.js';
-import env from "../../config/env.js";
+import env from '../../config/env.js';
+import { buildEmail, ctaButton, darkCard, heading } from './emailTemplate.js';
 
-function escapeHtml(value = "") {
+function escapeHtml(value = '') {
   return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 export async function sendPlatformUpdateEmail({ to, username, title, description, type }) {
-  if (!to) {
-    throw new Error("Missing required email parameters for platform update notification");
-  }
+  if (!to) throw new Error('Missing required email parameters for platform update notification');
 
   const updateUrl = `${env.CLIENT_URL}/platform-updates`;
-  const safeType = type === "feature" ? "feature" : "platform";
+  const typeLabel = type === 'feature' ? 'New Feature' : 'Platform Update';
+
+  const content = `
+    ${heading('Platform Update')}
+    <p style="margin:0 0 20px;color:#c8c8c8;">Hi ${escapeHtml(username || 'there')},</p>
+    <p style="margin:0 0 16px;color:#c8c8c8;">We&rsquo;ve just shipped something new on <strong style="color:#e2e2e2;">Mystery Mansion</strong>. Here&rsquo;s what&rsquo;s changed:</p>
+    ${darkCard(`
+      <p style="margin:0 0 4px;color:#d5197e;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;">${escapeHtml(typeLabel)}</p>
+      <p style="margin:0 0 10px;color:#ffffff;font-size:17px;font-weight:700;">${escapeHtml(title || '')}</p>
+      <p style="margin:0;color:#b0b0b0;font-size:14px;line-height:1.7;">${escapeHtml(description || '')}</p>
+    `)}
+    ${ctaButton('View All Updates', updateUrl)}
+  `;
 
   await sendEmail({
     from: FROM_ADDRESS,
     to,
-    subject: "New platform updates are available",
-    html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-        <h2 style="margin-bottom: 8px;">Platform updates are available</h2>
-        <p>Hi ${escapeHtml(username || "there")},</p>
-        <p>We posted new ${safeType} updates on <strong>Mystery Mansion</strong>.</p>
-        <div style="margin: 20px 0; padding: 16px; border: 1px solid #eee; border-radius: 10px; background: #fafafa;">
-          <p style="margin: 0;">Check the platform updates page to see what new features and fixes are now available.</p>
-        </div>
-        <p style="margin: 20px 0;">
-          <a
-            href="${updateUrl}"
-            style="background: #000; color: #fff; padding: 12px 18px; text-decoration: none; border-radius: 6px; display: inline-block;"
-          >
-            View Platform Updates
-          </a>
-        </p>
-        <hr />
-        <p style="font-size: 12px; color: #777;">© ${new Date().getFullYear()} Mystery Mansion. All rights reserved.</p>
-      </div>
-    `,
+    subject: `Mystery Mansion — ${escapeHtml(title || 'Platform Update')}`,
+    html: buildEmail(content),
   });
 }
 
