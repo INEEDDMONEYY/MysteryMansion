@@ -1,8 +1,47 @@
 import { useContext, useEffect, useState } from 'react';
-import { Coins, Plus, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Coins, Plus, Clock, CheckCircle, XCircle, AlertCircle, Star, Zap } from 'lucide-react';
 import { UserContext } from '@/context/UserContext';
 import api from '@/shared/utils/api';
 import { setSEO } from '@/shared/utils/seo';
+
+function fmt(cents) {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function PackageCard({ pkg, onSelect, selected }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(pkg)}
+      className={`relative flex flex-col items-start p-4 rounded-2xl border-2 text-left transition-all w-full ${
+        selected
+          ? 'border-purple-500 bg-purple-50 shadow-md'
+          : pkg.isPopular
+          ? 'border-pink-400 bg-pink-50'
+          : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/40'
+      }`}
+    >
+      {pkg.isPopular && (
+        <span className="absolute -top-3 left-3 flex items-center gap-1 rounded-full bg-pink-600 text-white text-[10px] font-bold px-2.5 py-0.5">
+          <Star size={9} fill="currentColor" /> Popular
+        </span>
+      )}
+      <p className="font-bold text-gray-900 text-sm">{pkg.name}</p>
+      {pkg.description && <p className="text-xs text-gray-500 mt-0.5">{pkg.description}</p>}
+      <p className="text-2xl font-extrabold text-gray-900 mt-2 leading-none">{fmt(pkg.priceCents)}</p>
+      <div className="flex items-center gap-1.5 mt-2">
+        <Coins size={13} className="text-yellow-500" />
+        <span className="text-sm font-semibold text-yellow-700">{pkg.credits.toLocaleString()} credits</span>
+      </div>
+      <p className="text-[11px] text-gray-400 mt-0.5">≈ {Math.floor(pkg.credits / 20)} messages</p>
+      {selected && (
+        <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-purple-600">
+          <Zap size={11} /> Selected — fill your payment note below
+        </div>
+      )}
+    </button>
+  );
+}
 
 const CREDITS_PER_MESSAGE = 20;
 
@@ -37,14 +76,16 @@ function RequestRow({ req }) {
 
 export default function ClientCreditsPage() {
   const { user } = useContext(UserContext);
-  const [credits, setCredits]       = useState(null);
-  const [requests, setRequests]     = useState([]);
-  const [loadingData, setLoadingData] = useState(true);
-  const [amount, setAmount]         = useState('');
-  const [note, setNote]             = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess]       = useState('');
-  const [error, setError]           = useState('');
+  const [credits, setCredits]           = useState(null);
+  const [requests, setRequests]         = useState([]);
+  const [packages, setPackages]         = useState([]);
+  const [selectedPkg, setSelectedPkg]   = useState(null);
+  const [loadingData, setLoadingData]   = useState(true);
+  const [amount, setAmount]             = useState('');
+  const [note, setNote]                 = useState('');
+  const [submitting, setSubmitting]     = useState(false);
+  const [success, setSuccess]           = useState('');
+  const [error, setError]               = useState('');
 
   useEffect(() => {
     setSEO('My Credits | Mystery Mansion', '', { robots: 'noindex, nofollow' });
@@ -54,17 +95,29 @@ export default function ClientCreditsPage() {
   const fetchData = async () => {
     setLoadingData(true);
     try {
-      const [balRes, reqRes] = await Promise.all([
+      const [balRes, reqRes, pkgRes] = await Promise.all([
         api.get('/credits/balance'),
         api.get('/credits/requests'),
+        api.get('/credits/packages'),
       ]);
       setCredits(balRes.data.credits ?? 0);
       setRequests(Array.isArray(reqRes.data) ? reqRes.data : []);
+      setPackages(Array.isArray(pkgRes.data) ? pkgRes.data : []);
     } catch {
       setCredits(0);
     } finally {
       setLoadingData(false);
     }
+  };
+
+  const handleSelectPackage = (pkg) => {
+    setSelectedPkg(pkg);
+    setAmount(String(pkg.credits));
+    setNote(`Requesting ${pkg.credits} credits — ${pkg.name} package (${fmt(pkg.priceCents)}). `);
+    setError('');
+    setSuccess('');
+    // Scroll to form
+    setTimeout(() => document.getElementById('topup-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
   const handleSubmit = async (e) => {
@@ -82,6 +135,7 @@ export default function ClientCreditsPage() {
       setSuccess('Request submitted! An admin will review it shortly.');
       setAmount('');
       setNote('');
+      setSelectedPkg(null);
       fetchData();
     } catch (err) {
       setError(err?.response?.data?.error || 'Failed to submit request.');
@@ -136,8 +190,30 @@ export default function ClientCreditsPage() {
         )}
       </div>
 
+      {/* Pricing packages */}
+      {packages.length > 0 && (
+        <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-2">
+            <Coins size={15} className="text-yellow-500" /> Credit Packages
+          </h2>
+          <p className="text-xs text-gray-500 mb-4">
+            Choose a package below — it will pre-fill your request. Then add your payment details and submit.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {packages.map((pkg) => (
+              <PackageCard
+                key={pkg._id}
+                pkg={pkg}
+                onSelect={handleSelectPackage}
+                selected={selectedPkg?._id === pkg._id}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Request top-up */}
-      <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm">
+      <div id="topup-form" className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
           <Plus size={16} className="text-purple-500" />
           <h2 className="text-sm font-semibold text-gray-900">Request a Top-Up</h2>

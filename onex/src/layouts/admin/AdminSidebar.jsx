@@ -28,6 +28,7 @@ const ADMIN_NAV = [
   { to: '/admin/notifications',   label: 'Notifications',icon: Bell },
   { to: '/admin/email-users',     label: 'Email Users',     icon: MailCheck },
   { to: '/admin/credit-requests', label: 'Credit Requests', icon: Coins },
+  { to: '/admin/credit-packages', label: 'Credit Packages', icon: Coins },
   { to: '/admin/settings',        label: 'Settings',        icon: Settings },
 ];
 

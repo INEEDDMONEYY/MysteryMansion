@@ -1,11 +1,25 @@
 import express from 'express';
 import User from '../../models/User.js';
 import CreditRequest from '../../models/CreditRequest.js';
+import CreditPackage from '../../models/CreditPackage.js';
 import { authMiddleware } from '../../common/middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// All credits routes require authentication
+// ── GET /api/credits/packages (public — no auth) ────────────────────────
+router.get('/packages', async (req, res) => {
+  try {
+    const packages = await CreditPackage
+      .find({ isActive: true })
+      .sort({ sortOrder: 1, createdAt: 1 })
+      .lean();
+    res.json(packages);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch packages' });
+  }
+});
+
+// All routes below require authentication
 router.use(authMiddleware);
 
 // ── GET /api/credits/balance ──────────────────────────────────────────────────
