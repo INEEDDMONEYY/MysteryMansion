@@ -97,7 +97,7 @@ router.post("/signup", async (req, res) => {
 
     // Send welcome email after successful signup. Do not fail signup if email service has issues.
     if (user.email) {
-      sendWelcomeEmail({ to: user.email, username: user.username }).catch((mailErr) => {
+      sendWelcomeEmail({ to: user.email, username: user.username, accountType: user.accountType }).catch((mailErr) => {
         console.warn("Welcome email failed:", mailErr?.message || mailErr);
       });
     }
