@@ -4,7 +4,10 @@ import {
   Plus,
   RefreshCw,
   Menu,
+  Coins,
+  AlertCircle,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import MessageInput from "@/shared/components/Messages/MessageInput";
 import MessageList from "@/shared/components/Messages/MessageList";
 import ConversationList from "@/shared/components/Messages/ConversationList";
@@ -20,6 +23,8 @@ export default function UserMessages() {
   const [showNewModal, setShowNewModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isClient = user?.accountType === 'client';
+  const [credits, setCredits] = useState(null);
 
   const adminParticipantIds = Array.from(
     new Set(
@@ -32,10 +37,18 @@ export default function UserMessages() {
   );
   const hasAdminConversation = adminParticipantIds.length > 0;
 
+  // For the "+" button: clients can message providers too,
+  // so disable only if they already have a conversation with every available recipient (impossible to know upfront).
+  // For non-client users, disable once they have an admin conversation.
+  const canStartNew = isClient ? true : !hasAdminConversation;
+
   // 🔹 Fetch conversations from backend
   useEffect(() => {
     if (!user || userLoading) return;
     fetchConversations();
+    if (user.accountType === 'client') {
+      api.get('/credits/balance').then(r => setCredits(r.data.credits ?? 0)).catch(() => {});
+    }
   }, [user, userLoading]);
 
   const fetchConversations = async () => {
@@ -78,7 +91,13 @@ export default function UserMessages() {
       });
 
       setMessages((prev) => [...prev, res.data]);
+      // Deduct 20 credits locally for instant UI feedback (client only)
+      if (isClient) setCredits((c) => Math.max(0, (c ?? 0) - 20));
     } catch (err) {
+      if (err?.response?.status === 402) {
+        // Insufficient credits — refresh balance from server
+        api.get('/credits/balance').then(r => setCredits(r.data.credits ?? 0)).catch(() => {});
+      }
       console.error("❌ Failed to send message:", err);
     }
   };
@@ -108,13 +127,9 @@ export default function UserMessages() {
           <h2 className="text-lg font-semibold tracking-wide">Messages</h2>
           <button
             onClick={() => setShowNewModal(true)}
-            disabled={hasAdminConversation}
+            disabled={!canStartNew}
             className="p-1.5 bg-pink-600 rounded-lg hover:bg-pink-500 transition disabled:cursor-not-allowed disabled:opacity-50"
-            title={
-              hasAdminConversation
-                ? "Admin already exists in your message list"
-                : "Start New Conversation"
-            }
+            title={canStartNew ? 'Start New Conversation' : 'Admin already exists in your message list'}
           >
             <Plus size={18} />
           </button>
@@ -182,16 +197,43 @@ export default function UserMessages() {
         {/* Message Input */}
         {selectedConversation && (
           <div className="border-t border-pink-500/30 bg-black/30">
-            <MessageInput
-              onSend={handleSend}
-              senderRole={user.role}
-              placeholder={`Message ${
-                selectedConversation.participants
-                  .filter((p) => p._id !== user._id)
-                  .map((p) => p.username)
-                  .join(", ")
-              }...`}
-            />
+            {/* Credits indicator (client only) */}
+            {isClient && credits !== null && (
+              <div className={`flex items-center justify-between px-4 py-2 text-xs border-b border-pink-500/20 ${
+                credits < 20 ? 'bg-red-900/40 text-red-300' : 'bg-black/20 text-pink-300'
+              }`}>
+                <span className="flex items-center gap-1.5">
+                  <Coins size={13} />
+                  <strong>{credits}</strong> credits remaining
+                  &nbsp;&mdash;&nbsp;20 per message
+                </span>
+                {credits < 20 && (
+                  <Link
+                    to="/client/credits"
+                    className="flex items-center gap-1 text-yellow-400 font-semibold hover:underline"
+                  >
+                    <AlertCircle size={12} /> Top up
+                  </Link>
+                )}
+              </div>
+            )}
+            {isClient && credits !== null && credits < 20 ? (
+              <div className="px-4 py-4 text-center text-sm text-red-300">
+                You need at least 20 credits to send a message.&nbsp;
+                <Link to="/client/credits" className="text-yellow-400 font-semibold hover:underline">Top up credits</Link>
+              </div>
+            ) : (
+              <MessageInput
+                onSend={handleSend}
+                senderRole={user.role}
+                placeholder={`Message ${
+                  selectedConversation.participants
+                    .filter((p) => p._id !== user._id)
+                    .map((p) => p.username)
+                    .join(", ")
+                }...`}
+              />
+            )}
           </div>
         )}
       </main>
@@ -201,8 +243,9 @@ export default function UserMessages() {
         <NewConversationModal
           onClose={() => setShowNewModal(false)}
           currentUserId={user?._id}
-          restrictToRole="admin"
-          excludedRecipientIds={adminParticipantIds}
+          restrictToRole={isClient ? null : "admin"}
+          accountTypeFilter={isClient ? null : null}
+          excludedRecipientIds={isClient ? [] : adminParticipantIds}
           onCreate={(newConversation) => {
             setConversations((prev) => [newConversation, ...prev]);
             setShowNewModal(false);

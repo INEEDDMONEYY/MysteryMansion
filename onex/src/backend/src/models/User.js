@@ -163,6 +163,12 @@ const UserSchema = new mongoose.Schema(
       enum: ["provider", "client"],
       default: "provider",
     },
+    // Platform credits (client accounts only — 200 on signup, deducted per message)
+    credits: {
+      type: Number,
+      default: 200,
+      min: 0,
+    },
     /* ----------------------------------------------------------- */
   },
   { timestamps: true },

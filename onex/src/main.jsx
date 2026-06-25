@@ -60,9 +60,11 @@ const AdminNotifications  = lazy(() => import("@/features/admin/pages/AdminNotif
 const AdminBanners        = lazy(() => import("@/features/admin/pages/AdminBannersPage"));
 const AdminDiscounts      = lazy(() => import("@/features/admin/pages/AdminDiscountsPage"));
 const AdminEmailUsers     = lazy(() => import("@/features/admin/pages/AdminEmailUsersPage"));
+const AdminCreditRequests = lazy(() => import("@/features/admin/pages/AdminCreditRequestsPage"));
 const UserNotifications   = lazy(() => import("@/features/users/pages/UserNotificationsPage"));
 const ClientDashboard     = lazy(() => import("@/features/clients/pages/ClientDashboard"));
 const ClientProfilePage   = lazy(() => import("@/features/clients/pages/ClientProfilePage"));
+const ClientCreditsPage   = lazy(() => import("@/features/clients/pages/ClientCreditsPage"));
 
 // ── Shared pages ──────────────────────────────────────────────────────────────
 const NotFoundPage = lazy(() => import("@/shared/pages/NotFoundPage"));
@@ -133,6 +135,7 @@ const router = createBrowserRouter([
           { path: "/client/messages",      element: <UserMessages /> },
           { path: "/client/profile",       element: <ClientProfilePage /> },
           { path: "/client/notifications", element: <UserNotifications /> },
+          { path: "/client/credits",       element: <ClientCreditsPage /> },
         ],
       },
     ],
@@ -155,6 +158,7 @@ const router = createBrowserRouter([
           { path: "/admin/banners",          element: <AdminBanners /> },
           { path: "/admin/discounts",        element: <AdminDiscounts /> },
           { path: "/admin/email-users",      element: <AdminEmailUsers /> },
+          { path: "/admin/credit-requests",  element: <AdminCreditRequests /> },
         ],
       },
     ],

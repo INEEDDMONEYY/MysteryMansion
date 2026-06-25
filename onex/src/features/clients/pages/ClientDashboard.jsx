@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import CountUp from 'react-countup';
 import {
   Heart, MessageSquareText, CalendarDays, Search,
-  Sparkles, BadgeCheck, ArrowRight,
+  Sparkles, BadgeCheck, ArrowRight, Coins,
 } from 'lucide-react';
 import { UserContext } from '@/context/UserContext';
 import api from '@/shared/utils/api';
@@ -88,6 +88,7 @@ export default function ClientDashboard() {
   const { user } = useContext(UserContext);
   const [likedPosts, setLikedPosts]     = useState([]);
   const [unreadCount, setUnreadCount]   = useState(0);
+  const [credits, setCredits]           = useState(0);
   const [loading, setLoading]           = useState(true);
 
   useEffect(() => {
@@ -96,12 +97,16 @@ export default function ClientDashboard() {
     Promise.allSettled([
       api.get('/users/me/liked-posts'),
       api.get('/messages/unread/count'),
-    ]).then(([likedR, msgR]) => {
+      api.get('/credits/balance'),
+    ]).then(([likedR, msgR, credR]) => {
       if (likedR.status === 'fulfilled') {
         setLikedPosts(Array.isArray(likedR.value.data) ? likedR.value.data : []);
       }
       if (msgR.status === 'fulfilled') {
         setUnreadCount(Number(msgR.value.data?.unreadCount) || 0);
+      }
+      if (credR.status === 'fulfilled') {
+        setCredits(Number(credR.value.data?.credits) || 0);
       }
     }).finally(() => setLoading(false));
   }, []);
@@ -131,13 +136,13 @@ export default function ClientDashboard() {
 
       {/* Stat cards */}
       {loading ? (
-        <div key="stats-loading" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
+        <div key="stats-loading" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-24 rounded-2xl bg-white/60 animate-pulse" />
           ))}
         </div>
       ) : (
-        <div key="stats-loaded" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div key="stats-loaded" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="Liked Posts"
             value={likedPosts.length}
@@ -150,6 +155,16 @@ export default function ClientDashboard() {
             icon={MessageSquareText}
             gradient="bg-gradient-to-br from-purple-500 to-violet-600"
           />
+          <Link to="/client/credits" className="block">
+            <StatCard
+              label="Credits"
+              value={credits}
+              icon={Coins}
+              gradient={credits < 20
+                ? 'bg-gradient-to-br from-red-400 to-rose-500'
+                : 'bg-gradient-to-br from-yellow-400 to-amber-500'}
+            />
+          </Link>
           <StatCard
             label="Days on Platform"
             value={joinedAt ? Math.floor((Date.now() - new Date(joinedAt)) / 86400000) : 0}

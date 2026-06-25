@@ -9,8 +9,7 @@ import {
 import { emailUsers } from "./controllers/emailUsersController.js";
 import adminProfileRouter from "./adminProfile.js";
 import adminUsersRouter from "./adminUsers.js";
-import adminPromoCodesRouter from "./adminPromoCodes.js";
-
+import adminPromoCodesRouter from "./adminPromoCodes.js";import adminCreditRequestsRouter from './adminCreditRequests.js';
 const router = express.Router();
 
 /* --- Settings --- */
@@ -26,6 +25,5 @@ router.post("/email-users", emailUsers);
 /* --- Admin sub-routers --- */
 router.use("/profile", adminProfileRouter);
 router.use("/users", adminUsersRouter);
-router.use("/promo-codes", adminPromoCodesRouter);
-
+router.use("/promo-codes", adminPromoCodesRouter);router.use('/credit-requests', adminCreditRequestsRouter);
 export default router;

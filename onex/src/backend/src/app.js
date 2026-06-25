@@ -39,6 +39,7 @@ import notificationRoutes from './modules/notifications/routes.js';
 import bannerRoutes from './modules/banners/routes.js';
 import discountRoutes from './modules/discounts/routes.js';
 import savedPostRoutes from './modules/savedPosts/routes.js';
+import creditsRoutes from './modules/credits/routes.js';
 
 // Utilities
 import { startPromoExpiryReminderJob } from './common/utils/promoExpiryReminderJob.js';
@@ -161,7 +162,8 @@ app.use('/api/discounts', discountRoutes);
 
 // Saved Posts Routes
 app.use('/api/saved-posts', savedPostRoutes);
-
+// Credits Routes
+app.use('/api/credits', creditsRoutes);
 /**
  * ==========================================
  * STATIC FILES & PUBLIC ROUTES

@@ -1,6 +1,7 @@
 import express from "express";
 import Message from "../../models/Message.js";
 import Conversation from "../../models/Conversation.js";
+import User from "../../models/User.js";
 import { authMiddleware } from "../../common/middleware/authMiddleware.js";
 import { enforceRestriction } from "../../common/middleware/restrictionMiddleware.js";
 
@@ -82,7 +83,7 @@ router.post("/", authMiddleware, enforceRestriction("message:send"), async (req,
 
     const conversation = await Conversation.findById(conversationId).populate(
       "participants",
-      "_id role"
+      "_id role accountType"
     );
 
     if (!conversation) {
@@ -101,8 +102,28 @@ router.post("/", authMiddleware, enforceRestriction("message:send"), async (req,
       (participant) => String(participant._id) !== String(senderId)
     );
 
-    if (req.user.role === "user" && recipients.some((participant) => participant.role !== "admin")) {
-      return res.status(403).json({ error: "Users can only message admins" });
+    const senderUser = await User.findById(senderId).select('accountType credits').lean();
+    const isClientSender = senderUser?.accountType === 'client';
+    const recipientIsProvider = recipients.some(
+      (p) => p.role === 'user' && p.accountType === 'provider'
+    );
+
+    // Clients messaging providers (not admin) require 20 credits per message
+    const CREDITS_PER_MESSAGE = 20;
+    if (isClientSender && recipientIsProvider) {
+      if ((senderUser.credits ?? 0) < CREDITS_PER_MESSAGE) {
+        return res.status(402).json({
+          error: 'Insufficient credits. You need at least 20 credits to send a message.',
+          credits: senderUser.credits ?? 0,
+        });
+      }
+      // Deduct credits atomically before saving the message
+      await User.findByIdAndUpdate(senderId, { $inc: { credits: -CREDITS_PER_MESSAGE } });
+    }
+
+    // Block non-client regular users from messaging other users (original rule preserved)
+    if (req.user.role === 'user' && !isClientSender && recipients.some((p) => p.role !== 'admin')) {
+      return res.status(403).json({ error: 'Users can only message admins' });
     }
 
     const message = await Message.create({

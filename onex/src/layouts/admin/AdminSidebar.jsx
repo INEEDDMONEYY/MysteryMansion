@@ -13,6 +13,7 @@ import {
   Percent,
   Bell,
   MailCheck,
+  Coins,
 } from 'lucide-react';
 import { useUser } from '@/context/useUser';
 
@@ -25,8 +26,9 @@ const ADMIN_NAV = [
   { to: '/admin/banners',         label: 'Banners',      icon: Megaphone },
   { to: '/admin/discounts',       label: 'Discounts',    icon: Percent },
   { to: '/admin/notifications',   label: 'Notifications',icon: Bell },
-  { to: '/admin/email-users',     label: 'Email Users',  icon: MailCheck },
-  { to: '/admin/settings',        label: 'Settings',     icon: Settings },
+  { to: '/admin/email-users',     label: 'Email Users',     icon: MailCheck },
+  { to: '/admin/credit-requests', label: 'Credit Requests', icon: Coins },
+  { to: '/admin/settings',        label: 'Settings',        icon: Settings },
 ];
 
 export default function AdminSidebar({

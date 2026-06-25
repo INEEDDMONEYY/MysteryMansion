@@ -49,13 +49,22 @@ router.post("/", authMiddleware, enforceRestriction("conversation:create"), asyn
       return res.status(400).json({ error: "Cannot create a conversation with yourself" });
     }
 
-    const recipient = await User.findById(recipientId).select("_id role");
+    const recipient = await User.findById(recipientId).select("_id role accountType");
     if (!recipient) {
       return res.status(404).json({ error: "Recipient not found" });
     }
 
-    if (req.user.role === "user" && recipient.role !== "admin") {
+    const senderUser = await User.findById(userId).select("accountType credits").lean();
+    const isClientSender = senderUser?.accountType === 'client';
+    const recipientIsProvider = recipient.role === 'user' && recipient.accountType === 'provider';
+
+    // Clients can start conversations with admins or providers.
+    // Regular providers can only talk to admins (existing behaviour).
+    if (req.user.role === "user" && !isClientSender && recipient.role !== "admin") {
       return res.status(403).json({ error: "Users can only start conversations with admins" });
+    }
+    if (req.user.role === "user" && isClientSender && recipient.role !== "admin" && !recipientIsProvider) {
+      return res.status(403).json({ error: "Clients can only start conversations with admins or providers" });
     }
 
     const existing = await Conversation.findOne({
