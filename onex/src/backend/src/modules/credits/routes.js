@@ -14,7 +14,11 @@ router.get('/balance', async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('credits accountType').lean();
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ credits: user.credits ?? 0, accountType: user.accountType });
+    // Credits field may be missing on accounts created before this feature.
+    // Default to 200 for clients (matches schema default) and 0 for providers.
+    const defaultCredits = user.accountType === 'client' ? 200 : 0;
+    const credits = user.credits ?? defaultCredits;
+    res.json({ credits, accountType: user.accountType });
   } catch (err) {
     console.error('❌ GET /credits/balance:', err);
     res.status(500).json({ error: 'Failed to fetch credit balance' });
