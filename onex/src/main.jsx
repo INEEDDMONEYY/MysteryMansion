@@ -62,10 +62,12 @@ const AdminDiscounts      = lazy(() => import("@/features/admin/pages/AdminDisco
 const AdminEmailUsers     = lazy(() => import("@/features/admin/pages/AdminEmailUsersPage"));
 const AdminCreditRequests = lazy(() => import("@/features/admin/pages/AdminCreditRequestsPage"));
 const AdminCreditPackages = lazy(() => import("@/features/admin/pages/AdminCreditPackagesPage"));
+const AdminFAQPage        = lazy(() => import("@/features/admin/pages/AdminFAQPage"));
 const UserNotifications   = lazy(() => import("@/features/users/pages/UserNotificationsPage"));
 const ClientDashboard     = lazy(() => import("@/features/clients/pages/ClientDashboard"));
 const ClientProfilePage   = lazy(() => import("@/features/clients/pages/ClientProfilePage"));
 const ClientCreditsPage   = lazy(() => import("@/features/clients/pages/ClientCreditsPage"));
+const ClientNotifications = lazy(() => import("@/features/clients/pages/ClientNotificationsPage"));
 
 // ── Shared pages ──────────────────────────────────────────────────────────────
 const NotFoundPage = lazy(() => import("@/shared/pages/NotFoundPage"));
@@ -135,7 +137,7 @@ const router = createBrowserRouter([
           { path: "/client/liked-posts",   element: <LikedPostsPage /> },
           { path: "/client/messages",      element: <UserMessages /> },
           { path: "/client/profile",       element: <ClientProfilePage /> },
-          { path: "/client/notifications", element: <UserNotifications /> },
+          { path: "/client/notifications", element: <ClientNotifications /> },
           { path: "/client/credits",       element: <ClientCreditsPage /> },
         ],
       },
@@ -161,6 +163,7 @@ const router = createBrowserRouter([
           { path: "/admin/email-users",      element: <AdminEmailUsers /> },
           { path: "/admin/credit-requests",  element: <AdminCreditRequests /> },
           { path: "/admin/credit-packages",  element: <AdminCreditPackages /> },
+          { path: "/admin/faqs",             element: <AdminFAQPage /> },
         ],
       },
     ],

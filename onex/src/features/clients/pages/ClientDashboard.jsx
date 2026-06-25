@@ -33,7 +33,7 @@ function formatAccountAge(iso) {
 // ── Stat card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, icon: Icon, gradient, suffix = '' }) {
   return (
-    <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm flex items-center gap-4">
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex items-center gap-4">
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${gradient} shadow-md`}>
         <Icon size={22} className="text-white" />
       </div>
@@ -54,7 +54,7 @@ function LikedRow({ post }) {
   return (
     <Link
       to={`/posts/${post._id}`}
-      className="flex items-center gap-3 p-3 rounded-xl hover:bg-purple-50 transition-colors group"
+      className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50/60 transition-colors group"
     >
       <div className="h-12 w-12 rounded-lg overflow-hidden bg-gray-100 shrink-0">
         {thumb
@@ -63,7 +63,9 @@ function LikedRow({ post }) {
         }
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-purple-700 transition-colors">
+        <p
+          className="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-700 transition-colors"
+        >
           {post.title || 'Untitled'}
         </p>
         <p className="text-xs text-gray-400 truncate">
@@ -78,7 +80,7 @@ function LikedRow({ post }) {
           <BadgeCheck size={10} /> Verified
         </span>
       )}
-      <ArrowRight size={14} className="shrink-0 text-gray-300 group-hover:text-purple-500 transition-colors" />
+      <ArrowRight size={14} className="shrink-0 text-gray-300 group-hover:text-blue-600 transition-colors" />
     </Link>
   );
 }
@@ -115,7 +117,7 @@ export default function ClientDashboard() {
   const joinedAt = user?.createdAt ?? null;
 
   return (
-    <div className="min-h-full -m-4 md:-m-6 p-4 md:p-6 space-y-6 bg-gradient-to-br from-purple-50 via-pink-50 to-white">
+    <div className="min-h-full -m-4 md:-m-6 p-4 md:p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-white">
 
       {/* Welcome */}
       <div className="flex items-start justify-between gap-4">
@@ -129,7 +131,7 @@ export default function ClientDashboard() {
         </div>
         <Link
           to="/"
-          className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-500 transition-colors shadow-sm"
+          className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-colors shadow-sm"
         >
           <Search size={15} /> Browse
         </Link>
@@ -148,13 +150,13 @@ export default function ClientDashboard() {
             label="Liked Posts"
             value={likedPosts.length}
             icon={Heart}
-            gradient="bg-gradient-to-br from-pink-500 to-rose-500"
+            gradient="bg-gradient-to-br from-rose-600 to-red-700"
           />
           <StatCard
             label="Unread Messages"
             value={unreadCount}
             icon={MessageSquareText}
-            gradient="bg-gradient-to-br from-purple-500 to-violet-600"
+            gradient="bg-gradient-to-br from-blue-700 to-slate-700"
           />
           <Link to="/client/credits" className="block">
             <StatCard
@@ -170,22 +172,22 @@ export default function ClientDashboard() {
             label="Days on Platform"
             value={joinedAt ? Math.floor((Date.now() - new Date(joinedAt)) / 86400000) : 0}
             icon={CalendarDays}
-            gradient="bg-gradient-to-br from-indigo-500 to-blue-500"
+            gradient="bg-gradient-to-br from-slate-600 to-zinc-700"
             suffix=" days"
           />
         </div>
       )}
 
       {/* Liked posts preview */}
-      <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Heart size={16} className="text-pink-500 fill-pink-400" />
+            <Heart size={16} className="text-rose-500 fill-rose-400" />
             <h2 className="text-sm font-semibold text-gray-900">Recently Liked</h2>
           </div>
           <Link
             to="/client/liked-posts"
-            className="text-xs text-purple-600 font-medium hover:underline"
+            className="text-xs text-blue-700 font-medium hover:underline"
           >
             View all →
           </Link>
@@ -197,9 +199,9 @@ export default function ClientDashboard() {
           </div>
         ) : likedPosts.length === 0 ? (
           <div key="liked-empty" className="py-8 text-center">
-            <Heart size={32} className="mx-auto mb-2 text-purple-200" />
+            <Heart size={32} className="mx-auto mb-2 text-slate-200" />
             <p className="text-sm text-gray-400">You haven't liked any posts yet.</p>
-            <Link to="/" className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-purple-600 hover:underline">
+            <Link to="/" className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:underline">
               <Search size={13} /> Start browsing
             </Link>
           </div>
@@ -214,18 +216,18 @@ export default function ClientDashboard() {
 
       {/* Buy Credits CTA */}
       {credits != null && credits < 100 && (
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-blue-800 to-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4">
           <div>
             <p className="text-white font-bold text-sm">
               {credits < 20 ? '⚠️ You\'re out of messaging credits!' : '💬 Running low on credits?'}
             </p>
-            <p className="text-purple-100 text-xs mt-0.5">
+            <p className="text-blue-100 text-xs mt-0.5">
               Top up to keep messaging providers. Each message costs 20 credits.
             </p>
           </div>
           <Link
             to="/client/credits"
-            className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-white text-purple-700 font-semibold text-sm px-4 py-2 hover:bg-purple-50 transition-colors shadow-sm"
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-white text-blue-800 font-semibold text-sm px-4 py-2 hover:bg-blue-50 transition-colors shadow-sm"
           >
             <Coins size={14} /> Buy Credits
           </Link>
@@ -233,11 +235,11 @@ export default function ClientDashboard() {
       )}
 
       {/* What's new for clients */}
-      <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-3">
-          <Sparkles size={16} className="text-purple-500" />
+          <Sparkles size={16} className="text-blue-600" />
           <h2 className="text-sm font-semibold text-gray-900">What's New for Clients</h2>
-          <span className="ml-auto rounded-full bg-purple-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow">
+          <span className="ml-auto rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow">
             New
           </span>
         </div>

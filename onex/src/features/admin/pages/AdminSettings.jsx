@@ -7,6 +7,7 @@ import DeveloperMessageSetting from "@/shared/components/admin/settings/Develope
 import AdminCredentialsSetting from "@/shared/components/admin/settings/AdminCredentialsSettings.jsx";
 import ProfilePictureSetting from "@/shared/components/admin/settings/ProfilePictureSettings.jsx";
 import DeleteUserSetting from "@/shared/components/admin/settings/DeleteUserSettings.jsx";
+import VisitorCountSetting from "@/shared/components/admin/settings/VisitorCountSetting.jsx";
 import PlatformUpdatesForm from "@/features/updates/components/PlatformUpdatesForm";
 import NewFeatureUpdatesForm from "@/features/updates/components/NewFeatureUpdatesForm";
 
@@ -33,6 +34,7 @@ export default function AdminSettings({ onProfileUpdate, settingsData }) {
       <UnrestrictUserSetting users={users} />
       <SuspendUserSetting users={users} />
       <DeveloperMessageSetting />
+      <VisitorCountSetting />
       <AdminCredentialsSetting />
       <ProfilePictureSetting
         currentProfile={settingsData?.profilePicture}

@@ -11,7 +11,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['new_signup', 'new_comment', 'new_review', 'welcome', 'browse_peak', 'new_message', 'promo_approved', 'promo_expiring', 'account_restricted'],
+      enum: ['new_signup', 'new_comment', 'new_review', 'welcome', 'browse_peak', 'new_message', 'message', 'promo_approved', 'promo_expiring', 'account_restricted', 'profile_visited', 'low_credits', 'post_liked'],
       required: true,
     },
     title:   { type: String, required: true },

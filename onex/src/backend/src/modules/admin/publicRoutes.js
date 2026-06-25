@@ -10,10 +10,13 @@ router.get('/dev-message', getPublicDevMessage);
 // Public read-only endpoint — exposes only safe, non-sensitive flags
 router.get('/flags', async (req, res) => {
   try {
-    const settings = await AdminSettings.findOne().select('emailEnabled').lean();
-    res.json({ emailEnabled: settings?.emailEnabled !== false });
+    const settings = await AdminSettings.findOne().select('emailEnabled visitorCount').lean();
+    res.json({
+      emailEnabled: settings?.emailEnabled !== false,
+      visitorCount: settings?.visitorCount ?? 13000,
+    });
   } catch {
-    res.json({ emailEnabled: true }); // fail-safe: assume enabled
+    res.json({ emailEnabled: true, visitorCount: 13000 }); // fail-safe
   }
 });
 

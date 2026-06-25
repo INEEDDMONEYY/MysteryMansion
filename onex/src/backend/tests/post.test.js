@@ -3,7 +3,7 @@ import './setup.js';
 import seedPosts from './seed.js';
 import request from 'supertest';
 import app from '../server.js';
-import Post from '../models/Post.js';
+import Post from '../src/models/Post.js';
 
 beforeEach(async () => {
   await seedPosts(10); // populate test DB before each test

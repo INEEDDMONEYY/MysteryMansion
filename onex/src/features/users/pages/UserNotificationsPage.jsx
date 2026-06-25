@@ -1,4 +1,4 @@
-import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus } from 'lucide-react';
+import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus, Eye, Coins, Heart } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import useNotifications from '@/shared/hooks/useNotifications';
 
@@ -12,6 +12,9 @@ const TYPE_META = {
   promo_expiring:     { icon: TrendingUp,     color: 'text-orange-400',  bg: 'bg-orange-400/10',  label: 'Promo Expiring'  },
   account_restricted: { icon: Bell,           color: 'text-red-400',     bg: 'bg-red-400/10',     label: 'Account Update'  },
   new_signup:         { icon: UserPlus,       color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'New Signup'      },
+  profile_visited:    { icon: Eye,            color: 'text-sky-400',     bg: 'bg-sky-400/10',     label: 'Profile Visit'   },
+  low_credits:        { icon: Coins,          color: 'text-orange-400',  bg: 'bg-orange-400/10',  label: 'Low Credits'     },
+  post_liked:         { icon: Heart,          color: 'text-pink-400',    bg: 'bg-pink-400/10',    label: 'Post Liked'      },
 };
 
 export default function UserNotificationsPage() {

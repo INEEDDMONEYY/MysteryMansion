@@ -79,7 +79,7 @@ router.post("/signup", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const resolvedAccountType = accountType === "provider" ? "provider" : "client";
+    const resolvedAccountType = ["provider", "client"].includes(accountType) ? accountType : "provider";
 
     const user = new User({
       username: normalizedUsername,
@@ -163,6 +163,7 @@ router.post("/signin", async (req, res) => {
         _id: user._id,
         username: user.username,
         role: user.role,
+        accountType: user.accountType,
         profilePic: user.profilePic,
         roleRestriction: user.roleRestriction,
         status: user.status,

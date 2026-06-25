@@ -47,12 +47,16 @@ export default function DashboardSidebar({
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-[280px] flex flex-col bg-white border-r border-gray-200 transition-transform duration-300
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+        className={`fixed top-0 left-0 z-50 h-full w-[280px] flex flex-col border-r transition-transform duration-300
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
+          ${variant === 'client'
+            ? 'bg-slate-900 border-slate-800'
+            : 'bg-white border-gray-200'
+          }`}
         aria-label={`${variant === 'admin' ? 'Admin' : 'User'} navigation`}
       >
         {/* ── Brand / profile row ── */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-200">
+        <div className={`flex items-center gap-3 px-6 py-5 border-b ${variant === 'client' ? 'border-slate-800' : 'border-gray-200'}`}>
           {brand.avatarSrc && (
             <img
               src={brand.avatarSrc}
@@ -60,7 +64,7 @@ export default function DashboardSidebar({
               className="w-9 h-9 rounded-full object-cover shrink-0"
             />
           )}
-          <span className="text-gray-900 font-semibold text-sm truncate">{brand.label}</span>
+          <span className={`font-semibold text-sm truncate ${variant === 'client' ? 'text-white' : 'text-gray-900'}`}>{brand.label}</span>
         </div>
 
         {/* ── Navigation ── */}
@@ -74,8 +78,12 @@ export default function DashboardSidebar({
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                   isActive
-                    ? 'bg-pink-600 text-white font-medium'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? variant === 'client'
+                      ? 'bg-blue-700 text-white font-medium'
+                      : 'bg-pink-600 text-white font-medium'
+                    : variant === 'client'
+                      ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`
               }
             >
@@ -84,7 +92,9 @@ export default function DashboardSidebar({
               {typeof badge === 'number' && (
                 <span
                   className={`min-w-5 text-center rounded-full px-1.5 py-0.5 text-xs font-semibold ${
-                    badge > 0 ? 'bg-pink-500 text-white' : 'bg-gray-200 text-gray-500'
+                    badge > 0
+                      ? variant === 'client' ? 'bg-blue-600 text-white' : 'bg-pink-500 text-white'
+                      : 'bg-gray-200 text-gray-500'
                   }`}
                   aria-label={`${badge} unread`}
                 >
@@ -99,7 +109,7 @@ export default function DashboardSidebar({
         </nav>
 
         {/* ── Footer actions ── */}
-        <div className="px-3 py-4 border-t border-gray-200 space-y-1">
+        <div className={`px-3 py-4 border-t space-y-1 ${variant === 'client' ? 'border-slate-800' : 'border-gray-200'}`}>
           {footerActions.map(({ label, icon: Icon, onClick, danger }) => (
             <button
               key={label}
@@ -107,8 +117,12 @@ export default function DashboardSidebar({
               onClick={onClick}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                 danger
-                  ? 'text-red-600 hover:bg-red-50 hover:text-red-700'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  ? variant === 'client'
+                    ? 'text-red-400 hover:bg-red-900/30 hover:text-red-300'
+                    : 'text-red-600 hover:bg-red-50 hover:text-red-700'
+                  : variant === 'client'
+                    ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
               {Icon && <Icon size={18} aria-hidden="true" className="shrink-0" />}

@@ -7,11 +7,13 @@ import NotificationModal from '@/shared/components/Notifications/NotificationMod
 /**
  * Drop-in bell button + modal for the user dashboard header.
  * @param {string} viewAllHref  - path to the full notifications page
- * @param {string} messagesPath - path to the messages page (for click-through)
+ * @param {string} messagesPath - path to the messages page (for message click-through)
+ * @param {string} creditsPath  - path to the credits page (for low_credits click-through)
  */
 export default function UserNotificationBell({
   viewAllHref = '/user/notifications',
   messagesPath = '/user/messages',
+  creditsPath  = '/client/credits',
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -22,13 +24,32 @@ export default function UserNotificationBell({
 
   const handleItemClick = (n) => {
     if (!n.read) markOneRead(n._id);
-    // Navigate to the conversation if meta includes one, else go to messages
-    if (n.type === 'message' || n.type === 'new_message') {
-      setOpen(false);
-      const dest = n.meta?.conversationId
-        ? `${messagesPath}?conv=${n.meta.conversationId}`
-        : messagesPath;
-      navigate(dest);
+    setOpen(false);
+
+    switch (n.type) {
+      case 'message':
+      case 'new_message': {
+        const dest = n.meta?.conversationId
+          ? `${messagesPath}?conv=${n.meta.conversationId}`
+          : messagesPath;
+        navigate(dest);
+        break;
+      }
+      case 'post_liked':
+        if (n.meta?.postId) navigate(`/posts/${n.meta.postId}`);
+        break;
+      case 'new_review':
+        // Navigate to the target's review page — if meta has targetId use it, else viewAll
+        if (n.meta?.reviewId || n.userId) navigate(viewAllHref);
+        break;
+      case 'profile_visited':
+        navigate(viewAllHref);
+        break;
+      case 'low_credits':
+        navigate(creditsPath);
+        break;
+      default:
+        break;
     }
   };
 

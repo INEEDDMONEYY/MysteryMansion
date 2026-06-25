@@ -1,5 +1,7 @@
 import PostLike from '../../../models/PostLike.js';
 import Post from '../../../models/Post.js';
+import User from '../../../models/User.js';
+import { createNotification } from '../../notifications/notificationController.js';
 
 /**
  * POST /api/posts/:id/like
@@ -20,6 +22,19 @@ export async function toggleLike(req, res) {
       await PostLike.deleteOne({ _id: existing._id });
     } else {
       await PostLike.create({ userId, postId });
+      // Notify post owner (skip self-likes)
+      if (post.userId && String(post.userId) !== String(userId)) {
+        const liker = await User.findById(userId).select('username').lean();
+        const likerName = liker?.username || 'Someone';
+        createNotification({
+          audience: 'user',
+          type: 'post_liked',
+          title: 'Someone liked your post',
+          message: `${likerName} liked your post.`,
+          userId: post.userId,
+          meta: { postId: String(postId), likerId: String(userId) },
+        }).catch(() => {});
+      }
     }
 
     const likeCount = await PostLike.countDocuments({ postId });

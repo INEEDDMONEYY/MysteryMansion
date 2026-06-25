@@ -120,6 +120,20 @@ router.post("/", authMiddleware, enforceRestriction("message:send"), async (req,
       }
       // Deduct credits atomically before saving the message
       await User.findByIdAndUpdate(senderId, { $inc: { credits: -CREDITS_PER_MESSAGE } });
+
+      // Fire low-credits notification if balance is now low (< 40 = 2 messages left)
+      const LOW_CREDITS_THRESHOLD = CREDITS_PER_MESSAGE * 2;
+      const remainingCredits = (senderUser.credits ?? 0) - CREDITS_PER_MESSAGE;
+      if (remainingCredits < LOW_CREDITS_THRESHOLD) {
+        createNotification({
+          audience: 'user',
+          type: 'low_credits',
+          title: 'Message credits running low',
+          message: `You have ${remainingCredits} credits remaining — that's ${Math.floor(remainingCredits / CREDITS_PER_MESSAGE)} message${Math.floor(remainingCredits / CREDITS_PER_MESSAGE) !== 1 ? 's' : ''} left. Refill soon to keep chatting.`,
+          userId: senderId,
+          meta: { credits: remainingCredits },
+        }).catch(() => {});
+      }
     }
 
     // Providers (role=user, accountType=provider) may only message admins or clients — not other providers.

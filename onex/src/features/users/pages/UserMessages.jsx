@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { ArrowLeft, Coins, AlertCircle, MessageCircle, RefreshCw } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import MessageInput from "@/shared/components/Messages/MessageInput";
 import MessageList from "@/shared/components/Messages/MessageList";
 import ConversationList from "@/shared/components/Messages/ConversationList";
@@ -13,6 +13,7 @@ const CREDITS_PER_MESSAGE = 20;
 
 export default function UserMessages() {
   const { user, loading: userLoading } = useContext(UserContext);
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations]               = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages]                         = useState([]);
@@ -40,6 +41,16 @@ export default function UserMessages() {
     try {
       const { data } = await api.get("/conversations");
       setConversations(data);
+
+      // If a ?conv= param was provided (e.g. from a notification click), auto-open that conversation
+      const convId = searchParams.get('conv');
+      if (convId) {
+        const match = Array.isArray(data) ? data.find((c) => c._id === convId) : null;
+        if (match) {
+          setSelectedConversation(match);
+          setMobileView("chat");
+        }
+      }
     } catch (err) {
       console.error("Failed to load conversations:", err);
     } finally {

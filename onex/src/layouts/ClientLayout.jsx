@@ -36,7 +36,7 @@ export default function ClientLayout() {
   }, [user?._id]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-purple-50/30">
+    <div className="flex h-screen overflow-hidden bg-slate-100">
       <ScrollToTop />
 
       <ClientSidebar

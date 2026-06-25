@@ -40,9 +40,12 @@ import bannerRoutes from './modules/banners/routes.js';
 import discountRoutes from './modules/discounts/routes.js';
 import savedPostRoutes from './modules/savedPosts/routes.js';
 import creditsRoutes from './modules/credits/routes.js';
+import faqRoutes from './modules/faqs/routes.js';
 
 // Utilities
 import { startPromoExpiryReminderJob } from './common/utils/promoExpiryReminderJob.js';
+import { startProfileViewNotificationJob } from './common/utils/profileViewNotificationJob.js';
+import { seedDefaultFAQs } from './common/utils/seedFAQs.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -102,6 +105,8 @@ const connectDB = async () => {
 
     // Start background jobs
     startPromoExpiryReminderJob();
+    startProfileViewNotificationJob();
+    await seedDefaultFAQs();
     console.log('✅ Background jobs started');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
@@ -164,6 +169,8 @@ app.use('/api/discounts', discountRoutes);
 app.use('/api/saved-posts', savedPostRoutes);
 // Credits Routes
 app.use('/api/credits', creditsRoutes);
+// FAQ Routes
+app.use('/api/faqs', faqRoutes);
 /**
  * ==========================================
  * STATIC FILES & PUBLIC ROUTES

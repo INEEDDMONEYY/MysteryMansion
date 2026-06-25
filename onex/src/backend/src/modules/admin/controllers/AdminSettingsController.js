@@ -220,6 +220,7 @@ export const updateSettings = async (req, res) => {
     if (roleRestriction !== undefined) settings.roleRestriction = roleRestriction;
     if (suspendUserId !== undefined) settings.suspendUserId = suspendUserId;
     if (emailEnabled !== undefined) settings.emailEnabled = emailEnabled;
+    if (req.body.visitorCount !== undefined) settings.visitorCount = Number(req.body.visitorCount);
 
     settings.lastUpdatedBy = adminId;
     await settings.save();

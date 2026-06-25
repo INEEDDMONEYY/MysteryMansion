@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { Coins, Plus, Clock, CheckCircle, XCircle, AlertCircle, Star, Zap } from 'lucide-react';
+import { Coins, Plus, Clock, CheckCircle, XCircle, AlertCircle, Star, Zap, Copy, DollarSign } from 'lucide-react';
 import { UserContext } from '@/context/UserContext';
 import api from '@/shared/utils/api';
 import { setSEO } from '@/shared/utils/seo';
@@ -15,10 +15,10 @@ function PackageCard({ pkg, onSelect, selected }) {
       onClick={() => onSelect(pkg)}
       className={`relative flex flex-col items-start p-4 rounded-2xl border-2 text-left transition-all w-full ${
         selected
-          ? 'border-purple-500 bg-purple-50 shadow-md'
+          ? 'border-blue-600 bg-blue-50 shadow-md'
           : pkg.isPopular
           ? 'border-pink-400 bg-pink-50'
-          : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/40'
+          : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/40'
       }`}
     >
       {pkg.isPopular && (
@@ -35,7 +35,7 @@ function PackageCard({ pkg, onSelect, selected }) {
       </div>
       <p className="text-[11px] text-gray-400 mt-0.5">≈ {Math.floor(pkg.credits / 20)} messages</p>
       {selected && (
-        <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-purple-600">
+        <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-blue-700">
           <Zap size={11} /> Selected — fill your payment note below
         </div>
       )}
@@ -44,6 +44,42 @@ function PackageCard({ pkg, onSelect, selected }) {
 }
 
 const CREDITS_PER_MESSAGE = 20;
+const CASHAPP_TAG = '$MysteryyyMansion';
+
+function PaymentInfoCard() {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(CASHAPP_TAG);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {/* ignore */}
+  };
+  return (
+    <div className="bg-white border border-green-200 rounded-2xl p-5 shadow-sm">
+      <div className="flex items-center gap-2 mb-3">
+        <DollarSign size={16} className="text-green-600" />
+        <h2 className="text-sm font-semibold text-gray-900">Where to Send Payment</h2>
+      </div>
+      <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+        We accept payment via <strong>Cash App</strong>. Send the amount for your chosen package to the tag below, then include the reference in your request note.
+      </p>
+      <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+        <span className="flex-1 text-base font-bold text-gray-900">{CASHAPP_TAG}</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black text-white text-xs font-semibold hover:bg-gray-800 transition-colors"
+        >
+          {copied ? <CheckCircle size={13} /> : <Copy size={13} />}
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <p className="text-[11px] text-gray-400 mt-3">
+        After sending payment, include your Cash App username or transaction note in the request below so we can verify and approve quickly.
+      </p>
+    </div>
+  );
+}
 
 const STATUS_CONFIG = {
   pending:  { label: 'Pending',  icon: Clock,        color: 'text-yellow-600', bg: 'bg-yellow-50 border-yellow-200' },
@@ -149,12 +185,12 @@ export default function ClientCreditsPage() {
   const isLow    = credits !== null && credits < CREDITS_PER_MESSAGE;
 
   return (
-    <div className="min-h-full -m-4 md:-m-6 p-4 md:p-6 space-y-6 bg-gradient-to-br from-purple-50 via-pink-50 to-white">
+    <div className="min-h-full -m-4 md:-m-6 p-4 md:p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-white">
 
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Coins size={24} className="text-purple-500" /> My Credits
+          <Coins size={24} className="text-blue-600" /> My Credits
         </h1>
         <p className="text-gray-500 text-sm mt-0.5">
           Credits are required to message providers. Each message costs {CREDITS_PER_MESSAGE} credits.
@@ -163,10 +199,10 @@ export default function ClientCreditsPage() {
 
       {/* Balance card */}
       <div className={`rounded-2xl p-6 shadow-sm border flex items-center gap-5 ${
-        isLow ? 'bg-red-50 border-red-200' : 'bg-white border-purple-100'
+        isLow ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'
       }`}>
         <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 shadow-md ${
-          isLow ? 'bg-gradient-to-br from-red-400 to-rose-500' : 'bg-gradient-to-br from-purple-500 to-violet-600'
+          isLow ? 'bg-gradient-to-br from-red-400 to-rose-500' : 'bg-gradient-to-br from-blue-700 to-slate-700'
         }`}>
           <Coins size={30} className="text-white" />
         </div>
@@ -193,7 +229,7 @@ export default function ClientCreditsPage() {
 
       {/* Pricing packages */}
       {packages.length > 0 && (
-        <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
           <h2 className="text-sm font-semibold text-gray-900 mb-1 flex items-center gap-2">
             <Coins size={15} className="text-yellow-500" /> Credit Packages
           </h2>
@@ -213,10 +249,13 @@ export default function ClientCreditsPage() {
         </div>
       )}
 
+      {/* Payment info */}
+      <PaymentInfoCard />
+
       {/* Request top-up */}
-      <div id="topup-form" className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm">
+      <div id="topup-form" className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
-          <Plus size={16} className="text-purple-500" />
+          <Plus size={16} className="text-blue-600" />
           <h2 className="text-sm font-semibold text-gray-900">Request a Top-Up</h2>
         </div>
         <p className="text-xs text-gray-500 mb-4 leading-relaxed">
@@ -248,7 +287,7 @@ export default function ClientCreditsPage() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="e.g. 200"
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
             />
           </div>
@@ -262,13 +301,13 @@ export default function ClientCreditsPage() {
               placeholder="e.g. Sent $10 via Venmo to @mysterymansion"
               rows={2}
               maxLength={500}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors"
+            className="w-full py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors"
           >
             {submitting ? 'Submitting…' : 'Submit Request'}
           </button>
@@ -276,9 +315,9 @@ export default function ClientCreditsPage() {
       </div>
 
       {/* Request history */}
-      <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
         <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Clock size={15} className="text-purple-400" /> Request History
+          <Clock size={15} className="text-blue-500" /> Request History
         </h2>
         {loadingData ? (
           <div className="space-y-2">

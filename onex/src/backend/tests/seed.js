@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import mongoose from 'mongoose';
-import Post from '../models/Post.js';
+import Post from '../src/models/Post.js';
 
 const seedPosts = async (count = 5) => {
   const mockPosts = Array.from({ length: count }).map(() => ({

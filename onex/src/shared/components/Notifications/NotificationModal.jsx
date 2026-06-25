@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { X, UserPlus, MessageSquare, TrendingUp, Bell, CheckCheck, Star, PartyPopper } from 'lucide-react';
+import { X, UserPlus, MessageSquare, TrendingUp, Bell, CheckCheck, Star, PartyPopper, Eye, Coins, Heart } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const TYPE_META = {
@@ -13,6 +13,9 @@ const TYPE_META = {
   promo_approved:     { icon: TrendingUp,     color: 'text-amber-400',   bg: 'bg-amber-400/10'   },
   promo_expiring:     { icon: TrendingUp,     color: 'text-orange-400',  bg: 'bg-orange-400/10'  },
   account_restricted: { icon: Bell,           color: 'text-red-400',     bg: 'bg-red-400/10'     },
+  profile_visited:    { icon: Eye,            color: 'text-sky-400',     bg: 'bg-sky-400/10'     },
+  low_credits:        { icon: Coins,          color: 'text-orange-400',  bg: 'bg-orange-400/10'  },
+  post_liked:         { icon: Heart,          color: 'text-pink-400',    bg: 'bg-pink-400/10'    },
 };
 
 function NotificationItem({ n, onRead, onItemClick }) {

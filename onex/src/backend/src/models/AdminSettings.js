@@ -50,6 +50,10 @@ const AdminSettingsSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    visitorCount: {
+      type: Number,
+      default: 13000,
+    },
   },
   { timestamps: true }
 );
