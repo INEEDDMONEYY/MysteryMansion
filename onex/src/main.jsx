@@ -62,6 +62,7 @@ const AdminDiscounts      = lazy(() => import("@/features/admin/pages/AdminDisco
 const AdminEmailUsers     = lazy(() => import("@/features/admin/pages/AdminEmailUsersPage"));
 const UserNotifications   = lazy(() => import("@/features/users/pages/UserNotificationsPage"));
 const ClientDashboard     = lazy(() => import("@/features/clients/pages/ClientDashboard"));
+const ClientProfilePage   = lazy(() => import("@/features/clients/pages/ClientProfilePage"));
 
 // ── Shared pages ──────────────────────────────────────────────────────────────
 const NotFoundPage = lazy(() => import("@/shared/pages/NotFoundPage"));
@@ -130,7 +131,7 @@ const router = createBrowserRouter([
           { path: "/client/dashboard",     element: <ClientDashboard /> },
           { path: "/client/liked-posts",   element: <LikedPostsPage /> },
           { path: "/client/messages",      element: <UserMessages /> },
-          { path: "/client/profile",       element: <UserProfileSettings /> },
+          { path: "/client/profile",       element: <ClientProfilePage /> },
           { path: "/client/notifications", element: <UserNotifications /> },
         ],
       },

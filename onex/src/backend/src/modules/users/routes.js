@@ -1,6 +1,7 @@
 //User routes file
 import express from "express";
 import multer from "multer";
+import streamifier from "streamifier";
 import cloudinary from "../../common/utils/cloudinary.js";
 import User from "../../models/User.js";
 import Post from "../../models/Post.js";
@@ -21,8 +22,18 @@ const router = express.Router();
 router.use(authMiddleware);
 const looksLikeEmail = (value = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim());
 
-// ✅ Multer setup for handling file uploads
-const upload = multer({ dest: "uploads/" });
+// ✅ Multer setup — memory storage (no temp files on disk, safe on ephemeral filesystems like Render)
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Helper: upload a Buffer to Cloudinary via upload_stream
+const uploadBufferToCloudinary = (buffer, folder) =>
+  new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream({ folder }, (err, result) => {
+      if (err) return reject(err);
+      resolve(result);
+    });
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
 
 // ✅ Update-profile route with Cloudinary integration
 router.post("/update-profile", enforceRestriction("profile:update"), upload.fields([
@@ -88,18 +99,14 @@ router.post("/update-profile", enforceRestriction("profile:update"), upload.fiel
     // ✅ Handle profilePic upload if file is present
     if (profilePicFile) {
       console.log("🔹 [UserRoutes] Uploading profilePic to Cloudinary...");
-      const result = await cloudinary.uploader.upload(profilePicFile.path, {
-        folder: "profile_pics",
-      });
+      const result = await uploadBufferToCloudinary(profilePicFile.buffer, "profile_pics");
       updateData.profilePic = result.secure_url; // ✅ hosted Cloudinary URL
     }
 
     // ✅ Handle bannerPic upload if file is present
     if (bannerPicFile) {
       console.log("🔹 [UserRoutes] Uploading bannerPic to Cloudinary...");
-      const result = await cloudinary.uploader.upload(bannerPicFile.path, {
-        folder: "profile_banners",
-      });
+      const result = await uploadBufferToCloudinary(bannerPicFile.buffer, "profile_banners");
       updateData.bannerPic = result.secure_url;
     }
 
@@ -187,7 +194,7 @@ router.delete("/delete-account", async (req, res) => {
 });
 
 // ── User self-activity ───────────────────────────────────────────────────────
-// Returns paginated posts, comments, received-reviews, and sent messages
+// Returns paginated posts, comments, received-reviews, authored-reviews, and sent messages
 router.get('/me/activity', async (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
@@ -203,6 +210,7 @@ router.get('/me/activity', async (req, res) => {
       comments, commentTotal,
       reviews, reviewTotal,
       messages, messageTotal,
+      authoredReviews, authoredReviewTotal,
     ] = await Promise.all([
       // Posts authored by this user
       Post.find({ userId })
@@ -236,13 +244,22 @@ router.get('/me/activity', async (req, res) => {
         .select('content text senderId receiverId createdAt read readBy')
         .lean(),
       Message.countDocuments({ senderId: userId }),
+
+      // Reviews authored by this user — populate target provider
+      Review.find({ authorUserId: userId })
+        .sort({ createdAt: -1 })
+        .skip(skip).limit(limit)
+        .populate('targetUserId', 'username profilePic')
+        .lean(),
+      Review.countDocuments({ authorUserId: userId }),
     ]);
 
     res.json({
-      posts:    { items: posts,    total: postTotal,    page, limit },
-      comments: { items: comments, total: commentTotal, page, limit },
-      reviews:  { items: reviews,  total: reviewTotal,  page, limit },
-      messages: { items: messages, total: messageTotal, page, limit },
+      posts:          { items: posts,          total: postTotal,          page, limit },
+      comments:       { items: comments,       total: commentTotal,       page, limit },
+      reviews:        { items: reviews,        total: reviewTotal,        page, limit },
+      messages:       { items: messages,       total: messageTotal,       page, limit },
+      authoredReviews:{ items: authoredReviews,total: authoredReviewTotal,page, limit },
     });
   } catch (err) {
     console.error('[UserActivity]', err);
