@@ -156,10 +156,12 @@ const UserSchema = new mongoose.Schema(
       default: false,
     },
     // Account type: provider (escort/advertiser) or client (browser/buyer)
+    // Default is "provider" for backwards compatibility — all pre-overhaul
+    // users are providers. New signups set this explicitly via the signup form.
     accountType: {
       type: String,
       enum: ["provider", "client"],
-      default: "client",
+      default: "provider",
     },
     /* ----------------------------------------------------------- */
   },
