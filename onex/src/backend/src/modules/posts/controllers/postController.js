@@ -33,7 +33,7 @@ export async function createPost(req, res) {
   try {
     if (!req.user?._id) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { title, description, city, state, country, category, categories, visibility } = req.body;
+    const { title, description, city, state, country, category, categories, visibility, gender } = req.body;
     if (!title || !description)
       return res.status(400).json({ error: 'Title and description required' });
 
@@ -44,6 +44,7 @@ export async function createPost(req, res) {
     const normalizedCity = city?.trim() || '';
     const normalizedState = normalizeState(state);
     const normalizedCountry = country?.trim() || '';
+    const normalizedGender = ['female', 'male', 'ts'].includes(gender) ? gender : '';
 
     let imageUrls = [];
     let videoUrls = [];
@@ -88,6 +89,7 @@ export async function createPost(req, res) {
       city: normalizedCity,
       state: normalizedState,
       country: normalizedCountry,
+      gender: normalizedGender,
       category: effectiveCategory,
       categories: effectiveCategories,
       visibility,
@@ -133,14 +135,52 @@ export async function createPost(req, res) {
   }
 }
 
+// ---------------- Get filter options (states + cities from real posts) ----------------
+export async function getFilterOptions(req, res) {
+  try {
+    const raw = await Post.find(
+      { state: { $exists: true, $ne: '' } },
+      { state: 1, city: 1 }
+    ).lean();
+
+    const stateSet = new Set();
+    const citiesByState = {};
+
+    for (const post of raw) {
+      const st = (post.state || '').trim();
+      if (!st) continue;
+      stateSet.add(st);
+      const cities = (post.city || '').split(',').map((c) => c.trim()).filter(Boolean);
+      for (const c of cities) {
+        if (!citiesByState[st]) citiesByState[st] = new Set();
+        citiesByState[st].add(c);
+      }
+    }
+
+    const citiesByStateArr = {};
+    for (const [st, set] of Object.entries(citiesByState)) {
+      citiesByStateArr[st] = [...set].sort();
+    }
+
+    res.json({
+      states: [...stateSet].sort(),
+      citiesByState: citiesByStateArr,
+    });
+  } catch (err) {
+    console.error('❌ [getFilterOptions] Error:', err);
+    res.status(500).json({ error: 'Failed to fetch filter options' });
+  }
+}
+
 // ---------------- Get all posts ----------------
 export async function getPosts(req, res) {
   try {
-    const { userId, state, city } = req.query;
+    const { userId, state, city, gender } = req.query;
     const filter = {};
     if (userId) filter.userId = userId;
-    if (state) filter.state = state;
-    if (city) filter.city = city;
+    if (state) filter.state = { $regex: new RegExp(`^${state.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
+    if (city)  filter.city  = { $regex: new RegExp(city.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') };
+    if (gender && ['female', 'male', 'ts'].includes(gender)) filter.gender = gender;
 
     const posts = await Post.find(filter)
       .sort({ createdAt: -1 })

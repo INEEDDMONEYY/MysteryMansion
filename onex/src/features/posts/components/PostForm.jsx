@@ -20,6 +20,7 @@ export default function PostForm({ onSuccess, embedded = false }) {
     city: "",
     state: "",
     country: "",
+    gender: "",
     categories: ["uncategorized"],
     pictures: [],
     videos: [],
@@ -211,6 +212,7 @@ export default function PostForm({ onSuccess, embedded = false }) {
         city: "",
         state: "",
         country: "",
+        gender: "",
         categories: ["uncategorized"],
         pictures: [],
         videos: [],
@@ -328,6 +330,27 @@ export default function PostForm({ onSuccess, embedded = false }) {
             onChange={handleChange}
             className="flex-1 border border-gray-300 p-2 sm:p-3 md:p-4 rounded-lg focus:ring-2 focus:ring-pink-400 focus:outline-none text-sm sm:text-base md:text-lg"
           />
+        </div>
+
+        {/* Gender selector */}
+        <div>
+          <p className="text-xs font-medium text-gray-500 mb-1.5">Provider gender <span className="text-gray-400">(helps clients filter)</span></p>
+          <div className="flex gap-2">
+            {[{ value: 'female', label: '♀ Female' }, { value: 'male', label: '♂ Male' }, { value: 'ts', label: '⚧ TS' }].map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, gender: prev.gender === value ? '' : value }))}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                  formData.gender === value
+                    ? 'bg-pink-600 border-pink-600 text-white'
+                    : 'border-gray-300 text-gray-600 hover:border-pink-400 hover:text-pink-600'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <input

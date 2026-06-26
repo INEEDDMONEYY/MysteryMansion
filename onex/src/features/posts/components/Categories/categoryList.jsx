@@ -1,31 +1,29 @@
+import { useEffect, useState } from "react";
+import api from "@/shared/utils/api";
+
 const normalizeCategory = (value = "") => String(value).trim().toLowerCase();
 
 export default function CategoryList({ onSelect, selectedCategories = [], multiple = false }) {
-  const categories = [
-    'Restrictions 🚫',
-    'Only AA 🔥',
-    ' Baddies 💝',
-    ' Latinas ❤️‍🔥',
-    ' BBW ⛱️',
-    ' Asians 🌏',
-    ' LGBQT+ 🌈',
-    ' Party N Play ❄️',
-    '40+ 🔞',
-    ' MILF 💅',
-    ' Request Pickup/Dropoff 💳',
-    ' Car Dates 🚘',
-    'No AA ❌',
-    'GFE 💋',
-    'Mature 💦',
-    'BDSM 👣',
-    '24/7 ☀️',
-  ];
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    api.get("/categories")
+      .then(({ data }) => {
+        setCategories(Array.isArray(data) ? data.map((c) => c.name) : []);
+      })
+      .catch(() => {
+        // Fallback to a minimal list if the API is unavailable
+        setCategories([]);
+      });
+  }, []);
 
   const selectedSet = new Set(
     (Array.isArray(selectedCategories) ? selectedCategories : [])
       .map((category) => normalizeCategory(category))
       .filter(Boolean)
   );
+
+  if (categories.length === 0) return null;
 
   return (
     <div className="w-full py-6 px-4 md:px-8 lg:px-12">

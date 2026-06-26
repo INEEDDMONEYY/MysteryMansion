@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import LocationSet from "./Location/LocationSet";
 import Heading from "./Header";
 import PromotionPosts from "./Promotion/PromotedPosts";
@@ -109,6 +110,15 @@ export default function Body() {
   const [visibleCount, setVisibleCount] = useState(15);
   const LOAD_MORE_STEP = 15;
 
+  // ---- Filter panel state ----
+  const [filterOptions, setFilterOptions] = useState({ states: [], citiesByState: {} });
+  const [showFilters, setShowFilters] = useState(false);
+  const [pendingState, setPendingState] = useState("");
+  const [pendingCity, setPendingCity] = useState("");
+  const [pendingGender, setPendingGender] = useState("");
+  // Applied filters (set when "Update Search" is clicked)
+  const [activeFilters, setActiveFilters] = useState({ state: "", city: "", gender: "" });
+
   const getAreaLabel = (selectedLocation) => {
     if (!selectedLocation) return "your area";
 
@@ -126,10 +136,27 @@ export default function Body() {
     return "your area";
   };
 
-  // --------------------------- Fetch Posts ---------------------------
-  const fetchPosts = async () => {
+  // --------------------------- Fetch Filter Options ------------------
+  const fetchFilterOptions = async () => {
     try {
-      const { data } = await api.get("/posts");
+      const { data } = await api.get("/posts/filter-options");
+      setFilterOptions({
+        states: Array.isArray(data.states) ? data.states : [],
+        citiesByState: data.citiesByState || {},
+      });
+    } catch {
+      // non-critical — filter dropdowns will just be empty
+    }
+  };
+
+  // --------------------------- Fetch Posts ---------------------------
+  const fetchPosts = async (filters = {}) => {
+    try {
+      const params = {};
+      if (filters.state)  params.state  = filters.state;
+      if (filters.city)   params.city   = filters.city;
+      if (filters.gender) params.gender = filters.gender;
+      const { data } = await api.get("/posts", { params });
       const normalized = Array.isArray(data) ? data : [];
       setPosts(dedupePostsById(normalized));
     } catch (err) {
@@ -163,6 +190,7 @@ export default function Body() {
     fetchPosts();
     fetchUsers();
     fetchPopularProviders();
+    fetchFilterOptions();
   }, []);
 
   const serverReady = useServerReady();
@@ -173,6 +201,7 @@ export default function Body() {
     if (posts.length === 0) fetchPosts();
     if (users.length === 0) fetchUsers();
     if (popularProviders.length === 0) fetchPopularProviders();
+    if (filterOptions.states.length === 0) fetchFilterOptions();
   }, [serverReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Update page title/description based on selected location so search engines
@@ -184,6 +213,41 @@ export default function Body() {
   // --------------------------- Load More -----------------------------
   const handleLoadMore = () => {
     setVisibleCount((prev) => prev + LOAD_MORE_STEP);
+  };
+
+  // --------------------------- Filter handlers ----------------------
+  const handleStateChange = (st) => {
+    setPendingState(st);
+    setPendingCity(""); // reset city when state changes
+  };
+
+  // Pre-populate filter panel from the user's current geolocation when opening
+  const handleOpenFilters = () => {
+    if (!showFilters && location) {
+      const locState = (location.state || "").trim();
+      const locCity  = (location.city  || "").trim();
+      if (locState && filterOptions.states.includes(locState)) {
+        setPendingState(locState);
+        const cities = filterOptions.citiesByState[locState] || [];
+        // pre-select city only if posts exist for that city
+        const matched = cities.find((c) => c.toLowerCase() === locCity.toLowerCase());
+        setPendingCity(matched || "");
+      }
+    }
+    setShowFilters((v) => !v);
+  };
+
+  const handleUpdateSearch = () => {
+    const filters = { state: pendingState, city: pendingCity, gender: pendingGender };
+    setActiveFilters(filters);
+    setVisibleCount(15);
+    fetchPosts(filters);
+  };
+
+  const handleClearFilters = () => {
+    setPendingState(''); setPendingCity(''); setPendingGender('');
+    setActiveFilters({ state: '', city: '', gender: '' });
+    fetchPosts({});
   };
 
   // --------------------------- Filter Posts --------------------------
@@ -224,8 +288,9 @@ export default function Body() {
 
   const filteredUncategorizedPool = sourcePosts
     .filter((post) => {
-      // Show all posts regardless of category — categorized posts still appear in the location feed
-      const matchesLocation = hasSearchQuery ? true : locationMatchesPost(post, location);
+      // When active server-side filters are in use, skip client-side location filtering
+      const hasServerFilter = activeFilters.state || activeFilters.city || activeFilters.gender;
+      const matchesLocation = (hasSearchQuery || hasServerFilter) ? true : locationMatchesPost(post, location);
       return matchesLocation;
     })
   ;
@@ -305,12 +370,30 @@ export default function Body() {
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
       <Heading />
 
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6 mt-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 mt-4">
         <h3 className="text-lg font-semibold text-gray-900">New listings daily</h3>
-        <LocationSet onLocationChange={setLocation} />
-        {isProvider && (
-          <div className="post-btn-div">
-            <Link to="/post">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex-1 sm:flex-none min-w-0">
+            <LocationSet onLocationChange={setLocation} />
+          </div>
+          {/* Filter toggle button */}
+          <button
+            type="button"
+            onClick={handleOpenFilters}
+            className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+              showFilters || (activeFilters.state || activeFilters.city || activeFilters.gender)
+                ? 'bg-pink-600 border-pink-600 text-white'
+                : 'border-gray-300 text-gray-600 bg-white hover:border-pink-400 hover:text-pink-600'
+            }`}
+          >
+            <SlidersHorizontal size={15} />
+            Filters
+            {(activeFilters.state || activeFilters.city || activeFilters.gender) && (
+              <span className="ml-1 h-2 w-2 rounded-full bg-white opacity-90 inline-block" />
+            )}
+          </button>
+          {isProvider && (
+            <Link to="/post" className="shrink-0">
               <button
                 className="border border-pink-500 px-4 py-2 rounded bg-pink-600 hover:bg-pink-700 text-white text-sm font-medium"
                 id="post-btn"
@@ -318,9 +401,92 @@ export default function Body() {
                 Post
               </button>
             </Link>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      {/* ---- State / City / Gender filter panel (collapsed by default) ---- */}
+      {showFilters && (
+        <div className="mb-6 p-3 sm:p-4 rounded-2xl bg-gray-50 border border-gray-200">
+
+          {/* Row 1: State + City — stack on mobile, side-by-side on sm+ */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">State</label>
+              <select
+                value={pendingState}
+                onChange={(e) => handleStateChange(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              >
+                <option value="">All states</option>
+                {filterOptions.states.map((st) => (
+                  <option key={st} value={st}>{st}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* City — only shown when a state is selected AND posts exist with cities there */}
+            {pendingState && (filterOptions.citiesByState[pendingState]?.length > 0) && (
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">City</label>
+                <select
+                  value={pendingCity}
+                  onChange={(e) => setPendingCity(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                >
+                  <option value="">All cities</option>
+                  {filterOptions.citiesByState[pendingState].map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* Row 2: Gender pills + Update Search + Clear */}
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Provider</label>
+              <div className="flex gap-2">
+                {[{ v: 'female', label: '♀ Female' }, { v: 'male', label: '♂ Male' }, { v: 'ts', label: '⚧ TS' }].map(({ v, label }) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setPendingGender((g) => g === v ? '' : v)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                      pendingGender === v
+                        ? 'bg-pink-600 border-pink-600 text-white'
+                        : 'border-gray-300 text-gray-600 bg-white hover:border-pink-400 hover:text-pink-600'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleUpdateSearch}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold transition-colors"
+              >
+                <Search size={15} /> Update Search
+              </button>
+              {(activeFilters.state || activeFilters.city || activeFilters.gender) && (
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-pink-600 underline"
+                >
+                  <X size={12} /> Clear
+                </button>
+              )}
+            </div>
+          </div>
+
+        </div>
+      )}
 
       {FEATURE_FLAGS.ENABLE_PROMOTE_ACCOUNT && <PromotionPosts />}
 

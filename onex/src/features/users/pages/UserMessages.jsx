@@ -24,6 +24,24 @@ export default function UserMessages() {
   const isClient = user?.accountType === "client";
   const [credits, setCredits] = useState(null);
 
+  // --- Unread tracking ---
+  // readMap: { [conversationId]: ISO timestamp of last time the user opened it }
+  // Stored in localStorage keyed to the user so different accounts don't share state.
+  const readMapKey = user?._id ? `mm_read_${user._id}` : null;
+  const [readMap, setReadMap] = useState(() => {
+    if (!readMapKey) return {};
+    try { return JSON.parse(localStorage.getItem(readMapKey) || '{}'); } catch { return {}; }
+  });
+
+  const markRead = (convId) => {
+    const now = new Date().toISOString();
+    setReadMap((prev) => {
+      const next = { ...prev, [convId]: now };
+      if (readMapKey) localStorage.setItem(readMapKey, JSON.stringify(next));
+      return next;
+    });
+  };
+
   useEffect(() => {
     setSEO("Messages | Mystery Mansion", "", { robots: "noindex, nofollow" });
   }, []);
@@ -49,6 +67,7 @@ export default function UserMessages() {
         if (match) {
           setSelectedConversation(match);
           setMobileView("chat");
+          markRead(convId);
         }
       }
     } catch (err) {
@@ -60,6 +79,7 @@ export default function UserMessages() {
 
   const fetchMessages = async (conversationId) => {
     setMsgLoading(true);
+    markRead(conversationId);
     try {
       const { data } = await api.get(`/messages/${conversationId}`);
       setMessages(data);
@@ -115,6 +135,7 @@ export default function UserMessages() {
           conversations={conversations}
           selectedId={selectedConversation?._id}
           currentUserId={user?._id}
+          readMap={readMap}
           onSelect={fetchMessages}
           onNew={() => setShowNewModal(true)}
           canNew={canStartNew}

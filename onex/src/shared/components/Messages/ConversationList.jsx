@@ -17,11 +17,19 @@ export default function ConversationList({
   conversations = [],
   selectedId,
   currentUserId,
+  readMap = {},
   onSelect,
   onNew,
   canNew = true,
   loading = false,
 }) {
+  // A conversation is "unread" when its lastMessage is newer than the stored read timestamp.
+  const isUnread = (conv) => {
+    if (!conv.lastMessage?.createdAt) return false;
+    const lastMsgTime = new Date(conv.lastMessage.createdAt).getTime();
+    const lastRead    = readMap[conv._id] ? new Date(readMap[conv._id]).getTime() : 0;
+    return lastMsgTime > lastRead;
+  };
   return (
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
 
@@ -53,6 +61,7 @@ export default function ConversationList({
               (p) => String(p._id) !== String(currentUserId)
             ) || {};
             const isActive  = selectedId === conv._id;
+            const unread    = !isActive && isUnread(conv);
             const lastText  = conv.lastMessage?.text || 'No messages yet';
             const lastTime  = conv.lastMessage?.createdAt || conv.updatedAt;
             const initial   = (other.username || '?').charAt(0).toUpperCase();
@@ -66,19 +75,32 @@ export default function ConversationList({
                 }`}
               >
                 {/* Avatar */}
-                <div className="shrink-0 w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
-                  {other.profilePic
-                    ? <img src={other.profilePic} alt={other.username} className="w-full h-full object-cover" />
-                    : initial}
+                <div className="shrink-0 relative w-11 h-11">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                    {other.profilePic
+                      ? <img src={other.profilePic} alt={other.username} className="w-full h-full object-cover" />
+                      : initial}
+                  </div>
+                  {/* Unread red dot */}
+                  {unread && (
+                    <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-red-500 border-2 border-white" />
+                  )}
                 </div>
+
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline">
-                    <span className={`text-sm font-semibold truncate ${ isActive ? 'text-pink-700' : 'text-gray-900' }`}>
+                    <span className={`text-sm truncate ${
+                      unread ? 'font-bold text-gray-900' : isActive ? 'font-semibold text-pink-700' : 'font-semibold text-gray-900'
+                    }`}>
                       {other.username || 'Unknown'}
                     </span>
-                    <span className="text-[11px] text-gray-400 shrink-0 ml-2">{timeAgo(lastTime)}</span>
+                    <span className={`text-[11px] shrink-0 ml-2 ${unread ? 'text-red-500 font-semibold' : 'text-gray-400'}`}>
+                      {timeAgo(lastTime)}
+                    </span>
                   </div>
-                  <p className="text-xs text-gray-500 truncate mt-0.5">{lastText}</p>
+                  <p className={`text-xs truncate mt-0.5 ${unread ? 'text-gray-700 font-medium' : 'text-gray-500'}`}>
+                    {lastText}
+                  </p>
                 </div>
               </button>
             );

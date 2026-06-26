@@ -10,6 +10,11 @@ const PostSchema = new mongoose.Schema(
     city: { type: String },
     state: { type: String },
     country: { type: String },
+    gender: {
+      type: String,
+      enum: ["", "female", "male", "ts"],
+      default: "",
+    },
     category: { type: String, default: "" },
     categories: {
       type: [{ type: String, trim: true }],

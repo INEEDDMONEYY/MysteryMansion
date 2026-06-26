@@ -90,6 +90,9 @@ router.post(
   postController.createPost
 );
 
+// Get filter options (states + cities with actual posts) — must be before /:id
+router.get('/filter-options', postController.getFilterOptions);
+
 // Get all posts
 router.get('/', postController.getPosts);
 

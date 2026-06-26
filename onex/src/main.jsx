@@ -63,6 +63,7 @@ const AdminEmailUsers     = lazy(() => import("@/features/admin/pages/AdminEmail
 const AdminCreditRequests = lazy(() => import("@/features/admin/pages/AdminCreditRequestsPage"));
 const AdminCreditPackages = lazy(() => import("@/features/admin/pages/AdminCreditPackagesPage"));
 const AdminFAQPage        = lazy(() => import("@/features/admin/pages/AdminFAQPage"));
+const AdminCategoriesPage = lazy(() => import("@/features/admin/pages/AdminCategoriesPage"));
 const UserNotifications   = lazy(() => import("@/features/users/pages/UserNotificationsPage"));
 const ClientDashboard     = lazy(() => import("@/features/clients/pages/ClientDashboard"));
 const ClientProfilePage   = lazy(() => import("@/features/clients/pages/ClientProfilePage"));
@@ -164,6 +165,7 @@ const router = createBrowserRouter([
           { path: "/admin/credit-requests",  element: <AdminCreditRequests /> },
           { path: "/admin/credit-packages",  element: <AdminCreditPackages /> },
           { path: "/admin/faqs",             element: <AdminFAQPage /> },
+          { path: "/admin/categories",       element: <AdminCategoriesPage /> },
         ],
       },
     ],

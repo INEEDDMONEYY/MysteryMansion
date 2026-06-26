@@ -15,6 +15,7 @@ import {
   MailCheck,
   Coins,
   HelpCircle,
+  Tag,
 } from 'lucide-react';
 import { useUser } from '@/context/useUser';
 
@@ -31,6 +32,7 @@ const ADMIN_NAV = [
   { to: '/admin/credit-requests', label: 'Credit Requests', icon: Coins },
   { to: '/admin/credit-packages', label: 'Credit Packages', icon: Coins },
   { to: '/admin/faqs',            label: 'FAQ',             icon: HelpCircle },
+  { to: '/admin/categories',      label: 'Categories',      icon: Tag },
   { to: '/admin/settings',        label: 'Settings',        icon: Settings },
 ];
 

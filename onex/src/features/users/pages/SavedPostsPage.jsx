@@ -1,7 +1,7 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Plus, Pencil, Trash2, Send, LayoutGrid, List, X, Check, ImageIcon,
+  Plus, Pencil, Trash2, Send, LayoutGrid, List, X, Check, ImageIcon, Upload,
 } from 'lucide-react';
 import api from '@/shared/utils/api';
 import { UserContext } from '@/context/UserContext';
@@ -38,6 +38,9 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
 function TemplateModal({ initial, onSave, onClose, saving }) {
   const [form, setForm] = useState(initial ?? EMPTY_FORM);
   const [pictureInput, setPictureInput] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const fileInputRef = useRef(null);
 
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -55,6 +58,36 @@ function TemplateModal({ initial, onSave, onClose, saving }) {
     if (!url) return;
     setForm((f) => ({ ...f, pictures: [...f.pictures, url] }));
     setPictureInput('');
+  };
+
+  const handleFileChange = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    // Reset input so same files can be re-selected if needed
+    e.target.value = '';
+
+    const remaining = 10 - form.pictures.length;
+    if (remaining <= 0) {
+      setUploadError('Maximum 10 images already added.');
+      return;
+    }
+    const toUpload = files.slice(0, Math.min(5, remaining));
+
+    setUploading(true);
+    setUploadError('');
+    try {
+      const fd = new FormData();
+      toUpload.forEach((f) => fd.append('images', f));
+      const { data } = await api.post('/saved-posts/upload', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const urls = Array.isArray(data?.urls) ? data.urls : [];
+      setForm((f) => ({ ...f, pictures: [...f.pictures, ...urls] }));
+    } catch (err) {
+      setUploadError(err?.response?.data?.error || 'Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removePicture = (i) =>
@@ -124,9 +157,11 @@ function TemplateModal({ initial, onSave, onClose, saving }) {
           {/* Photos */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
-              Photo URLs <span className="text-gray-400 font-normal normal-case">(paste hosted image links)</span>
+              Photos <span className="text-gray-400 font-normal normal-case">(upload from device or paste a link)</span>
             </label>
-            <div className="flex gap-2 mb-3">
+
+            {/* URL input row */}
+            <div className="flex gap-2 mb-2">
               <input
                 type="url"
                 value={pictureInput}
@@ -141,6 +176,30 @@ function TemplateModal({ initial, onSave, onClose, saving }) {
                 className="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm font-medium"
               >Add</button>
             </div>
+
+            {/* Device upload button */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-dashed border-gray-300 text-gray-500 hover:border-pink-400 hover:text-pink-600 text-sm transition-colors disabled:opacity-50 mb-3"
+            >
+              <Upload size={14} />
+              {uploading ? 'Uploading…' : 'Upload from device'}
+            </button>
+
+            {uploadError && (
+              <p className="text-red-500 text-xs mb-2">{uploadError}</p>
+            )}
+
             {form.pictures.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {form.pictures.map((url, i) => (

@@ -39,8 +39,8 @@ function FAQForm({ initial, onSave, onCancel, saving }) {
           className="w-full border border-neutral-700 bg-neutral-800 text-white placeholder-neutral-500 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-pink-400"
         />
       </div>
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-[120px]">
           <label className="block text-xs font-medium text-neutral-300 mb-1">Sort order <span className="text-neutral-500">(lower = first)</span></label>
           <input
             type="number"
@@ -50,7 +50,7 @@ function FAQForm({ initial, onSave, onCancel, saving }) {
             className="w-full border border-neutral-700 bg-neutral-800 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
           />
         </div>
-        <div className="flex items-center gap-2 mt-5">
+        <div className="flex items-center mt-5">
           <button
             type="button"
             onClick={() => setIsActive((v) => !v)}

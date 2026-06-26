@@ -13,6 +13,21 @@
   box-sizing: border-box;
 }
 
+/*
+  Prevent iOS Safari from auto-zooming on form-field focus.
+  Safari zooms in whenever a focused input/select/textarea has font-size < 16px.
+  The !important ensures Tailwind's text-sm/text-xs utilities don't shrink
+  the font back below the zoom threshold on mobile.
+  On larger screens a media query lets text-sm look normal again.
+*/
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 body {
   margin: 0;
   padding: 0;
