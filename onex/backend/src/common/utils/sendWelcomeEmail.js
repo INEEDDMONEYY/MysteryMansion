@@ -48,7 +48,9 @@ async function sendWelcomeEmail({ to, username, accountType = 'provider' }) {
   await sendEmail({
     from: FROM_ADDRESS,
     to,
-    subject: 'Welcome to Mystery Mansion',
+    subject: isClient
+      ? 'Welcome to Mystery Mansion — Your Client Account is Ready'
+      : 'Welcome to Mystery Mansion — Your Provider Account is Active',
     html: buildEmail(isClient ? clientContent : providerContent, { showHero: true }),
   });
 }
