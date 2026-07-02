@@ -15,10 +15,10 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-dotenv.config({ path: "./src/backend/.env" });
+dotenv.config({ path: "./backend/.env" });
 // Also try the backend directory directly
 if (!process.env.MONGO_URI) {
-  dotenv.config({ path: "./src/backend/src/.env" });
+  dotenv.config({ path: "./backend/src/.env" });
 }
 
 const MONGO_URI =

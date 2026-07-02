@@ -1,8 +1,8 @@
 // migratePostsAddUserId.js
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import Post from "./src/backend/models/Post.js";
-import User from "./src/backend/models/User.js";
+import Post from "./backend/models/Post.js";
+import User from "./backend/models/User.js";
 
 dotenv.config();
 
