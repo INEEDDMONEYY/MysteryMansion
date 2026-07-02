@@ -33,6 +33,29 @@ body {
   padding: 0;
 }
 
+/*
+  Suppress the browser's native image hover toolbar (Chrome's "..." popup
+  offering "Search image", "Save image", etc.) and right-click context menu
+  on images. pointer-events: none removes the hover target from the <img>
+  element itself; parent buttons/anchors still receive click events normally.
+  -webkit-user-drag prevents drag-to-reverse-image-search.
+*/
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Re-enable pointer events for images that are themselves interactive */
+a > img,
+button > img,
+[role="button"] > img,
+label > img {
+  pointer-events: auto;
+}
+
 .nav-items .nav-item {
     margin: 0 2rem;
     color: pink;

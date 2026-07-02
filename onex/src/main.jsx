@@ -197,6 +197,16 @@ export function AppGate() {
       .catch(() => setEmailEnabled(true));
   }, [serverReady]);
 
+  // Block right-click context menu on all images to prevent
+  // browser "Search image / Save image" options.
+  useEffect(() => {
+    const block = (e) => {
+      if (e.target.tagName === 'IMG') e.preventDefault();
+    };
+    document.addEventListener('contextmenu', block);
+    return () => document.removeEventListener('contextmenu', block);
+  }, []);
+
   // Admin can permanently suppress the server-issue banner via localStorage
   const [issueDisabled] = useState(
     () => localStorage.getItem('mm_server_issue_disabled') === 'true'
