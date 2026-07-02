@@ -143,14 +143,19 @@ export async function getFilterOptions(req, res) {
       { state: 1, city: 1 }
     ).lean();
 
+    // Normalize to Title Case so "colorado springs" and "Colorado Springs"
+    // collapse into a single entry rather than appearing as duplicates.
+    const toTitleCase = (str) =>
+      str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+
     const stateSet = new Set();
     const citiesByState = {};
 
     for (const post of raw) {
-      const st = (post.state || '').trim();
+      const st = toTitleCase((post.state || '').trim());
       if (!st) continue;
       stateSet.add(st);
-      const cities = (post.city || '').split(',').map((c) => c.trim()).filter(Boolean);
+      const cities = (post.city || '').split(',').map((c) => toTitleCase(c.trim())).filter(Boolean);
       for (const c of cities) {
         if (!citiesByState[st]) citiesByState[st] = new Set();
         citiesByState[st].add(c);
