@@ -5,6 +5,16 @@ import api from "@/shared/utils/api";
 
 const SELECT = "bg-neutral-800 border border-neutral-700 text-white rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-neutral-500";
 
+const DURATION_OPTIONS = [
+  { value: "24hrs",   label: "24 hours" },
+  { value: "2days",   label: "2 days" },
+  { value: "4days",   label: "4 days" },
+  { value: "1week",   label: "1 week" },
+  { value: "2weeks",  label: "2 weeks" },
+  { value: "3weeks",  label: "3 weeks" },
+  { value: "monthly", label: "1 month" },
+];
+
 export default function PromoteAccountSettings({ users = [], onUserPromoted }) {
   const [selectedUser, setSelectedUser] = useState("");
   const [promotionDuration, setPromotionDuration] = useState("");
@@ -12,6 +22,12 @@ export default function PromoteAccountSettings({ users = [], onUserPromoted }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [recentlyPromoted, setRecentlyPromoted] = useState([]);
+
+  // Exclude admin / dev accounts from the dropdown
+  const selectableUsers = useMemo(
+    () => users.filter((u) => u.role !== "admin"),
+    [users]
+  );
 
   const activePromotedUsers = useMemo(() => {
     const now = new Date();
@@ -62,6 +78,27 @@ export default function PromoteAccountSettings({ users = [], onUserPromoted }) {
     } finally { setSubmitting(false); }
   };
 
+  const handlePromoteAll = async () => {
+    setSuccessMessage(""); setErrorMessage("");
+    if (!promotionDuration) {
+      setErrorMessage("Please select a promotion duration first.");
+      return;
+    }
+    if (!window.confirm(`Promote ALL ${selectableUsers.length} users for the selected duration?`)) return;
+    setSubmitting(true);
+    try {
+      const response = await api.post("/admin/users/promote-all",
+        { duration: promotionDuration },
+        { withCredentials: true }
+      );
+      showConfetti();
+      setSuccessMessage(response?.data?.message || "All users promoted.");
+      setPromotionDuration("");
+    } catch (err) {
+      setErrorMessage(err.response?.data?.error || "Failed to promote all users.");
+    } finally { setSubmitting(false); }
+  };
+
   return (
     <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-5">
       <div className="flex items-center gap-2 mb-4">
@@ -72,17 +109,16 @@ export default function PromoteAccountSettings({ users = [], onUserPromoted }) {
       {successMessage && <p className="text-emerald-400 text-sm mb-3">{successMessage}</p>}
       {errorMessage && <p className="text-red-400 text-sm mb-3">{errorMessage}</p>}
 
-      <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center mb-4">
+      <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center mb-3">
         <select value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)} className={`${SELECT} flex-1`}>
           <option value="">Select user</option>
-          {users.map((user) => <option key={user._id} value={user._id}>{user.username}</option>)}
+          {selectableUsers.map((user) => <option key={user._id} value={user._id}>{user.username}</option>)}
         </select>
         <select value={promotionDuration} onChange={(e) => setPromotionDuration(e.target.value)} className={`${SELECT} flex-1`}>
           <option value="">Promotion duration</option>
-          <option value="24hrs">24 hours</option>
-          <option value="2days">2 days</option>
-          <option value="4days">4 days</option>
-          <option value="1week">1 week</option>
+          {DURATION_OPTIONS.map(({ value, label }) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
         </select>
         <button
           onClick={handlePromoteUser}
@@ -91,6 +127,21 @@ export default function PromoteAccountSettings({ users = [], onUserPromoted }) {
         >
           {submitting ? "Saving…" : "Promote"}
         </button>
+      </div>
+
+      {/* Promote All button */}
+      <div className="flex items-center gap-2 mb-4">
+        <button
+          onClick={handlePromoteAll}
+          disabled={submitting || !promotionDuration}
+          className="flex items-center gap-2 bg-amber-500/15 border border-amber-500/40 text-amber-400 hover:bg-amber-500/25 px-4 py-2 rounded-xl text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Crown size={13} />
+          Promote All Users ({selectableUsers.length})
+        </button>
+        {!promotionDuration && (
+          <span className="text-xs text-neutral-500">Select a duration first</span>
+        )}
       </div>
 
       {selectedUserProfile && (

@@ -340,9 +340,12 @@ export const deleteUser = async (req, res) => {
 
 /* --------------------------- ⭐ Promote User (Admin) --------------------------- */
 const PROMO_DURATION_MAP = {
-  "1week": 7,
-  "2weeks": 14,
-  "3weeks": 21,
+  "24hrs":   1,
+  "2days":   2,
+  "4days":   4,
+  "1week":   7,
+  "2weeks":  14,
+  "3weeks":  21,
   "monthly": 30,
 };
 
@@ -446,7 +449,49 @@ export const promoteUser = async (req, res) => {
   }
 }
 
-/* --------------------------- �🖼 Upload Profile Picture --------------------------- */
+/* --------------------------- ⭐ Promote All Users (Admin) --------------------------- */
+export const promoteAllUsers = async (req, res) => {
+  try {
+    const adminId = req.user?.id || req.user?._id;
+    if (!adminId) return res.status(401).json({ success: false, error: "Unauthorized" });
+
+    const { duration } = req.body || {};
+    if (!duration) {
+      return res.status(400).json({ success: false, error: "Promotion duration is required." });
+    }
+
+    const promoDurationDays = PROMO_DURATION_MAP[duration];
+    if (!promoDurationDays) {
+      return res.status(400).json({ success: false, error: "Invalid promotion duration." });
+    }
+
+    const promoExpiry = new Date(Date.now() + promoDurationDays * 24 * 60 * 60 * 1000);
+
+    // Promote all non-admin users
+    const userResult = await User.updateMany(
+      { role: { $ne: "admin" } },
+      { activePromoExpiry: promoExpiry, badgeType: "pink" }
+    );
+
+    // Update all posts belonging to non-admin users
+    const adminIds = await User.find({ role: "admin" }).distinct("_id");
+    await Post.updateMany(
+      { userId: { $nin: adminIds } },
+      { isPromo: true, promoExpiresAt: promoExpiry, badgeType: "pink" }
+    );
+
+    return res.json({
+      success: true,
+      message: `${userResult.modifiedCount} users promoted for ${promoDurationDays} day(s).`,
+      data: { count: userResult.modifiedCount, promoExpiry, promoDurationDays },
+    });
+  } catch (err) {
+    console.error("❌ Error promoting all users:", err);
+    return res.status(500).json({ success: false, error: "Failed to promote all users." });
+  }
+};
+
+/* --------------------------- 🖼 Upload Profile Picture --------------------------- */
 /* --------------------------- 🖼 Upload Profile Picture to Cloudinary --------------------------- */
 export const uploadProfilePicture = async (req, res) => {
   try {
