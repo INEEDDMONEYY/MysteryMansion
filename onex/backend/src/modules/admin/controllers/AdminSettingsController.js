@@ -467,16 +467,16 @@ export const promoteAllUsers = async (req, res) => {
 
     const promoExpiry = new Date(Date.now() + promoDurationDays * 24 * 60 * 60 * 1000);
 
-    // Promote all non-admin users
+    // Promote all provider (non-admin) users only
     const userResult = await User.updateMany(
-      { role: { $ne: "admin" } },
+      { role: { $ne: "admin" }, accountType: "provider" },
       { activePromoExpiry: promoExpiry, badgeType: "pink" }
     );
 
-    // Update all posts belonging to non-admin users
-    const adminIds = await User.find({ role: "admin" }).distinct("_id");
+    // Update posts for those same users
+    const nonProviderIds = await User.find({ $or: [{ role: "admin" }, { accountType: { $ne: "provider" } }] }).distinct("_id");
     await Post.updateMany(
-      { userId: { $nin: adminIds } },
+      { userId: { $nin: nonProviderIds } },
       { isPromo: true, promoExpiresAt: promoExpiry, badgeType: "pink" }
     );
 
@@ -488,6 +488,33 @@ export const promoteAllUsers = async (req, res) => {
   } catch (err) {
     console.error("❌ Error promoting all users:", err);
     return res.status(500).json({ success: false, error: "Failed to promote all users." });
+  }
+};
+
+/* --------------------------- ⭐ Cancel All Promotions (Admin) --------------------------- */
+export const cancelAllPromotions = async (req, res) => {
+  try {
+    const adminId = req.user?.id || req.user?._id;
+    if (!adminId) return res.status(401).json({ success: false, error: "Unauthorized" });
+
+    const userResult = await User.updateMany(
+      { activePromoExpiry: { $ne: null } },
+      { activePromoExpiry: null, badgeType: "" }
+    );
+
+    await Post.updateMany(
+      { isPromo: true },
+      { isPromo: false, promoExpiresAt: null, badgeType: "" }
+    );
+
+    return res.json({
+      success: true,
+      message: `Promotion cancelled for ${userResult.modifiedCount} user(s).`,
+      data: { count: userResult.modifiedCount },
+    });
+  } catch (err) {
+    console.error("❌ Error cancelling all promotions:", err);
+    return res.status(500).json({ success: false, error: "Failed to cancel all promotions." });
   }
 };
 

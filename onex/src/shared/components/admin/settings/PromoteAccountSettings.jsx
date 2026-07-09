@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Crown } from "lucide-react";
+import { Crown, X } from "lucide-react";
 import confetti from "canvas-confetti";
 import api from "@/shared/utils/api";
 
@@ -23,9 +23,9 @@ export default function PromoteAccountSettings({ users = [], onUserPromoted }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [recentlyPromoted, setRecentlyPromoted] = useState([]);
 
-  // Exclude admin / dev accounts from the dropdown
+  // Only show provider accounts (exclude admins and clients)
   const selectableUsers = useMemo(
-    () => users.filter((u) => u.role !== "admin"),
+    () => users.filter((u) => u.role !== "admin" && u.accountType === "provider"),
     [users]
   );
 
@@ -99,6 +99,33 @@ export default function PromoteAccountSettings({ users = [], onUserPromoted }) {
     } finally { setSubmitting(false); }
   };
 
+  const handleCancelUser = async (userId, username) => {
+    setSuccessMessage(""); setErrorMessage("");
+    if (!window.confirm(`Cancel promotion for ${username}?`)) return;
+    setSubmitting(true);
+    try {
+      await api.post("/admin/users/promote", { userId, cancel: true }, { withCredentials: true });
+      setRecentlyPromoted((prev) => prev.filter((u) => u._id !== userId));
+      onUserPromoted?.(userId, null);
+      setSuccessMessage(`Promotion cancelled for ${username}.`);
+    } catch (err) {
+      setErrorMessage(err.response?.data?.error || "Failed to cancel promotion.");
+    } finally { setSubmitting(false); }
+  };
+
+  const handleCancelAll = async () => {
+    setSuccessMessage(""); setErrorMessage("");
+    if (!window.confirm(`Cancel ALL active promotions? This cannot be undone.`)) return;
+    setSubmitting(true);
+    try {
+      const response = await api.post("/admin/users/cancel-all-promotions", {}, { withCredentials: true });
+      setRecentlyPromoted([]);
+      setSuccessMessage(response?.data?.message || "All promotions cancelled.");
+    } catch (err) {
+      setErrorMessage(err.response?.data?.error || "Failed to cancel all promotions.");
+    } finally { setSubmitting(false); }
+  };
+
   return (
     <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-5">
       <div className="flex items-center gap-2 mb-4">
@@ -129,18 +156,28 @@ export default function PromoteAccountSettings({ users = [], onUserPromoted }) {
         </button>
       </div>
 
-      {/* Promote All button */}
-      <div className="flex items-center gap-2 mb-4">
+      {/* Promote All + Cancel All row */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <button
           onClick={handlePromoteAll}
           disabled={submitting || !promotionDuration}
           className="flex items-center gap-2 bg-amber-500/15 border border-amber-500/40 text-amber-400 hover:bg-amber-500/25 px-4 py-2 rounded-xl text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Crown size={13} />
-          Promote All Users ({selectableUsers.length})
+          Promote All ({selectableUsers.length})
         </button>
+        {promotedUsers.length > 0 && (
+          <button
+            onClick={handleCancelAll}
+            disabled={submitting}
+            className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 px-4 py-2 rounded-xl text-sm font-medium transition disabled:opacity-40"
+          >
+            <X size={13} />
+            Cancel All ({promotedUsers.length})
+          </button>
+        )}
         {!promotionDuration && (
-          <span className="text-xs text-neutral-500">Select a duration first</span>
+          <span className="text-xs text-neutral-500">Select a duration to promote</span>
         )}
       </div>
 
@@ -167,13 +204,23 @@ export default function PromoteAccountSettings({ users = [], onUserPromoted }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {promotedUsers.map((user) => (
               <div key={user._id} className="bg-neutral-800 border border-neutral-700 rounded-xl p-3">
-                <div className="flex items-center gap-2">
-                  <img
-                    src={user.profilePic || "https://cdn-icons-png.flaticon.com/512/9131/9131529.png"}
-                    alt={user.username}
-                    className="h-8 w-8 rounded-lg object-cover border border-neutral-600"
-                  />
-                  <p className="text-sm font-medium text-white">{user.username || "Unknown"}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <img
+                      src={user.profilePic || "https://cdn-icons-png.flaticon.com/512/9131/9131529.png"}
+                      alt={user.username}
+                      className="h-8 w-8 rounded-lg object-cover border border-neutral-600 shrink-0"
+                    />
+                    <p className="text-sm font-medium text-white truncate">{user.username || "Unknown"}</p>
+                  </div>
+                  <button
+                    onClick={() => handleCancelUser(user._id, user.username || "this user")}
+                    disabled={submitting}
+                    title="Cancel promotion"
+                    className="shrink-0 p-1 rounded-lg text-neutral-500 hover:text-red-400 hover:bg-red-500/10 transition disabled:opacity-40"
+                  >
+                    <X size={14} />
+                  </button>
                 </div>
                 <p className="mt-2 text-xs text-neutral-500">
                   Active until: {user.activePromoExpiry ? new Date(user.activePromoExpiry).toLocaleString() : "Unknown"}
