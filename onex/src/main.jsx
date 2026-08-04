@@ -6,6 +6,18 @@ import { X } from "lucide-react";
 
 import "./index.css";
 
+// Reload once when a lazy-loaded chunk is missing after a new deployment.
+window.addEventListener("unhandledrejection", (e) => {
+  const msg = e?.reason?.message || "";
+  if (msg.includes("Failed to fetch dynamically imported module") || msg.includes("Importing a module script failed")) {
+    const reloaded = sessionStorage.getItem("chunk_reload");
+    if (!reloaded) {
+      sessionStorage.setItem("chunk_reload", "1");
+      window.location.reload();
+    }
+  }
+});
+
 import { UserProvider } from "@/context/UserContext";
 import { DevMessageProvider } from "@/context/DevMessageContext";
 import { ServerReadyProvider, useServerReady } from "@/context/ServerReadyContext";
