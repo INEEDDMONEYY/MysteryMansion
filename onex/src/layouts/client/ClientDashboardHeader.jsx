@@ -55,7 +55,7 @@ export default function ClientDashboardHeader({ title, menuOpen, onMenuToggle })
 
         {/* Right — notifications + profile */}
         <div className="flex items-center gap-2 shrink-0">
-          <UserNotificationBell viewAllHref="/client/notifications" messagesPath="/client/messages" creditsPath="/client/credits" />
+          <UserNotificationBell viewAllHref="/client/notifications" messagesPath="/client/messages" creditsPath="/client/credits" milestonesPath="/client/milestones" />
 
           <div className="relative" ref={dropdownRef}>
             <button

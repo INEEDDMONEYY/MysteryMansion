@@ -42,10 +42,14 @@ import savedPostRoutes from './modules/savedPosts/routes.js';
 import creditsRoutes from './modules/credits/routes.js';
 import faqRoutes from './modules/faqs/routes.js';
 import categoryRoutes from './modules/categories/routes.js';
+import referralRoutes from './modules/referrals/routes.js';
+import milestoneRoutes from './modules/milestones/routes.js';
 
 // Utilities
 import { startPromoExpiryReminderJob } from './common/utils/promoExpiryReminderJob.js';
 import { startProfileViewNotificationJob } from './common/utils/profileViewNotificationJob.js';
+import { startMilestoneAchievementJob } from './common/utils/milestoneAchievementJob.js';
+import { startAccountInactivityEmailJob } from './common/utils/accountInactivityEmailJob.js';
 import { seedDefaultFAQs } from './common/utils/seedFAQs.js';
 import { seedDefaultCategories } from './common/utils/seedCategories.js';
 
@@ -108,6 +112,8 @@ const connectDB = async () => {
     // Start background jobs
     startPromoExpiryReminderJob();
     startProfileViewNotificationJob();
+    startMilestoneAchievementJob();
+    startAccountInactivityEmailJob();
     await seedDefaultFAQs();
     await seedDefaultCategories();
     console.log('✅ Background jobs started');
@@ -176,6 +182,10 @@ app.use('/api/credits', creditsRoutes);
 app.use('/api/faqs', faqRoutes);
 // Category Routes
 app.use('/api/categories', categoryRoutes);
+// Referral Routes
+app.use('/api/referrals', referralRoutes);
+// Milestone Routes
+app.use('/api/milestones', milestoneRoutes);
 /**
  * ==========================================
  * STATIC FILES & PUBLIC ROUTES

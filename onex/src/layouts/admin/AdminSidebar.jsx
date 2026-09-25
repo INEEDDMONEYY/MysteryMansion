@@ -16,24 +16,30 @@ import {
   Coins,
   HelpCircle,
   Tag,
+  PersonStanding,
+  ChartArea,
+  BookPlus,
 } from 'lucide-react';
 import { useUser } from '@/context/useUser';
 
 const ADMIN_NAV = [
   { to: '/admin',                 label: 'Dashboard',    icon: Home,      end: true },
-  { to: '/admin/users',           label: 'User Mgmt',    icon: Users },
-  { to: '/admin/create-user',     label: 'Create Users', icon: UserPlus },
   { to: '/admin/analytics',       label: 'Analytics',    icon: BarChart2 },
-  { to: '/admin/messages',        label: 'Messages',     icon: Mail },
   { to: '/admin/banners',         label: 'Banners',      icon: Megaphone },
-  { to: '/admin/discounts',       label: 'Discounts',    icon: Percent },
-  { to: '/admin/notifications',   label: 'Notifications',icon: Bell },
-  { to: '/admin/email-users',     label: 'Email Users',     icon: MailCheck },
+  { to: '/admin/categories',      label: 'Categories',      icon: Tag },
   { to: '/admin/credit-requests', label: 'Credit Requests', icon: Coins },
   { to: '/admin/credit-packages', label: 'Credit Packages', icon: Coins },
+  { to: '/admin/create-user',     label: 'Create Users', icon: UserPlus },
+  { to: '/admin/discounts',       label: 'Discounts',    icon: Percent },
+  { to: '/admin/email-users',     label: 'Email Users',     icon: MailCheck },
   { to: '/admin/faqs',            label: 'FAQ',             icon: HelpCircle },
-  { to: '/admin/categories',      label: 'Categories',      icon: Tag },
+  { to: '/admin/milestones', label: 'Milestones', icon: BookPlus },
+  { to: '/admin/messages',        label: 'Messages',     icon: Mail },
+  { to: '/admin/notifications',   label: 'Notifications',icon: Bell },
+  { to: '/admin/referrals',       label: 'Referral Analytics',    icon: PersonStanding },
+  { to: '/admin/shared-link-analytics', label: 'Shared Link Analytics', icon: ChartArea },
   { to: '/admin/settings',        label: 'Settings',        icon: Settings },
+  { to: '/admin/users',           label: 'User Mgmt',    icon: Users },
 ];
 
 export default function AdminSidebar({

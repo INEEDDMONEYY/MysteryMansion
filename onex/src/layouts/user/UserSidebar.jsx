@@ -12,7 +12,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   User, MessageSquareText, BarChart3, LogOut, Home,
-  Sparkles, LayoutDashboard, BookMarked, Heart,
+  Rocket, LayoutDashboard, BookMarked, Heart, SquareM, Share2,
 } from 'lucide-react';
 import { useContext } from 'react';
 import { UserContext } from '@/context/UserContext';
@@ -32,7 +32,9 @@ export default function UserSidebar({ isOpen, onClose, unreadMessages = 0 }) {
     { to: '/user/activity',      label: 'Activity',       icon: BarChart3 },
     { to: '/user/profile',     label: 'Edit Profile',  icon: User },
     { to: '/user/messages',    label: 'Messages',      icon: MessageSquareText, badge: unreadMessages },
-    { to: '/promote',          label: 'Promote',        icon: Sparkles },
+    { to: '/user/milestones', label: 'Milestones', icon: SquareM },
+    { to: '/user/referrals', label: 'Referrals', icon: Share2 },
+    { to: '/promote',          label: 'Promote',        icon: Rocket },
   ];
 
   // ── Feature-flagged extra nav items ───────────────────────────────────────

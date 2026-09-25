@@ -169,6 +169,31 @@ const UserSchema = new mongoose.Schema(
       default: 200,
       min: 0,
     },
+    // Referral tracking — the provider whose referral link this account signed up through
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+    referralCodeUsed: {
+      type: String,
+      default: "",
+    },
+    // Cached timestamp of the user's most recent post — powers inactivity emails.
+    lastPostAt: {
+      type: Date,
+      default: null,
+    },
+    // Highest inactivity threshold (days) already emailed for; resets to 0 on new post.
+    lastInactivityEmailDays: {
+      type: Number,
+      default: 0,
+    },
+    // Milestone ids already emailed/notified for — prevents duplicate milestone emails.
+    notifiedMilestones: {
+      type: [String],
+      default: [],
+    },
     /* ----------------------------------------------------------- */
   },
   { timestamps: true },

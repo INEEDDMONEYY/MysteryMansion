@@ -10,3 +10,7 @@ export { normalizeState } from './stateNormalizer.js';
 export { default as AppError } from './AppError.js';
 export { ensureUserAdminConversation, ensureAdminConversationsForAllUsers, getPrimaryAdminId } from './ensureAdminWelcomeConversation.js';
 export { default as promoExpiryReminderJob } from './promoExpiryReminderJob.js';
+export { sendAccountActivityEmail, sendAccountInactivityEmail } from './sendAccountActivityEmail.js';
+export { sendMilestoneAchievedEmail } from './sendMilestoneAchievedEmail.js';
+export { startMilestoneAchievementJob } from './milestoneAchievementJob.js';
+export { startAccountInactivityEmailJob } from './accountInactivityEmailJob.js';

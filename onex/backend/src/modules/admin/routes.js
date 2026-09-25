@@ -9,7 +9,7 @@ import {
 import { emailUsers } from "./controllers/emailUsersController.js";
 import adminProfileRouter from "./adminProfile.js";
 import adminUsersRouter from "./adminUsers.js";
-import adminPromoCodesRouter from "./adminPromoCodes.js";import adminCreditRequestsRouter from './adminCreditRequests.js';import adminCreditPackagesRouter from './adminCreditPackages.js';import adminFaqsRouter from './adminFaqs.js';import adminCategoriesRouter from './adminCategories.js';const router = express.Router();
+import adminPromoCodesRouter from "./adminPromoCodes.js";import adminCreditRequestsRouter from './adminCreditRequests.js';import adminCreditPackagesRouter from './adminCreditPackages.js';import adminFaqsRouter from './adminFaqs.js';import adminCategoriesRouter from './adminCategories.js';import adminReferralsRouter from './adminReferrals.js';import adminSearchRouter from './adminSearch.js';import adminMilestonesRouter from './adminMilestones.js';const router = express.Router();
 
 /* --- Settings --- */
 router.get("/stats", getStats);
@@ -25,4 +25,4 @@ router.post("/email-users", emailUsers);
 /* --- Admin sub-routers --- */
 router.use("/profile", adminProfileRouter);
 router.use("/users", adminUsersRouter);
-router.use("/promo-codes", adminPromoCodesRouter);router.use('/credit-requests', adminCreditRequestsRouter);router.use('/credit-packages', adminCreditPackagesRouter);router.use('/faqs', adminFaqsRouter);router.use('/categories', adminCategoriesRouter);export default router;
+router.use("/promo-codes", adminPromoCodesRouter);router.use('/credit-requests', adminCreditRequestsRouter);router.use('/credit-packages', adminCreditPackagesRouter);router.use('/faqs', adminFaqsRouter);router.use('/categories', adminCategoriesRouter);router.use('/referrals', adminReferralsRouter);router.use('/search', adminSearchRouter);router.use('/milestones', adminMilestonesRouter);export default router;

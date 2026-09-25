@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { X, UserPlus, MessageSquare, TrendingUp, Bell, CheckCheck, Star, PartyPopper, Eye, Coins, Heart } from 'lucide-react';
+import { X, UserPlus, MessageSquare, TrendingUp, Bell, CheckCheck, Star, PartyPopper, Eye, Coins, Heart, Trophy } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const TYPE_META = {
@@ -16,6 +16,8 @@ const TYPE_META = {
   profile_visited:    { icon: Eye,            color: 'text-sky-400',     bg: 'bg-sky-400/10'     },
   low_credits:        { icon: Coins,          color: 'text-orange-400',  bg: 'bg-orange-400/10'  },
   post_liked:         { icon: Heart,          color: 'text-pink-400',    bg: 'bg-pink-400/10'    },
+  milestone_added:    { icon: Trophy,         color: 'text-purple-400',  bg: 'bg-purple-400/10'  },
+  milestone_achieved: { icon: Trophy,         color: 'text-purple-400',  bg: 'bg-purple-400/10'  },
 };
 
 function NotificationItem({ n, onRead, onItemClick }) {
@@ -88,7 +90,7 @@ export default function NotificationModal({
   return (
     <div
       ref={ref}
-      className="absolute right-0 top-full mt-2 z-50 w-[calc(100vw-2rem)] max-w-80 sm:max-w-96 rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl shadow-black/40 overflow-hidden"
+      className="fixed left-1/2 top-20 -translate-x-1/2 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:translate-x-0 sm:mt-2 z-50 w-[calc(100vw-2rem)] max-w-80 sm:max-w-96 rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl shadow-black/40 overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-800">

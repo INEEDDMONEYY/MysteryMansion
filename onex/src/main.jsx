@@ -26,61 +26,74 @@ import ProtectedRoute from "@/shared/components/ProtectedRoute";
 import ProviderOnlyRoute from "@/shared/components/ProviderOnlyRoute";
 
 // ── Layouts ──────────────────────────────────────────────────────────────────
-import MainLayout   from "@/layouts/MainLayout";
-import AuthLayout   from "@/layouts/AuthLayout";
-import UserLayout   from "@/layouts/UserLayout";
-import AdminLayout  from "@/layouts/AdminLayout";
+import MainLayout from "@/layouts/MainLayout";
+import AuthLayout from "@/layouts/AuthLayout";
+import UserLayout from "@/layouts/UserLayout";
+import AdminLayout from "@/layouts/AdminLayout";
 import ClientLayout from "@/layouts/ClientLayout";
 
 // ── Public pages ─────────────────────────────────────────────────────────────
-const Home            = lazy(() => import("@/features/posts/pages/homePage"));
-const PostDetail      = lazy(() => import("@/features/posts/components/PostDetail"));
-const PostPage        = lazy(() => import("@/features/posts/pages/postPage"));
+const Home = lazy(() => import("@/features/posts/pages/homePage"));
+const CategoryPage = lazy(() => import("@/features/posts/pages/CategoryPage"));
+const PostDetail = lazy(() => import("@/features/posts/components/PostDetail"));
+const PostPage = lazy(() => import("@/features/posts/pages/postPage"));
 const UserProfileView = lazy(() => import("@/features/users/pages/UserProfileViewPage"));
-const PromoteAccount  = lazy(() => import("@/features/promotions/pages/promoteAccount"));
-const ReviewsPage     = lazy(() => import("@/features/reviews/pages/ReviewsPage"));
+const PromoteAccount = lazy(() => import("@/features/promotions/pages/promoteAccount"));
+const ReviewsPage = lazy(() => import("@/features/reviews/pages/ReviewsPage"));
 const PlatformUpdates = lazy(() => import("@/features/updates/pages/PlatformUpdatesPage"));
-const FAQPage         = lazy(() => import("@/features/admin/pages/FAQPage"));
-const ContactPage     = lazy(() => import("@/features/admin/pages/ContactPage"));
-const TermsOfUsePage  = lazy(() => import("@/features/admin/pages/policies/TermsOfUsePage"));
-const PrivacyPolicy   = lazy(() => import("@/features/admin/pages/policies/PrivacyPolicyPage"));
+const FAQPage = lazy(() => import("@/features/admin/pages/FAQPage"));
+const ContactPage = lazy(() => import("@/features/admin/pages/ContactPage"));
+const TermsOfUsePage = lazy(() => import("@/features/company/pages/TermsOfUsePage"));
+const PrivacyPolicy = lazy(() => import("@/features/company/pages/PrivacyPolicyPage"));
+const BecomeAClientPage = lazy(() => import("@/features/company/pages/BecomeAClientPage"));
+const BecomeAProviderPage = lazy(() => import("@/features/company/pages/BecomeAProviderPage"));
+const CreditsHowItWorksPage = lazy(() => import("@/features/company/pages/CreditsHowItWorksPage"));
+const CommunityGuidelinesPage = lazy(() => import("@/features/company/pages/CommunityGuidelinesPage"));
+const ReviewIncentivesPage = lazy(() => import("@/features/company/pages/ReviewIncentivesPage"));
+const ReferralsPage = lazy(() => import("@/features/company/pages/ReferralsPage"));
+const ReferralLandingPage = lazy(() => import("@/features/company/components/referrals/pages/ReferralLandingPage"));
+
 
 // ── Auth pages ────────────────────────────────────────────────────────────────
-const SignIn       = lazy(() => import("@/features/auth/pages/SignInPage"));
-const SignUp       = lazy(() => import("@/features/auth/pages/signUpPage"));
-const ForgotPass   = lazy(() => import("@/features/auth/pages/forgotPassPage"));
-const ResetPassword= lazy(() => import("@/features/auth/pages/resetPasswordPage"));
-const Signout      = lazy(() => import("@/features/auth/pages/SignoutPage"));
+const SignIn = lazy(() => import("@/features/auth/pages/SignInPage"));
+const SignUp = lazy(() => import("@/features/auth/pages/signUpPage"));
+const ForgotPass = lazy(() => import("@/features/auth/pages/forgotPassPage"));
+const ResetPassword = lazy(() => import("@/features/auth/pages/resetPasswordPage"));
+const Signout = lazy(() => import("@/features/auth/pages/SignoutPage"));
 
 // ── User pages ────────────────────────────────────────────────────────────────
-const UserDashboard      = lazy(() => import("@/features/users/pages/dashboard"));
-const SavedPostsPage     = lazy(() => import("@/features/users/pages/SavedPostsPage"));
-const LikedPostsPage     = lazy(() => import("@/features/users/pages/LikedPostsPage"));
-const UserProfileSettings= lazy(() => import("@/features/users/pages/UserProfileSettings"));
-const UserMessages       = lazy(() => import("@/features/users/pages/UserMessages"));
-const ProfilePage        = lazy(() => import("@/features/users/pages/ProfilePage"));
-const UserActivity       = lazy(() => import("@/features/users/pages/UserActivity"));
+const UserDashboard = lazy(() => import("@/features/users/pages/dashboard"));
+const SavedPostsPage = lazy(() => import("@/features/users/pages/SavedPostsPage"));
+const LikedPostsPage = lazy(() => import("@/features/users/pages/LikedPostsPage"));
+const UserProfileSettings = lazy(() => import("@/features/users/pages/UserProfileSettings"));
+const UserMessages = lazy(() => import("@/features/users/pages/UserMessages"));
+const ProfilePage = lazy(() => import("@/features/users/pages/ProfilePage"));
+const UserActivity = lazy(() => import("@/features/users/pages/UserActivity"));
+const UserMilestonesPage = lazy(() => import("@/features/users/pages/UserMilestonesPage"));
+const UserReferralsPage = lazy(() => import("@/features/users/pages/UserReferralsPage"));
 
 // ── Admin pages ───────────────────────────────────────────────────────────────
-const AdminDashboard      = lazy(() => import("@/features/admin/pages/dashboard"));
-const AdminAnalytics      = lazy(() => import("@/features/admin/pages/AdminAnalytics"));
+const AdminDashboard = lazy(() => import("@/features/admin/pages/dashboard"));
+const AdminAnalytics = lazy(() => import("@/features/admin/pages/AdminAnalytics"));
 const AdminUserManagement = lazy(() => import("@/features/admin/pages/AdminUserManagement"));
-const AdminMessages       = lazy(() => import("@/features/admin/pages/AdminMessages"));
-const AdminSettings       = lazy(() => import("@/features/admin/pages/AdminSettings"));
+const AdminMessages = lazy(() => import("@/features/admin/pages/AdminMessages"));
+const AdminSettings = lazy(() => import("@/features/admin/pages/AdminSettings"));
 const AdminCreateUserForm = lazy(() => import("@/features/admin/pages/AdminCreateUserForm"));
-const AdminNotifications  = lazy(() => import("@/features/admin/pages/AdminNotificationsPage"));
-const AdminBanners        = lazy(() => import("@/features/admin/pages/AdminBannersPage"));
-const AdminDiscounts      = lazy(() => import("@/features/admin/pages/AdminDiscountsPage"));
-const AdminEmailUsers     = lazy(() => import("@/features/admin/pages/AdminEmailUsersPage"));
+const AdminNotifications = lazy(() => import("@/features/admin/pages/AdminNotificationsPage"));
+const AdminBanners = lazy(() => import("@/features/admin/pages/AdminBannersPage"));
+const AdminDiscounts = lazy(() => import("@/features/admin/pages/AdminDiscountsPage"));
+const AdminEmailUsers = lazy(() => import("@/features/admin/pages/AdminEmailUsersPage"));
 const AdminCreditRequests = lazy(() => import("@/features/admin/pages/AdminCreditRequestsPage"));
 const AdminCreditPackages = lazy(() => import("@/features/admin/pages/AdminCreditPackagesPage"));
-const AdminFAQPage        = lazy(() => import("@/features/admin/pages/AdminFAQPage"));
+const AdminFAQPage = lazy(() => import("@/features/admin/pages/AdminFAQPage"));
 const AdminCategoriesPage = lazy(() => import("@/features/admin/pages/AdminCategoriesPage"));
-const UserNotifications   = lazy(() => import("@/features/users/pages/UserNotificationsPage"));
-const ClientDashboard     = lazy(() => import("@/features/clients/pages/ClientDashboard"));
-const ClientProfilePage   = lazy(() => import("@/features/clients/pages/ClientProfilePage"));
-const ClientCreditsPage   = lazy(() => import("@/features/clients/pages/ClientCreditsPage"));
+const AdminMilestonesPage = lazy(() => import("@/features/admin/pages/AdminMilestonesPage"));
+const UserNotifications = lazy(() => import("@/features/users/pages/UserNotificationsPage"));
+const ClientDashboard = lazy(() => import("@/features/clients/pages/ClientDashboard"));
+const ClientProfilePage = lazy(() => import("@/features/clients/pages/ClientProfilePage"));
+const ClientCreditsPage = lazy(() => import("@/features/clients/pages/ClientCreditsPage"));
 const ClientNotifications = lazy(() => import("@/features/clients/pages/ClientNotificationsPage"));
+const MilestonesPage = lazy(() => import("@/features/company/pages/MilestonesPage"));
 
 // ── Shared pages ──────────────────────────────────────────────────────────────
 const NotFoundPage = lazy(() => import("@/shared/pages/NotFoundPage"));
@@ -91,19 +104,33 @@ const router = createBrowserRouter([
   {
     element: <MainLayout />,
     children: [
-      { path: "/",                    element: <Home /> },
-      { path: "/home",                element: <Navigate to="/" replace /> },
-      { path: "/post",                element: <ProviderOnlyRoute><PostPage /></ProviderOnlyRoute> },
-      { path: "/posts/:postId",       element: <PostDetail /> },
-      { path: "/user/:userId",        element: <UserProfileView /> },
-      { path: "/profile/:username",   element: <ProfilePage /> },
-      { path: "/promote",             element: <PromoteAccount /> },
-      { path: "/reviews/:userId",     element: <ReviewsPage /> },
-      { path: "/platform-updates",    element: <PlatformUpdates /> },
-      { path: "/faq",                 element: <FAQPage /> },
-      { path: "/contact",             element: <ContactPage /> },
-      { path: "/terms-policy",        element: <TermsOfUsePage /> },
-      { path: "/privacy-policy",      element: <PrivacyPolicy /> },
+      { path: "/", element: <Home /> },
+      { path: "/category/:categoryName", element: <CategoryPage /> },
+      { path: "/home", element: <Navigate to="/" replace /> },
+      { path: "/post", element: <ProviderOnlyRoute><PostPage /></ProviderOnlyRoute> },
+      { path: "/posts/:postId", element: <PostDetail /> },
+      { path: "/user/:userId", element: <UserProfileView /> },
+      { path: "/user/:userId/:tab", element: <UserProfileView /> },
+      { path: "/profile/:username", element: <ProfilePage /> },
+      { path: "/profile/:username/:tab", element: <ProfilePage /> },
+      { path: "/promote", element: <PromoteAccount /> },
+      { path: "/reviews/:userId", element: <ReviewsPage /> },
+      { path: "/milestones", element: <MilestonesPage /> },
+      { path: "/platform-updates", element: <PlatformUpdates /> },
+      { path: "/faq", element: <FAQPage /> },
+      { path: "/contact", element: <ContactPage /> },
+      { path: "/terms-policy", element: <TermsOfUsePage /> },
+      { path: "/privacy-policy", element: <PrivacyPolicy /> },
+      { path: "/become-a-client", element: <BecomeAClientPage /> },
+      { path: "/become-a-provider", element: <BecomeAProviderPage /> },
+      { path: "/credits/how-it-works", element: <CreditsHowItWorksPage /> },
+      { path: "/community-guidelines", element: <CommunityGuidelinesPage /> },
+      { path: "/privacy-policy", element: <PrivacyPolicy /> },
+      { path: "/terms-of-use", element: <TermsOfUsePage /> },
+      { path: "/review-incentives", element: <ReviewIncentivesPage /> },
+      { path: "/referrals", element: <ReferralsPage /> },
+      { path: "/referral/:referralCode", element: <ReferralLandingPage /> }
+      
     ],
   },
 
@@ -111,11 +138,11 @@ const router = createBrowserRouter([
   {
     element: <AuthLayout />,
     children: [
-      { path: "/signin",                  element: <SignIn /> },
-      { path: "/signup",                  element: <SignUp /> },
-      { path: "/forgotpass",              element: <ForgotPass /> },
-      { path: "/reset-password/:token",   element: <ResetPassword /> },
-      { path: "/signout",                 element: <Signout /> },
+      { path: "/signin", element: <SignIn /> },
+      { path: "/signup", element: <SignUp /> },
+      { path: "/forgotpass", element: <ForgotPass /> },
+      { path: "/reset-password/:token", element: <ResetPassword /> },
+      { path: "/signout", element: <Signout /> },
     ],
   },
 
@@ -126,14 +153,17 @@ const router = createBrowserRouter([
       {
         element: <UserLayout />,
         children: [
-          { path: "/user/dashboard",       element: <UserDashboard /> },
-          { path: "/user/saved-posts",      element: <SavedPostsPage /> },
-          { path: "/user/profile",          element: <UserProfileSettings /> },
-          { path: "/user/messages",         element: <UserMessages /> },
-          { path: "/user/profilepage",      element: <ProfilePage /> },
-          { path: "/user/activity",         element: <UserActivity /> },
-          { path: "/user/notifications",    element: <UserNotifications /> },
-          { path: "/user/liked-posts",       element: <LikedPostsPage /> },
+          { path: "/user/dashboard", element: <UserDashboard /> },
+          { path: "/user/saved-posts", element: <SavedPostsPage /> },
+          { path: "/user/profile", element: <UserProfileSettings /> },
+          { path: "/user/messages", element: <UserMessages /> },
+          { path: "/user/profilepage", element: <ProfilePage /> },
+          { path: "/user/profilepage/:tab", element: <ProfilePage /> },
+          { path: "/user/activity", element: <UserActivity /> },
+          { path: "/user/notifications", element: <UserNotifications /> },
+          { path: "/user/liked-posts", element: <LikedPostsPage /> },
+          { path: "/user/milestones", element: <UserMilestonesPage /> },
+          { path: "/user/referrals", element: <UserReferralsPage /> },
         ],
       },
     ],
@@ -146,12 +176,13 @@ const router = createBrowserRouter([
       {
         element: <ClientLayout />,
         children: [
-          { path: "/client/dashboard",     element: <ClientDashboard /> },
-          { path: "/client/liked-posts",   element: <LikedPostsPage /> },
-          { path: "/client/messages",      element: <UserMessages /> },
-          { path: "/client/profile",       element: <ClientProfilePage /> },
+          { path: "/client/dashboard", element: <ClientDashboard /> },
+          { path: "/client/liked-posts", element: <LikedPostsPage /> },
+          { path: "/client/messages", element: <UserMessages /> },
+          { path: "/client/profile", element: <ClientProfilePage /> },
           { path: "/client/notifications", element: <ClientNotifications /> },
-          { path: "/client/credits",       element: <ClientCreditsPage /> },
+          { path: "/client/credits", element: <ClientCreditsPage /> },
+          { path: "/client/milestones", element: <UserMilestonesPage /> },
         ],
       },
     ],
@@ -164,20 +195,21 @@ const router = createBrowserRouter([
       {
         element: <AdminLayout />,
         children: [
-          { path: "/admin",                element: <AdminDashboard /> },
-          { path: "/admin/analytics",       element: <AdminAnalytics /> },
-          { path: "/admin/users",           element: <AdminUserManagement /> },
-          { path: "/admin/messages",        element: <AdminMessages /> },
-          { path: "/admin/settings",        element: <AdminSettings /> },
-          { path: "/admin/create-user",     element: <AdminCreateUserForm /> },
-          { path: "/admin/notifications",   element: <AdminNotifications /> },
-          { path: "/admin/banners",          element: <AdminBanners /> },
-          { path: "/admin/discounts",        element: <AdminDiscounts /> },
-          { path: "/admin/email-users",      element: <AdminEmailUsers /> },
-          { path: "/admin/credit-requests",  element: <AdminCreditRequests /> },
-          { path: "/admin/credit-packages",  element: <AdminCreditPackages /> },
-          { path: "/admin/faqs",             element: <AdminFAQPage /> },
-          { path: "/admin/categories",       element: <AdminCategoriesPage /> },
+          { path: "/admin", element: <AdminDashboard /> },
+          { path: "/admin/analytics", element: <AdminAnalytics /> },
+          { path: "/admin/users", element: <AdminUserManagement /> },
+          { path: "/admin/messages", element: <AdminMessages /> },
+          { path: "/admin/settings", element: <AdminSettings /> },
+          { path: "/admin/create-user", element: <AdminCreateUserForm /> },
+          { path: "/admin/notifications", element: <AdminNotifications /> },
+          { path: "/admin/banners", element: <AdminBanners /> },
+          { path: "/admin/discounts", element: <AdminDiscounts /> },
+          { path: "/admin/email-users", element: <AdminEmailUsers /> },
+          { path: "/admin/credit-requests", element: <AdminCreditRequests /> },
+          { path: "/admin/credit-packages", element: <AdminCreditPackages /> },
+          { path: "/admin/faqs", element: <AdminFAQPage /> },
+          { path: "/admin/categories", element: <AdminCategoriesPage /> },
+          { path: "/admin/milestones", element: <AdminMilestonesPage /> },
         ],
       },
     ],
@@ -195,11 +227,11 @@ const router = createBrowserRouter([
 
 export function AppGate() {
   const serverReady = useServerReady();
-  const [bannerDismissed, setBannerDismissed]           = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const [emailBannerDismissed, setEmailBannerDismissed] = useState(false);
-  const [issueDismissed, setIssueDismissed]             = useState(false);
-  const [countdown, setCountdown]                       = useState(80);
-  const [emailEnabled, setEmailEnabled]                 = useState(true);
+  const [issueDismissed, setIssueDismissed] = useState(false);
+  const [countdown, setCountdown] = useState(80);
+  const [emailEnabled, setEmailEnabled] = useState(true);
 
   // Fetch email enabled state from public settings (no auth needed)
   useEffect(() => {
@@ -308,7 +340,7 @@ export function AppGate() {
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 text-sm">
             <p className="pr-2">
               <strong>Note:</strong> Email functionality is temporarily paused due to a security incident. No user data has been impacted.
-During this time, users will not receive automated emails such as welcome messages, password reset emails, or platform updates. We are actively working on restoring email services and implementing additional security measures to help prevent this from happening again.
+              During this time, users will not receive automated emails such as welcome messages, password reset emails, or platform updates. We are actively working on restoring email services and implementing additional security measures to help prevent this from happening again.
             </p>
             <button
               type="button"

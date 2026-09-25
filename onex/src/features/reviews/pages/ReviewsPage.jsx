@@ -1,220 +1,197 @@
-import { useState, useContext, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { UserContext } from "@/context/UserContext";
-import api from "@/shared/utils/api";
+import {
+  ArrowLeft,
+  MessageSquare,
+  ShieldCheck,
+} from "lucide-react";
+
+import ReviewsPanel from "@/features/reviews/components/ReviewsPanel";
 import { setSEO } from "@/shared/utils/seo";
 
-const reviewsInFlightByUserId = new Map();
-
 export default function ReviewsPage() {
-  const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const { userId: targetUserId } = useParams();
 
-  const handleReturnToPost = () => {
-    navigate("/home");
+  const [reviewCount, setReviewCount] = useState(0);
+  const [targetUsername, setTargetUsername] =
+    useState("this user");
+
+  // ─────────────────────────────────────────────────────────────
+  // NAVIGATION
+  // ─────────────────────────────────────────────────────────────
+
+  const handleReturnToProfile = () => {
+    if (!targetUserId) return;
+
+    navigate(`/user/${targetUserId}`);
   };
 
-  const currentUserId = useMemo(() => user?._id || user?.id || "", [user]);
+  const handlePanelMeta = ({ count, targetUsername: username }) => {
+    setReviewCount(count);
+    setTargetUsername(username);
 
-  const [reviewText, setReviewText] = useState("");
-  const [reviews, setReviews] = useState([]);
-  const [targetUsername, setTargetUsername] = useState("this user");
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState("");
-  const [posting, setPosting] = useState(false);
-  const [deletingReviewId, setDeletingReviewId] = useState("");
-
-  useEffect(() => {
-    const fetchReviews = async () => {
-      if (!targetUserId) {
-        setLoading(false);
-        setFetchError("Missing user id for reviews.");
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setFetchError("");
-        let request = reviewsInFlightByUserId.get(targetUserId);
-        if (!request) {
-          request = api
-            .get(`/reviews/${targetUserId}`)
-            .then((res) => res.data)
-            .finally(() => {
-              reviewsInFlightByUserId.delete(targetUserId);
-            });
-          reviewsInFlightByUserId.set(targetUserId, request);
-        }
-
-        const data = await request;
-        setReviews(Array.isArray(data?.reviews) ? data.reviews : []);
-        const resolvedUsername = data?.targetUser?.username || "this user";
-        setTargetUsername(resolvedUsername);
-        if (resolvedUsername && resolvedUsername !== "this user") {
-          setSEO(
-            `Client Reviews for ${resolvedUsername} | Mystery Mansion`,
-            `Read verified client reviews for ${resolvedUsername} on Mystery Mansion. See honest feedback from real clients.`
-          );
-        }
-      } catch (err) {
-        setFetchError(err?.response?.data?.error || "Failed to load reviews.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReviews();
-  }, [targetUserId]);
-
-  const handleSubmitReview = async () => {
-    const text = reviewText.trim();
-    if (!text || !targetUserId || !user) return;
-
-    try {
-      setPosting(true);
-      const { data } = await api.post(`/reviews/${targetUserId}`, { text });
-      if (data?.review) {
-        setReviews((prev) => [data.review, ...prev]);
-      }
-      setReviewText("");
-    } catch (err) {
-      setFetchError(err?.response?.data?.error || "Failed to post review.");
-    } finally {
-      setPosting(false);
+    if (username && username !== "this user") {
+      setSEO(
+        `Client Reviews for ${username} | Mystery Mansion`,
+        `Read verified client reviews for ${username} on Mystery Mansion. See honest feedback from real clients.`
+      );
     }
   };
 
-  const handleDeleteReview = async (reviewId) => {
-    if (!targetUserId || !reviewId) return;
-
-    try {
-      setDeletingReviewId(reviewId);
-      await api.delete(`/reviews/${targetUserId}/${reviewId}`);
-      setReviews((prev) => prev.filter((rev) => String(rev._id) !== String(reviewId)));
-    } catch (err) {
-      setFetchError(err?.response?.data?.error || "Failed to delete review.");
-    } finally {
-      setDeletingReviewId("");
-    }
-  };
-
-  const canDeleteReview = (review) => {
-    if (!currentUserId) return false;
-    const authorId = String(review?.authorUserId?._id || review?.authorUserId || "");
-    const targetId = String(review?.targetUserId || targetUserId || "");
-    return currentUserId === authorId || currentUserId === targetId;
-  };
+  // ─────────────────────────────────────────────────────────────
+  // PAGE
+  // ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="px-4 py-6 max-w-4xl mx-auto pb-36 sm:pb-10">
-      {/* Header */}
-      <h1 className="text-2xl md:text-3xl font-bold mb-2 text-white">
-        {targetUsername && `Reviews for @${targetUsername}`}
-      </h1>
+    <main className="min-h-screen bg-gray-50 pb-32">
 
-      {/* Description / login prompt */}
-      <p className="text-pink-500 mb-6">
-        {user
-          ? `Logged in as @${user.username}`
-          : "Login or Sign-up to leave a review."}
-      </p>
+      {/* ═══════════════════════════════════════════════════════
+          FULL WIDTH HERO
+      ═══════════════════════════════════════════════════════ */}
 
-      {fetchError && (
-        <p className="text-red-400 text-sm mb-4">{fetchError}</p>
-      )}
+      <section className="relative overflow-hidden bg-black">
 
-      {/* Review input section */}
-      {user && (
-        <div className="mb-6 bg-white rounded-xl shadow p-4">
-          <textarea
-            className="w-full resize-none border border-gray-300 rounded-md p-3 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-pink-400"
-            rows={3}
-            placeholder="What's your review?"
-            value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
-          />
-          <div className="flex justify-end mt-2">
-            <button
-              onClick={handleSubmitReview}
-              disabled={!reviewText.trim() || posting}
-              className="bg-pink-600 text-white px-4 py-2 rounded-md text-sm md:text-base hover:bg-pink-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {posting ? "Posting..." : "Post"}
-            </button>
-          </div>
-        </div>
-      )}
+        {/* Decorative gradients */}
 
-      {!user && (
-        <div className="mb-6 bg-white/90 rounded-xl shadow p-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-          <p className="text-sm text-gray-700">You must be logged in to leave a review.</p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => navigate("/signin")}
-              className="bg-pink-600 text-white px-3 py-2 rounded-md text-sm hover:bg-pink-700 transition"
-            >
-              Login
-            </button>
-            <button
-              onClick={() => navigate("/signup")}
-              className="bg-gray-800 text-white px-3 py-2 rounded-md text-sm hover:bg-black transition"
-            >
-              Sign-up
-            </button>
-          </div>
-        </div>
-      )}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-pink-600/30 via-transparent to-yellow-400/20" />
 
-      {/* Reviews Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {loading ? (
-          <p className="text-gray-400 col-span-full">Loading reviews...</p>
-        ) : reviews.length === 0 ? (
-          <p className="text-gray-500 col-span-full">
-            No reviews for {targetUsername} yet, be the first one to leave one
-          </p>
-        ) : (
-          reviews.map((rev) => (
-            <div
-              key={rev._id}
-              className="relative bg-white rounded-lg p-4 pb-10 shadow hover:shadow-md transition"
-            >
-              <h3 className="font-semibold text-gray-800">@{rev?.authorUserId?.username || "User"}</h3>
-              <p className="text-gray-700 text-sm mt-1 break-words">{rev.text}</p>
-              <p className="text-gray-400 text-xs mt-2">
-                {new Date(rev.createdAt).toLocaleString()}
+        <div className="pointer-events-none absolute -right-32 -top-32 h-72 w-72 rounded-full bg-pink-500/20 blur-3xl" />
+
+        <div className="pointer-events-none absolute -left-32 bottom-0 h-64 w-64 rounded-full bg-yellow-400/10 blur-3xl" />
+
+        <div className="relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+
+          {/* Back */}
+
+          <button
+            type="button"
+            onClick={handleReturnToProfile}
+            className="mb-8 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-gray-300 backdrop-blur-sm transition-all hover:border-pink-500/50 hover:bg-pink-500/10 hover:text-white"
+          >
+            <ArrowLeft size={16} />
+
+            Back to profile
+          </button>
+
+          {/* Hero content */}
+
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+
+            <div className="max-w-3xl">
+
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-pink-500/30 bg-pink-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-pink-300">
+                <MessageSquare size={14} />
+
+                Community Reviews
+              </div>
+
+              <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+                Reviews for{" "}
+                <span className="text-pink-400">
+                  @{targetUsername}
+                </span>
+              </h1>
+
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-400 sm:text-base">
+                See what members of the Mystery
+                Mansion community have shared about
+                this profile.
               </p>
 
-              {canDeleteReview(rev) && (
-                <button
-                  onClick={() => handleDeleteReview(rev._id)}
-                  disabled={deletingReviewId === rev._id}
-                  className="absolute bottom-3 right-3 text-xs px-2 py-1 rounded bg-rose-100 text-rose-700 hover:bg-rose-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {deletingReviewId === rev._id ? "Deleting..." : "Delete"}
-                </button>
-              )}
             </div>
-          ))
-        )}
+
+            {/* Review count */}
+
+            <div className="shrink-0 rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm sm:min-w-[190px]">
+
+              <div className="flex items-center gap-3">
+
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-pink-500/15 text-pink-400">
+                  <MessageSquare size={20} />
+                </div>
+
+                <div>
+                  <p className="text-2xl font-bold text-white">
+                    {reviewCount}
+                  </p>
+
+                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                    {reviewCount === 1
+                      ? "Review"
+                      : "Reviews"}
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+          CONTENT
+      ═══════════════════════════════════════════════════════ */}
+
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+
+        <div className="-mt-6 relative z-10">
+          <ReviewsPanel
+            targetUserId={targetUserId}
+            onMeta={handlePanelMeta}
+          />
+        </div>
+
+
+        {/* ═════════════════════════════════════════════════════
+            LOWER INFORMATION SECTION
+        ═════════════════════════════════════════════════════ */}
+
+        <section className="mt-10">
+
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-yellow-50 text-yellow-600">
+                <ShieldCheck size={22} />
+              </div>
+
+              <div className="flex-1">
+
+                <h3 className="font-semibold text-gray-900">
+                  Community-driven profiles
+                </h3>
+
+                <p className="mt-1 text-sm leading-5 text-gray-500">
+                  Reviews help members understand
+                  experiences shared by the Mystery
+                  Mansion community.
+                </p>
+
+              </div>
+
+              <button
+                type="button"
+                onClick={
+                  handleReturnToProfile
+                }
+                className="shrink-0 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600"
+              >
+                View Profile
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
       </div>
 
-      <div className="fixed bottom-4 left-4 right-4 z-40 sm:bottom-6 sm:right-6 sm:left-auto flex flex-col gap-2 sm:items-end">
-        <button
-          onClick={() => navigate(`/user/${targetUserId}`)}
-          className="w-full sm:w-auto bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-black transition"
-        >
-          Return to profile
-        </button>
-
-        <button
-          onClick={handleReturnToPost}
-          className="w-full sm:w-auto bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-900 transition"
-        >
-          Return to post
-        </button>
-      </div>
-    </div>
+    </main>
   );
 }

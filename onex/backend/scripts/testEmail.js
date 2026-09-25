@@ -15,6 +15,8 @@ import sendResetEmail from '../src/common/utils/sendResetEmail.js';
 import { sendAccountDeletionEmail } from '../src/common/utils/sendAccountDeletionEmail.js';
 import { sendPlatformUpdateEmail } from '../src/common/utils/sendPlatformUpdateEmail.js';
 import { sendVerificationCodeEmail } from '../src/common/services/emailService.js';
+import { sendAccountActivityEmail, sendAccountInactivityEmail } from '../src/common/utils/sendAccountActivityEmail.js';
+import { sendMilestoneAchievedEmail } from '../src/common/utils/sendMilestoneAchievedEmail.js';
 
 const to   = process.argv[2];
 const type = process.argv[3] || 'welcome-provider';
@@ -49,6 +51,44 @@ try {
         subject: 'Test Platform Update',
         updateTitle: 'Test Update',
         updateBody: '<p style="color:#c8c8c8;">This is a test platform update email.</p>',
+      });
+      break;
+    case 'account-activity-like':
+      await sendAccountActivityEmail({
+        to,
+        username: 'TestProvider',
+        type: 'post_liked',
+        message: 'TestFan liked your post.',
+        ctaUrl: 'https://mysterymansion.app/posts/test123',
+      });
+      break;
+    case 'account-activity-comment':
+      await sendAccountActivityEmail({
+        to,
+        username: 'TestProvider',
+        type: 'new_comment',
+        message: 'TestFan commented on your post: "Looking great!"',
+        ctaUrl: 'https://mysterymansion.app/posts/test123',
+      });
+      break;
+    case 'account-activity-review':
+      await sendAccountActivityEmail({
+        to,
+        username: 'TestProvider',
+        type: 'new_review',
+        message: 'TestFan left you a review: "Amazing experience, highly recommend!"',
+        ctaUrl: 'https://mysterymansion.app/user/test123',
+      });
+      break;
+    case 'account-inactivity':
+      await sendAccountInactivityEmail({ to, username: 'TestProvider', days: 30 });
+      break;
+    case 'milestone':
+      await sendMilestoneAchievedEmail({
+        to,
+        username: 'TestProvider',
+        milestoneTitle: 'Stay Active',
+        milestoneDescription: 'Publish at least 3 posts to stay visible on the platform.',
       });
       break;
     default:

@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect } from 'react';
-import { Menu, Bell, Search, Settings, User, ImageIcon, Crown, ChevronDown } from 'lucide-react';
+import { Menu, Bell, Search, Settings, User, ImageIcon, Crown, ChevronDown, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/context/useUser';
 import useNotifications from '@/shared/hooks/useNotifications';
 import NotificationModal from '@/shared/components/Notifications/NotificationModal';
+import api from '@/shared/utils/api';
 
 const PROFILE_MENU = [
   { label: 'Profile Settings',     icon: ImageIcon, to: '/admin/settings' },
@@ -11,6 +12,19 @@ const PROFILE_MENU = [
   { label: 'Account Settings',     icon: Settings,  to: '/admin/settings' },
   { label: 'Promotion Settings',   icon: Crown,     to: '/admin/users' },
 ];
+
+const SEARCH_TYPE_LABELS = {
+  user: 'Users',
+  post: 'Posts',
+  review: 'Reviews',
+  banner: 'Banners',
+  discount: 'Discounts',
+  promoCode: 'Promo Codes',
+  creditRequest: 'Credit Requests',
+  creditPackage: 'Credit Packages',
+  faq: 'FAQs',
+  category: 'Categories',
+};
 
 export default function AdminDashboardHeader({
   title,
@@ -23,6 +37,12 @@ export default function AdminDashboardHeader({
   const [bellOpen, setBellOpen]         = useState(false);
   const dropdownRef = useRef(null);
   const bellRef     = useRef(null);
+
+  const [searchQuery, setSearchQuery]     = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchOpen, setSearchOpen]       = useState(false);
+  const [searching, setSearching]         = useState(false);
+  const searchRef = useRef(null);
 
   const { notifications, unreadCount, loading, markAllRead, markOneRead } =
     useNotifications('admin');
@@ -38,10 +58,41 @@ export default function AdminDashboardHeader({
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // Debounced global admin search
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+
+    setSearching(true);
+    const timeout = setTimeout(() => {
+      api
+        .get('/admin/search', { params: { q } })
+        .then((res) => setSearchResults(res.data?.results || []))
+        .catch(() => setSearchResults([]))
+        .finally(() => setSearching(false));
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
+  const handleResultClick = (result) => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    navigate(result.path);
+  };
 
   const handleMenuClick = (item) => {
     setDropdownOpen(false);
@@ -95,13 +146,71 @@ export default function AdminDashboardHeader({
         {/* Right — search + bell + profile */}
         <div className="flex items-center gap-2 shrink-0">
           {/* Search — desktop only */}
-          <div className="hidden md:flex items-center gap-2 min-w-[220px] lg:min-w-[280px] rounded-2xl border border-neutral-800 bg-neutral-900 px-3 py-2">
-            <Search size={14} className="text-neutral-500 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="bg-transparent outline-none w-full text-sm text-white placeholder:text-neutral-500"
-            />
+          <div className="relative hidden md:block" ref={searchRef}>
+            <div className="flex items-center gap-2 min-w-[220px] lg:min-w-[280px] rounded-2xl border border-neutral-800 bg-neutral-900 px-3 py-2">
+              {searching ? (
+                <Loader2 size={14} className="text-neutral-500 shrink-0 animate-spin" />
+              ) : (
+                <Search size={14} className="text-neutral-500 shrink-0" />
+              )}
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSearchOpen(true);
+                }}
+                onFocus={() => setSearchOpen(true)}
+                placeholder="Search users, posts, banners..."
+                className="bg-transparent outline-none w-full text-sm text-white placeholder:text-neutral-500"
+              />
+            </div>
+
+            {searchOpen && searchQuery.trim().length >= 2 && (
+              <div
+                className="
+                  absolute right-0 top-full mt-2
+                  w-80
+                  max-h-96 overflow-y-auto
+                  bg-neutral-900
+                  border border-neutral-800
+                  rounded-2xl
+                  shadow-xl shadow-black/40
+                  z-50
+                "
+              >
+                {searching && searchResults.length === 0 ? (
+                  <p className="px-4 py-4 text-sm text-neutral-500">Searching...</p>
+                ) : searchResults.length === 0 ? (
+                  <p className="px-4 py-4 text-sm text-neutral-500">No results for "{searchQuery.trim()}"</p>
+                ) : (
+                  Object.entries(SEARCH_TYPE_LABELS).map(([type, groupLabel]) => {
+                    const group = searchResults.filter((r) => r.type === type);
+                    if (group.length === 0) return null;
+                    return (
+                      <div key={type} className="py-2 border-b border-neutral-800 last:border-b-0">
+                        <p className="px-4 pb-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                          {groupLabel}
+                        </p>
+                        {group.map((result) => (
+                          <button
+                            key={`${result.type}-${result.id}`}
+                            type="button"
+                            onClick={() => handleResultClick(result)}
+                            className="w-full flex flex-col items-start px-4 py-2 text-left hover:bg-neutral-800 transition-colors"
+                          >
+                            <span className="text-sm text-white truncate w-full">{result.label}</span>
+                            {result.sublabel && (
+                              <span className="text-xs text-neutral-500 truncate w-full">{result.sublabel}</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </div>
 
           {/* Bell */}

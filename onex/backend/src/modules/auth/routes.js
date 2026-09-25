@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import User from "../../models/User.js";
+import Referral from "../../models/Referral.js";
 import env from "../../config/env.js";
 import sendWelcomeEmail from "../../common/utils/sendWelcomeEmail.js";
 import sendResetEmail from "../../common/utils/sendResetEmail.js";
@@ -35,7 +36,7 @@ const strongPasswordRegex =
 /* -------------------------- 🔑 Signup -------------------------- */
 router.post("/signup", async (req, res) => {
   try {
-    const { username, email, password, accountType, emailVerificationToken } = req.body;
+    const { username, email, password, accountType, emailVerificationToken, referralCode } = req.body;
     const normalizedUsername = normalizeUsername(username || "");
     const normalizedEmail = (email || "").trim().toLowerCase();
 
@@ -81,15 +82,39 @@ router.post("/signup", async (req, res) => {
 
     const resolvedAccountType = ["provider", "client"].includes(accountType) ? accountType : "provider";
 
+    // Resolve the referral link (if any) before creating the account so the
+    // new user can be linked to the inviting provider in one write.
+    let referral = null;
+    const normalizedReferralCode = String(referralCode || "").trim();
+    if (normalizedReferralCode) {
+      referral = await Referral.findOne({ code: normalizedReferralCode });
+    }
+
     const user = new User({
       username: normalizedUsername,
       email: normalizedEmail,
       password: hashedPassword,
       role: "user",
       accountType: resolvedAccountType,
+      referredBy: referral?.providerId || null,
+      referralCodeUsed: referral ? normalizedReferralCode : "",
     });
 
     await user.save();
+
+    if (referral) {
+      referral.signupCount += 1;
+      referral.save().catch(() => {});
+
+      createNotification({
+        audience: 'user',
+        type: 'referral_signup',
+        title: 'Your referral signed up! 🎉',
+        message: `${normalizedUsername} just created an account using your referral link.`,
+        userId: referral.providerId,
+        meta: { referredUserId: user._id, username: normalizedUsername },
+      }).catch(() => {});
+    }
 
     if (user.role === "user") {
       await ensureUserAdminConversation(user._id);

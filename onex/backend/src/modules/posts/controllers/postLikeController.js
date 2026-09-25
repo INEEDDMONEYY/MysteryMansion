@@ -1,7 +1,9 @@
 import PostLike from '../../../models/PostLike.js';
 import Post from '../../../models/Post.js';
 import User from '../../../models/User.js';
+import env from '../../../config/env.js';
 import { createNotification } from '../../notifications/notificationController.js';
+import { sendAccountActivityEmail } from '../../../common/utils/sendAccountActivityEmail.js';
 
 /**
  * POST /api/posts/:id/like
@@ -24,7 +26,10 @@ export async function toggleLike(req, res) {
       await PostLike.create({ userId, postId });
       // Notify post owner (skip self-likes)
       if (post.userId && String(post.userId) !== String(userId)) {
-        const liker = await User.findById(userId).select('username').lean();
+        const [liker, owner] = await Promise.all([
+          User.findById(userId).select('username').lean(),
+          User.findById(post.userId).select('email username status').lean(),
+        ]);
         const likerName = liker?.username || 'Someone';
         createNotification({
           audience: 'user',
@@ -34,6 +39,16 @@ export async function toggleLike(req, res) {
           userId: post.userId,
           meta: { postId: String(postId), likerId: String(userId) },
         }).catch(() => {});
+
+        if (owner?.email && owner.status !== 'suspended') {
+          sendAccountActivityEmail({
+            to: owner.email,
+            username: owner.username,
+            type: 'post_liked',
+            message: `${likerName} liked your post.`,
+            ctaUrl: `${env.CLIENT_URL}/posts/${postId}`,
+          }).catch((err) => console.error('❌ Post-liked email failed:', err.message));
+        }
       }
     }
 

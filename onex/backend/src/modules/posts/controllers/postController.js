@@ -1,10 +1,13 @@
 // backend/controllers/postController.js
 import Post from '../../../models/Post.js';
 import Comment from '../../../models/Comment.js';
+import User from '../../../models/User.js';
 import cloudinary from '../../../common/utils/cloudinary.js';
 import streamifier from 'streamifier';
+import env from '../../../config/env.js';
 import { normalizeState } from '../../../common/utils/stateNormalizer.js';
 import { createNotification } from '../../notifications/notificationController.js';
+import { sendAccountActivityEmail } from '../../../common/utils/sendAccountActivityEmail.js';
 
 const normalizeCategories = ({ categories, category }) => {
   const rawCategories = Array.isArray(categories)
@@ -102,6 +105,12 @@ export async function createPost(req, res) {
     });
 
     const savedPost = await newPost.save();
+
+    // Reset inactivity tracking now that the user has posted again.
+    await User.findByIdAndUpdate(req.user._id, {
+      lastPostAt: savedPost.createdAt,
+      lastInactivityEmailDays: 0,
+    }).catch((err) => console.error('❌ Failed to update lastPostAt:', err.message));
 
     const populatedPost = await Post.findById(savedPost._id).populate({
       path: 'userId',
@@ -315,14 +324,27 @@ export async function createPostComment(req, res) {
     // Notify the post owner (skip if they commented on their own post)
     const post = await Post.findById(postId).select('userId title').lean();
     if (post && String(post.userId) !== String(userId)) {
+      const commenterName = populated.userId?.username || 'Someone';
+      const commentPreview = `${text.slice(0, 80)}${text.length > 80 ? '…' : ''}`;
       createNotification({
         audience: 'user',
         type: 'new_comment',
         title: 'New Comment on Your Post',
-        message: `${populated.userId?.username || 'Someone'} commented: "${text.slice(0, 80)}${text.length > 80 ? '…' : ''}"`,
+        message: `${commenterName} commented: "${commentPreview}"`,
         userId: post.userId,
         meta: { postId, commentId: created._id, commenterId: userId },
       }).catch(() => {});
+
+      const owner = await User.findById(post.userId).select('email username status').lean();
+      if (owner?.email && owner.status !== 'suspended') {
+        sendAccountActivityEmail({
+          to: owner.email,
+          username: owner.username,
+          type: 'new_comment',
+          message: `${commenterName} commented on your post: "${commentPreview}"`,
+          ctaUrl: `${env.CLIENT_URL}/posts/${postId}`,
+        }).catch((err) => console.error('❌ New-comment email failed:', err.message));
+      }
     }
 
     return res.status(201).json(populated);

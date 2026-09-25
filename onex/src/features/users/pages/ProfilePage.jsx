@@ -3,9 +3,12 @@ import { useParams } from 'react-router-dom';
 import api from '@/shared/utils/api';
 import UserProfileView from './UserProfileViewPage';
 import { setSEO } from '@/shared/utils/seo';
+import { useUser } from '@/context/useUser';
 
 export default function ProfilePage({ userId = null, disableActionButtons = false }) {
   const { username } = useParams();
+  const { user: loggedInUser } = useUser();
+  const ownUserId = loggedInUser?._id || loggedInUser?.id || null;
 
   useEffect(() => {
     if (username) {
@@ -16,7 +19,7 @@ export default function ProfilePage({ userId = null, disableActionButtons = fals
     }
   }, [username]);
   const [resolvedUserId, setResolvedUserId] = useState('');
-  const [loading, setLoading] = useState(Boolean(!userId && username));
+  const [loading, setLoading] = useState(Boolean(!userId && (username || ownUserId)));
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -31,6 +34,13 @@ export default function ProfilePage({ userId = null, disableActionButtons = fals
       }
 
       if (!username) {
+        if (ownUserId) {
+          setResolvedUserId(String(ownUserId));
+          setLoading(false);
+          setError('');
+          return;
+        }
+
         setResolvedUserId('');
         setLoading(false);
         setError('No profile username provided.');
@@ -69,7 +79,7 @@ export default function ProfilePage({ userId = null, disableActionButtons = fals
     return () => {
       ignore = true;
     };
-  }, [userId, username]);
+  }, [userId, username, ownUserId]);
 
   const effectiveUserId = useMemo(
     () => String(userId || resolvedUserId || ''),
@@ -78,33 +88,22 @@ export default function ProfilePage({ userId = null, disableActionButtons = fals
 
   if (loading) {
     return (
-      <section className="w-full min-h-screen px-4 sm:px-6 lg:px-12 py-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-white rounded-lg shadow-md p-6 text-gray-500">Loading profile...</div>
-        </div>
+      <section className="flex min-h-screen w-full items-center justify-center bg-gray-100 px-4">
+        <div className="rounded-lg bg-white p-6 text-gray-500 shadow-md">Loading profile...</div>
       </section>
     );
   }
 
   if (!effectiveUserId) {
     return (
-      <section className="w-full min-h-screen px-4 sm:px-6 lg:px-12 py-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-white rounded-lg shadow-md p-6 text-red-600">
-            {error || 'Profile unavailable.'}
-          </div>
+      <section className="flex min-h-screen w-full items-center justify-center bg-gray-100 px-4">
+        <div className="rounded-lg bg-white p-6 text-red-600 shadow-md">
+          {error || 'Profile unavailable.'}
         </div>
       </section>
     );
   }
 
-  return (
-    <section className="w-full min-h-screen px-4 sm:px-6 lg:px-12 py-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-          <UserProfileView userId={effectiveUserId} disableActionButtons={disableActionButtons} />
-        </div>
-      </div>
-    </section>
-  );
+  // No extra width wrapper here — matches the direct /user/:userId route's full-width styling.
+  return <UserProfileView userId={effectiveUserId} disableActionButtons={disableActionButtons} />;
 }

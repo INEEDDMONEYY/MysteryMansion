@@ -7,7 +7,7 @@ export default function ReviewButton({ onClick, disabled = false }) {
         disabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700'
       }`}
     >
-      Escort Reviews
+      Reviews
     </button>
   );
 }

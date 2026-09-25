@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '@/context/useUser.jsx';
 import api from '@/shared/utils/api';
+import { getStoredReferralCode, clearStoredReferralCode } from '@/shared/utils/referral';
 
 export default function SignupForm({ accountType = 'client', verifiedEmail = '', verificationToken = '' }) {
   const [username, setUsername] = useState('');
@@ -45,7 +46,9 @@ export default function SignupForm({ accountType = 'client', verifiedEmail = '',
         role: 'user',
         accountType,
         emailVerificationToken: verificationToken,
+        referralCode: getStoredReferralCode(),
       });
+      clearStoredReferralCode();
       await login(verifiedEmail, password);
       if (accountType === 'client') navigate('/client/dashboard');
       else navigate('/user/dashboard');

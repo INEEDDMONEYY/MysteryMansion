@@ -9,7 +9,7 @@ export default function Footer() {
   return (
     <footer
       style={{ fontFamily: "'DM Sans', sans-serif" }}
-      className="bg-black text-white border-t border-gray-800 pt-10 pb-6 px-6 w-full"
+      className="bg-black text-white border-t border-gray-800 pt-10 pb-28 md:pb-6 px-6 w-full"
     >
       {/* Google Font import via style tag trick */}
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap');`}</style>
@@ -37,19 +37,39 @@ export default function Footer() {
               style={{ letterSpacing: "0.12em", fontSize: "0.65rem" }}
               className="text-pink-500 uppercase font-semibold tracking-widest"
             >
-              Platform Policies
+              Platform 
             </h3>
             <div className="flex flex-col gap-1.5 text-sm text-gray-400">
-              <Link to="/terms-policy" className="hover:text-pink-400 transition-colors duration-200">
-                Terms of Service
+              <Link to="/become-a-client" className="hover:text-pink-400 transition-colors duration-200">
+                Become An Client
               </Link>
-              <Link to="/privacy-policy" className="hover:text-pink-400 transition-colors duration-200">
-                Privacy Policy
+              <Link to="/become-a-provider" className="hover:text-pink-400 transition-colors duration-200">
+                Become An Provider
+              </Link>
+              <Link to="/credits/how-it-works" className="hover:text-pink-400 transition-colors duration-200">
+                Credits
+              </Link>
+              <Link to="/community-guidelines" className="hover:text-pink-400 transition-colors duration-200">
+                Community Guidelines
               </Link>
               <Link to="/faq" className="hover:text-pink-400 transition-colors duration-200">
                 FAQ
               </Link>
-              <span className="text-gray-600 cursor-default">Community Guidelines</span>
+              <Link to="/milestones" className="hover:text-pink-400 transition-colors duration-200">
+                Milestones
+              </Link>
+              <Link to="/privacy-policy" className="hover:text-pink-400 transition-colors duration-200">
+                Privacy Policy
+              </Link>
+              <Link to="/review-incentives" className="hover:text-pink-400 transition-colors duration-200">
+                Review Incentives
+              </Link>
+              <Link to="/referrals" className="hover:text-pink-400 transition-colors duration-200">
+                Referrals
+              </Link>
+              <Link to="/terms-policy" className="hover:text-pink-400 transition-colors duration-200">
+                Terms of Service
+              </Link>
             </div>
 
             {FEATURE_FLAGS.ENABLE_FOLLOW_US && (
