@@ -125,9 +125,9 @@ router.delete('/:targetUserId/:reviewId', authMiddleware, async (req, res) => {
 
     const requesterId = String(req.user?._id || '');
     const isAuthor = String(review.authorUserId) === requesterId;
-    const isTargetUser = String(review.targetUserId) === requesterId;
+    const isAdmin = req.user?.role === 'admin';
 
-    if (!isAuthor && !isTargetUser) {
+    if (!isAuthor && !isAdmin) {
       return res.status(403).json({ error: 'Not authorized to delete this review' });
     }
 

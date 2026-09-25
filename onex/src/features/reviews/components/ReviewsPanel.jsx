@@ -216,15 +216,11 @@ export default function ReviewsPanel({ targetUserId, onMeta }) {
         ""
     );
 
-    const targetId = String(
-      review?.targetUserId ||
-        targetUserId ||
-        ""
-    );
-
+    // Only the review's author or an admin may delete it — the reviewed
+    // provider should not be able to remove reviews left about them.
     return (
       currentUserId === authorId ||
-      currentUserId === targetId
+      user?.role === "admin"
     );
   };
 

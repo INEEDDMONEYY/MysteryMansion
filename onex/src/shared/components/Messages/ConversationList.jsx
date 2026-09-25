@@ -17,19 +17,15 @@ export default function ConversationList({
   conversations = [],
   selectedId,
   currentUserId,
-  readMap = {},
   onSelect,
   onNew,
   canNew = true,
   loading = false,
 }) {
-  // A conversation is "unread" when its lastMessage is newer than the stored read timestamp.
-  const isUnread = (conv) => {
-    if (!conv.lastMessage?.createdAt) return false;
-    const lastMsgTime = new Date(conv.lastMessage.createdAt).getTime();
-    const lastRead    = readMap[conv._id] ? new Date(readMap[conv._id]).getTime() : 0;
-    return lastMsgTime > lastRead;
-  };
+  // A conversation is "unread" based on server-truth Message.readBy counts (see
+  // GET /conversations), not client-side timestamps — those can drift out of sync
+  // due to client/server clock skew and cause the dot to reappear incorrectly.
+  const isUnread = (conv) => (conv.unreadCount || 0) > 0;
   return (
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
 

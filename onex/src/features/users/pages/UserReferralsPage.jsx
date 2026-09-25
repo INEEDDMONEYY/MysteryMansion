@@ -5,6 +5,7 @@ import {
 import { UserContext } from "@/context/UserContext";
 import api from "@/shared/utils/api";
 import { setSEO } from "@/shared/utils/seo";
+import { FEATURE_FLAGS } from "@/config/featureFlags";
 
 function StatCard({ label, value, icon: Icon, color }) {
   return (
@@ -139,39 +140,43 @@ export default function UserReferralsPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <StatCard label="Link Clicks" value={data?.clickCount ?? 0} icon={TrendingUp} color="bg-blue-500" />
-            <StatCard label="Client Signups" value={data?.signupCount ?? 0} icon={Gift} color="bg-emerald-500" />
-          </div>
-
-          {/* Referred users */}
-          <div className="bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl shadow-md overflow-hidden">
-            <div className="flex items-center gap-2 px-5 pt-5 pb-3">
-              <Users size={16} className="text-pink-500" />
-              <h2 className="text-sm font-semibold text-gray-900">Clients you've referred</h2>
-            </div>
-            {!data?.referredUsers?.length ? (
-              <div className="px-5 pb-6 text-sm text-gray-500">
-                No signups yet. Share your link to start building your referral activity.
+          {FEATURE_FLAGS.ENABLE_REFERRAL_ANALYTICS && (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <StatCard label="Link Clicks" value={data?.clickCount ?? 0} icon={TrendingUp} color="bg-blue-500" />
+                <StatCard label="Client Signups" value={data?.signupCount ?? 0} icon={Gift} color="bg-emerald-500" />
               </div>
-            ) : (
-              <ul className="divide-y divide-gray-100">
-                {data.referredUsers.map((u) => (
-                  <li key={u._id} className="flex items-center gap-3 px-5 py-3">
-                    <img
-                      src={u.profilePic || "/default-avatar.png"}
-                      alt={u.username}
-                      className="w-9 h-9 rounded-full object-cover bg-gray-200"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{u.username}</p>
-                      <p className="text-xs text-gray-500">Joined {fmtDate(u.createdAt)}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+
+              {/* Referred users */}
+              <div className="bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl shadow-md overflow-hidden">
+                <div className="flex items-center gap-2 px-5 pt-5 pb-3">
+                  <Users size={16} className="text-pink-500" />
+                  <h2 className="text-sm font-semibold text-gray-900">Clients you've referred</h2>
+                </div>
+                {!data?.referredUsers?.length ? (
+                  <div className="px-5 pb-6 text-sm text-gray-500">
+                    No signups yet. Share your link to start building your referral activity.
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-gray-100">
+                    {data.referredUsers.map((u) => (
+                      <li key={u._id} className="flex items-center gap-3 px-5 py-3">
+                        <img
+                          src={u.profilePic || "/default-avatar.png"}
+                          alt={u.username}
+                          className="w-9 h-9 rounded-full object-cover bg-gray-200"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate">{u.username}</p>
+                          <p className="text-xs text-gray-500">Joined {fmtDate(u.createdAt)}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
     </div>

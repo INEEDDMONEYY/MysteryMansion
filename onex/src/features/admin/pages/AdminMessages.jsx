@@ -37,6 +37,11 @@ export default function AdminMessages() {
   // Fetch messages for selected conversation
   const fetchMessages = async (conversationId) => {
     setLoading(true);
+    // Optimistically clear the unread badge; the GET below also marks the
+    // messages read server-side (source of truth), so this won't drift back.
+    setConversations((prev) =>
+      prev.map((c) => (c._id === conversationId ? { ...c, unreadCount: 0 } : c))
+    );
     try {
       const res = await api.get(`/messages/${conversationId}`);
       setMessages(res.data);

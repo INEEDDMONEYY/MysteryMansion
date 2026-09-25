@@ -17,7 +17,7 @@ export const creditsPageData = {
       "Credits give you a simple way to access eligible platform features without having to manage each feature as a separate purchase.",
     primaryCta: {
       label: "View Credit Options",
-      href: "/credits",
+      href: "*",
     },
     secondaryCta: {
       label: "Create an Account",

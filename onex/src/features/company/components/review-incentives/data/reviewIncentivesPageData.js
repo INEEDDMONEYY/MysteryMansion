@@ -16,7 +16,7 @@ export const reviewIncentivesPageData = {
       "Mystery Mansion uses review incentives to encourage thoughtful, honest feedback that helps providers and clients make more informed decisions.",
     primaryCta: {
       label: "Explore the Program",
-      href: "/review-incentives",
+      href: "*",
     },
     secondaryCta: {
       label: "View Community Guidelines",

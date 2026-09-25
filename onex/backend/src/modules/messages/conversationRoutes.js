@@ -27,8 +27,32 @@ router.get("/", authMiddleware, async (req, res) => {
     const conversations = await Conversation.find({ participants: userId })
       .populate("participants", "username role profilePic")
       .populate("lastMessage")
-      .sort({ updatedAt: -1 });
-    res.json(conversations);
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    // Attach a server-truth unread count per conversation (based on Message.readBy),
+    // rather than relying on client-side timestamps which can drift due to clock skew.
+    const conversationIds = conversations.map((c) => c._id);
+    const unreadAgg = conversationIds.length
+      ? await Message.aggregate([
+          {
+            $match: {
+              conversationId: { $in: conversationIds },
+              sender: { $ne: userId },
+              readBy: { $ne: userId },
+            },
+          },
+          { $group: { _id: "$conversationId", count: { $sum: 1 } } },
+        ])
+      : [];
+    const unreadMap = new Map(unreadAgg.map((u) => [String(u._id), u.count]));
+
+    const withUnread = conversations.map((c) => ({
+      ...c,
+      unreadCount: unreadMap.get(String(c._id)) || 0,
+    }));
+
+    res.json(withUnread);
   } catch (err) {
     console.error("❌ Failed to fetch conversations:", err);
     res.status(500).json({ error: "Failed to fetch conversations" });

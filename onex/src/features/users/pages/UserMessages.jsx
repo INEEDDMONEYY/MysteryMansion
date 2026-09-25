@@ -24,24 +24,6 @@ export default function UserMessages() {
   const isClient = user?.accountType === "client";
   const [credits, setCredits] = useState(null);
 
-  // --- Unread tracking ---
-  // readMap: { [conversationId]: ISO timestamp of last time the user opened it }
-  // Stored in localStorage keyed to the user so different accounts don't share state.
-  const readMapKey = user?._id ? `mm_read_${user._id}` : null;
-  const [readMap, setReadMap] = useState(() => {
-    if (!readMapKey) return {};
-    try { return JSON.parse(localStorage.getItem(readMapKey) || '{}'); } catch { return {}; }
-  });
-
-  const markRead = (convId) => {
-    const now = new Date().toISOString();
-    setReadMap((prev) => {
-      const next = { ...prev, [convId]: now };
-      if (readMapKey) localStorage.setItem(readMapKey, JSON.stringify(next));
-      return next;
-    });
-  };
-
   useEffect(() => {
     setSEO("Messages | Mystery Mansion", "", { robots: "noindex, nofollow" });
   }, []);
@@ -64,11 +46,7 @@ export default function UserMessages() {
       const convId = searchParams.get('conv');
       if (convId) {
         const match = Array.isArray(data) ? data.find((c) => c._id === convId) : null;
-        if (match) {
-          setSelectedConversation(match);
-          setMobileView("chat");
-          markRead(convId);
-        }
+        if (match) fetchMessages(convId, match);
       }
     } catch (err) {
       console.error("Failed to load conversations:", err);
@@ -77,13 +55,18 @@ export default function UserMessages() {
     }
   };
 
-  const fetchMessages = async (conversationId) => {
+  const fetchMessages = async (conversationId, convFromCaller) => {
     setMsgLoading(true);
-    markRead(conversationId);
+    // Optimistically clear the unread badge; the GET below also marks the
+    // messages read server-side (source of truth), so this won't drift back.
+    setConversations((prev) =>
+      prev.map((c) => (c._id === conversationId ? { ...c, unreadCount: 0 } : c))
+    );
+    const fromList = convFromCaller || conversations.find((c) => c._id === conversationId);
+    if (fromList) setSelectedConversation({ ...fromList, unreadCount: 0 });
     try {
       const { data } = await api.get(`/messages/${conversationId}`);
       setMessages(data);
-      setSelectedConversation(conversations.find((c) => c._id === conversationId) || null);
       setMobileView("chat");
     } catch (err) {
       console.error("Failed to load messages:", err);
@@ -135,7 +118,6 @@ export default function UserMessages() {
           conversations={conversations}
           selectedId={selectedConversation?._id}
           currentUserId={user?._id}
-          readMap={readMap}
           onSelect={fetchMessages}
           onNew={() => setShowNewModal(true)}
           canNew={canStartNew}

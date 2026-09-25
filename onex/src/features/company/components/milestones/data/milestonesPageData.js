@@ -25,7 +25,7 @@ export const milestonesPageData = {
       "Milestones give providers and clients a clear way to recognize meaningful participation, activity, and progression across the Mystery Mansion platform.",
     primaryCta: {
       label: "Explore Milestones",
-      href: "#milestones",
+      href: "*",
     },
     secondaryCta: {
       label: "Community Guidelines",

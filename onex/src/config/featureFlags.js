@@ -23,4 +23,6 @@ export const FEATURE_FLAGS = {
   ENABLE_FOLLOW_US: false,
   //Onboarding Tutorial Flag
   ENABLE_ONBOARDING: false,
+  // Provider Referrals page: click/signup stats + referred-clients list
+  ENABLE_REFERRAL_ANALYTICS: true,
 };

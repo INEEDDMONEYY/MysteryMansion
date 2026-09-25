@@ -20,7 +20,7 @@ export const referralsPageData = {
       "Mystery Mansion referrals give providers a simple way to invite potential clients to join the platform and begin exploring.",
     primaryCta: {
       label: "How Referrals Work",
-      href: "#how-it-works",
+      href: "*",
     },
     secondaryCta: {
       label: "Become a Client",
