@@ -32,6 +32,29 @@
     <meta name="twitter:image" content="https://mysterymansion.app/MMNoBg2%20(1).png" />
 
     <title>Mystery Mansion | Sign Up, Search Profiles, and Read Reviews</title>
+
+    <script>
+      // A tab left open across a new deployment can still hold this stale index.html,
+      // whose entry script tag points at a build hash that no longer exists on the
+      // server. That request 404s and our SPA catch-all rewrite returns index.html
+      // (text/html) instead, which the browser rejects with a MIME-type error and
+      // never runs any of our bundled JS. Catch that at the plain-HTML level (before
+      // any bundle needs to load) and force a one-time hard reload to fetch the
+      // current index.html + fresh asset hashes.
+      (function () {
+        window.addEventListener(
+          "error",
+          function (e) {
+            var t = e.target;
+            if (t && t.tagName === "SCRIPT" && t.type === "module" && !sessionStorage.getItem("chunk_reload")) {
+              sessionStorage.setItem("chunk_reload", "1");
+              window.location.reload();
+            }
+          },
+          true
+        );
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

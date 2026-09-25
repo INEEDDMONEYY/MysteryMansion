@@ -9,7 +9,11 @@ import "./index.css";
 // Reload once when a lazy-loaded chunk is missing after a new deployment.
 window.addEventListener("unhandledrejection", (e) => {
   const msg = e?.reason?.message || "";
-  if (msg.includes("Failed to fetch dynamically imported module") || msg.includes("Importing a module script failed")) {
+  if (
+    msg.includes("Failed to fetch dynamically imported module") ||
+    msg.includes("Importing a module script failed") ||
+    msg.includes("error loading dynamically imported module")
+  ) {
     const reloaded = sessionStorage.getItem("chunk_reload");
     if (!reloaded) {
       sessionStorage.setItem("chunk_reload", "1");
@@ -17,6 +21,10 @@ window.addEventListener("unhandledrejection", (e) => {
     }
   }
 });
+
+// This module executing at all means the load succeeded — clear the guard so a
+// later deploy during the same tab session can still trigger one more reload.
+sessionStorage.removeItem("chunk_reload");
 
 import { UserProvider } from "@/context/UserContext";
 import { DevMessageProvider } from "@/context/DevMessageContext";
