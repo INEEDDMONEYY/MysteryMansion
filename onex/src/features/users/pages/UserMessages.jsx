@@ -92,6 +92,15 @@ export default function UserMessages() {
     if (isClient) setCredits((c) => Math.max(0, (c ?? 0) - CREDITS_PER_MESSAGE));
   };
 
+  const handleReact = async (messageId, emoji) => {
+    try {
+      const { data } = await api.post(`/messages/${messageId}/react`, { emoji });
+      setMessages((prev) => prev.map((m) => (m._id === messageId ? data : m)));
+    } catch (err) {
+      console.error("Failed to react to message:", err);
+    }
+  };
+
   const hasAdminConversation = conversations.some((c) =>
     c.participants?.some((p) => p.role === "admin")
   );
@@ -170,7 +179,7 @@ export default function UserMessages() {
                 <div className="w-7 h-7 rounded-full border-2 border-pink-500 border-t-transparent animate-spin" />
               </div>
             ) : (
-              <MessageList messages={messages} currentUserId={user?._id} className="flex-1" />
+              <MessageList messages={messages} currentUserId={user?._id} onReact={handleReact} className="flex-1" />
             )}
 
             {/* Input */}

@@ -1,6 +1,7 @@
 import { sendEmail, FROM_ADDRESS } from './unosend.js';
 import env from '../../config/env.js';
 import { buildEmail, ctaButton, darkCard, heading } from './emailTemplate.js';
+import { allowEmail } from './emailRateLimiter.js';
 
 function escapeHtml(value = '') {
   return String(value)
@@ -14,6 +15,13 @@ const ACTIVITY_COPY = {
   new_review: { subject: 'New review on your profile', label: 'New Review' },
 };
 
+// Caps how often a single recipient can be emailed for the same activity type —
+// prevents inbox flooding from repeated (or spoofed/multi-account) likes,
+// comments, or reviews. In-app notifications are unaffected and still fire
+// every time.
+const ACTIVITY_EMAIL_LIMIT = 1;
+const ACTIVITY_EMAIL_WINDOW_MS = 10 * 60 * 1000; // 10 minutes per (type, recipient)
+
 /**
  * Sends an account-activity email for a like, comment, or review.
  * @param {{ to: string, username?: string, type: 'post_liked'|'new_comment'|'new_review', message: string, ctaUrl?: string }} opts
@@ -21,6 +29,11 @@ const ACTIVITY_COPY = {
 export async function sendAccountActivityEmail({ to, username, type, message, ctaUrl }) {
   const copy = ACTIVITY_COPY[type];
   if (!to || !copy) throw new Error('Missing required parameters for account activity email');
+
+  if (!allowEmail(`activity:${type}:${to}`, { limit: ACTIVITY_EMAIL_LIMIT, windowMs: ACTIVITY_EMAIL_WINDOW_MS })) {
+    console.log(`[Email] Rate-limited (${type}) → ${to}`);
+    return { skipped: true, reason: 'rate_limited' };
+  }
 
   const content = `
     ${heading(copy.label)}

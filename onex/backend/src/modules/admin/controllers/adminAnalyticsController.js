@@ -2,6 +2,54 @@ import AnalyticsEvent from "../../../models/AnalyticsEvent.js";
 import User from "../../../models/User.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const ACTIVE_WINDOW_MS = 2 * 60 * 1000; // "active now" = seen in the last 2 minutes
+const IDLE_WINDOW_MS = 15 * 60 * 1000; // "recently idle" = last seen 2-15 minutes ago
+
+function categorizeActivity(pagePath = "") {
+  const p = String(pagePath || "").toLowerCase();
+  if (/edit|settings|\/new|create/.test(p)) return "editing";
+  if (/messages/.test(p)) return "messaging";
+  if (/\/posts?\/|\/user\/|\/client\/|\/provider\//.test(p)) return "viewing";
+  return "browsing";
+}
+
+async function getActiveNowStats() {
+  const since = new Date(Date.now() - IDLE_WINDOW_MS);
+  const recentEvents = await AnalyticsEvent.find({ occurredAt: { $gte: since } })
+    .select("sessionId pagePath occurredAt")
+    .sort({ occurredAt: -1 })
+    .lean();
+
+  // Keep only the most recent event per session (list is sorted newest-first).
+  const latestBySession = new Map();
+  for (const event of recentEvents) {
+    const key = String(event.sessionId || "");
+    if (!key || latestBySession.has(key)) continue;
+    latestBySession.set(key, event);
+  }
+
+  const now = Date.now();
+  const breakdown = { browsing: 0, viewing: 0, editing: 0, messaging: 0 };
+  let activeCount = 0;
+  let idleCount = 0;
+
+  for (const event of latestBySession.values()) {
+    const age = now - new Date(event.occurredAt).getTime();
+    if (age <= ACTIVE_WINDOW_MS) {
+      activeCount += 1;
+      breakdown[categorizeActivity(event.pagePath)] += 1;
+    } else {
+      idleCount += 1;
+    }
+  }
+
+  return {
+    total: activeCount,
+    idle: idleCount,
+    breakdown,
+    windowSeconds: ACTIVE_WINDOW_MS / 1000,
+  };
+}
 
 function getRangeDays(range = "7d") {
   const map = { "7d": 7, "30d": 30, "90d": 90, "1y": 365 };
@@ -48,7 +96,7 @@ export const getAdminAnalytics = async (req, res) => {
       trafficQuery.pagePath = { $regex: "comment", $options: "i" };
     }
 
-    const [trafficEvents, heartbeatEvents, signupUsers] = await Promise.all([
+    const [trafficEvents, heartbeatEvents, signupUsers, activeNow] = await Promise.all([
       AnalyticsEvent.find(trafficQuery)
         .select("occurredAt sessionId")
         .lean(),
@@ -62,6 +110,7 @@ export const getAdminAnalytics = async (req, res) => {
       })
         .select("createdAt")
         .lean(),
+      getActiveNowStats(),
     ]);
 
     trafficEvents.forEach((event) => {
@@ -109,6 +158,7 @@ export const getAdminAnalytics = async (req, res) => {
       data: {
         traffic,
         signups,
+        activeNow,
         session: {
           averageBrowseSeconds,
           trackedSessions,

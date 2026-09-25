@@ -14,3 +14,4 @@ export { sendAccountActivityEmail, sendAccountInactivityEmail } from './sendAcco
 export { sendMilestoneAchievedEmail } from './sendMilestoneAchievedEmail.js';
 export { startMilestoneAchievementJob } from './milestoneAchievementJob.js';
 export { startAccountInactivityEmailJob } from './accountInactivityEmailJob.js';
+export { allowEmail } from './emailRateLimiter.js';

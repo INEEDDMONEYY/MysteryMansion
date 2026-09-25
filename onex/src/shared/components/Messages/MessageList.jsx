@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import MessageItem from "./MessageItem";
 import { MessageCircle } from "lucide-react";
 
-export default function MessageList({ messages = [], currentUserId, className = "" }) {
+export default function MessageList({ messages = [], currentUserId, onReact, className = "" }) {
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -20,6 +20,7 @@ export default function MessageList({ messages = [], currentUserId, className = 
             key={msg._id || `${msg.createdAt}-${msg.text}`}
             message={msg}
             currentUserId={currentUserId}
+            onReact={onReact}
           />
         ))
       ) : (

@@ -5,8 +5,21 @@ import User from "../../models/User.js";
 import { authMiddleware } from "../../common/middleware/authMiddleware.js";
 import { enforceRestriction } from "../../common/middleware/restrictionMiddleware.js";
 import { createNotification } from "../notifications/notificationController.js";
+import { sendNewMessageEmail } from "../../common/utils/sendNewMessageEmail.js";
+import { allowEmail } from "../../common/utils/emailRateLimiter.js";
+import env from "../../config/env.js";
 
 const router = express.Router();
+
+// Cooldown between new-message emails to the same recipient (prevents inbox
+// floods during a fast back-and-forth conversation).
+const MESSAGE_EMAIL_COOLDOWN_MS = 5 * 60 * 1000;
+
+// Maps a participant to the messages page they'd use to view a conversation
+function messagesPathFor(participant) {
+  if (participant.role === "admin") return "/admin/messages";
+  return participant.accountType === "client" ? "/client/messages" : "/user/messages";
+}
 
 router.get("/unread/count", authMiddleware, async (req, res) => {
   try {
@@ -84,7 +97,7 @@ router.post("/", authMiddleware, enforceRestriction("message:send"), async (req,
 
     const conversation = await Conversation.findById(conversationId).populate(
       "participants",
-      "_id role accountType"
+      "_id role accountType username email"
     );
 
     if (!conversation) {
@@ -181,10 +194,75 @@ router.post("/", authMiddleware, enforceRestriction("message:send"), async (req,
       }).catch(() => {}); // fire-and-forget, don't block the response
     }
 
+    // ── Email admin<->user recipients of the new message ─────────────────────────
+    // Only admin-involved conversations get emailed (admin messaging a user, or a
+    // user messaging admin) — regular user-to-user (e.g. client<->provider) chats
+    // don't trigger email. Also rate-limited per recipient to avoid inbox floods
+    // during a fast back-and-forth conversation.
+    const isAdminInvolved = req.user.role === 'admin' || recipients.some((p) => p.role === 'admin');
+    if (isAdminInvolved) {
+      for (const recipient of recipients) {
+        if (!recipient.email) continue;
+        if (req.user.role !== 'admin' && recipient.role !== 'admin') continue; // skip user<->user leg
+        if (!allowEmail(`message:${recipient._id}`, { limit: 1, windowMs: MESSAGE_EMAIL_COOLDOWN_MS })) continue;
+
+        sendNewMessageEmail({
+          to: recipient.email,
+          recipientUsername: recipient.username,
+          senderUsername,
+          messageText: text.trim(),
+          ctaUrl: `${env.CLIENT_URL}${messagesPathFor(recipient)}?conv=${conversationId}`,
+        }).catch((err) => console.error('❌ Failed to send new-message email:', err.message));
+      }
+    }
+
     res.status(201).json(populated);
   } catch (err) {
     console.error("❌ Failed to send message:", err);
     res.status(500).json({ error: "Failed to send message" });
+  }
+});
+
+// POST toggle a reaction (emoji) on a message
+router.post("/:messageId/react", authMiddleware, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user._id;
+
+    if (!emoji || typeof emoji !== "string") {
+      return res.status(400).json({ error: "emoji is required" });
+    }
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    const conversation = await Conversation.findById(message.conversationId).select("participants");
+    const isParticipant = conversation?.participants.some(
+      (participantId) => String(participantId) === String(userId)
+    );
+    if (!isParticipant) {
+      return res.status(403).json({ error: "You are not a participant in this conversation" });
+    }
+
+    const existingIndex = message.reactions.findIndex(
+      (r) => String(r.userId) === String(userId) && r.emoji === emoji
+    );
+
+    if (existingIndex >= 0) {
+      message.reactions.splice(existingIndex, 1); // toggle off
+    } else {
+      message.reactions.push({ emoji, userId });
+    }
+
+    await message.save();
+    const populated = await message.populate("sender", "username role profilePic");
+    res.json(populated);
+  } catch (err) {
+    console.error("❌ Failed to react to message:", err);
+    res.status(500).json({ error: "Failed to react to message" });
   }
 });
 

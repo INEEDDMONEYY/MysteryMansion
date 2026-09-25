@@ -48,9 +48,10 @@ export default function AdminAnalytics() {
     return () => clearInterval(iv);
   }, [dateRange, userType, activityType]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // "Active Now" = today's unique visitors (last item in traffic array)
-  const todayUniqueVisitors = analytics?.traffic?.at(-1)?.uniqueVisitors ?? 0;
-  const yesterdayUniqueVisitors = analytics?.traffic?.at(-2)?.uniqueVisitors ?? 0;
+  // "Active Now" = real-time count of sessions seen in the last couple minutes
+  // (not a cumulative daily visitor count, which is misleading for "right now").
+  const activeNow = analytics?.activeNow || { total: 0, idle: 0, breakdown: {}, windowSeconds: 120 };
+  const activeWindowMinutes = Math.max(1, Math.round((activeNow.windowSeconds || 120) / 60));
 
   // Average browse time for stat card
   const browseSeconds = analytics?.session?.averageBrowseSeconds || 0;
@@ -71,12 +72,6 @@ export default function AdminAnalytics() {
 
   const visitsGrowth  = periodGrowth(analytics?.traffic,  'visits');
   const signupsGrowth = periodGrowth(analytics?.signups,  'count');
-
-  // Active Now: compare today vs yesterday
-  const activeGrowth =
-    yesterdayUniqueVisitors === 0
-      ? null
-      : Number((((todayUniqueVisitors - yesterdayUniqueVisitors) / yesterdayUniqueVisitors) * 100).toFixed(1));
 
   return (
     <div className="space-y-6 pb-8">
@@ -124,10 +119,15 @@ export default function AdminAnalytics() {
         <AnalyticsStatCard
           icon={Activity}
           label="Active Now"
-          value={todayUniqueVisitors}
-          sub="Today's visitors"
+          value={activeNow.total}
+          sub={`Last ${activeWindowMinutes} min · ${activeNow.idle} recently idle`}
           loading={loading}
-          change={activeGrowth}
+          breakdown={[
+            { label: 'Browsing', value: activeNow.breakdown?.browsing || 0 },
+            { label: 'Viewing', value: activeNow.breakdown?.viewing || 0 },
+            { label: 'Editing', value: activeNow.breakdown?.editing || 0 },
+            { label: 'Messaging', value: activeNow.breakdown?.messaging || 0 },
+          ]}
         />
       </div>
 

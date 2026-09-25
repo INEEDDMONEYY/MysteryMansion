@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import CountUp from 'react-countup';
 
-export default function AnalyticsStatCard({ icon: Icon, label, value, sub, loading, change }) {
+export default function AnalyticsStatCard({ icon: Icon, label, value, sub, loading, change, breakdown }) {
   const isNumeric = typeof value === 'number' && !Number.isNaN(value);
   // change: number | null — percentage change vs previous period
   const changeColor =
@@ -51,6 +51,19 @@ export default function AnalyticsStatCard({ icon: Icon, label, value, sub, loadi
           </span>
         )}
       </div>
+
+      {!loading && Array.isArray(breakdown) && breakdown.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-3">
+          {breakdown.map(({ label: bLabel, value: bValue }) => (
+            <span
+              key={bLabel}
+              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-neutral-800 text-[11px] text-neutral-400"
+            >
+              {bValue} {bLabel}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

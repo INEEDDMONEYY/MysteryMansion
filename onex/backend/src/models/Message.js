@@ -38,6 +38,12 @@ const messageSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    reactions: [
+      {
+        emoji: { type: String, required: true },
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+      },
+    ],
   },
   { timestamps: true } // adds createdAt and updatedAt
 );

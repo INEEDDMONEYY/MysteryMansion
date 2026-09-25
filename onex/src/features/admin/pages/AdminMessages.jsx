@@ -75,6 +75,15 @@ export default function AdminMessages() {
     if (selectedConversation) fetchMessages(selectedConversation._id);
   };
 
+  const handleReact = async (messageId, emoji) => {
+    try {
+      const res = await api.post(`/messages/${messageId}/react`, { emoji });
+      setMessages((prev) => prev.map((m) => (m._id === messageId ? res.data : m)));
+    } catch (err) {
+      console.error("Failed to react to message:", err);
+    }
+  };
+
   const conversationTitle = selectedConversation
     ? selectedConversation.participants
         .filter((p) => String(p._id) !== String(user?._id))
@@ -154,7 +163,7 @@ export default function AdminMessages() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto bg-neutral-950/50 p-3 sm:p-4">
           {selectedConversation ? (
-            <MessageList messages={messages} currentUserId={user?._id} />
+            <MessageList messages={messages} currentUserId={user?._id} onReact={handleReact} />
           ) : (
             <div className="flex items-center justify-center h-full text-neutral-500 text-sm text-center p-6">
               Select a conversation or start a new one to begin chatting.
