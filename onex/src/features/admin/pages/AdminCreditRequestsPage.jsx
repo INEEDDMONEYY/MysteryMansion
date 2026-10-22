@@ -136,6 +136,7 @@ export default function AdminCreditRequestsPage() {
       const { data } = await api.post(`/admin/credit-requests/${id}/approve`, { adminNote: note });
       showToast(data.message || 'Approved.');
       fetchRequests();
+      window.dispatchEvent(new Event('credit-requests-updated'));
     } catch (err) {
       showToast(err?.response?.data?.error || 'Failed to approve.');
     } finally {
@@ -149,6 +150,7 @@ export default function AdminCreditRequestsPage() {
       await api.post(`/admin/credit-requests/${id}/reject`, { adminNote: note });
       showToast('Rejected.');
       fetchRequests();
+      window.dispatchEvent(new Event('credit-requests-updated'));
     } catch (err) {
       showToast(err?.response?.data?.error || 'Failed to reject.');
     } finally {

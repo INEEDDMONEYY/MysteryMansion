@@ -72,7 +72,7 @@ export default function AdminDashboard() {
   const [posts, setPosts]                   = useState([]);
   const [users, setUsers]                   = useState([]);
   const [promoCodes, setPromoCodes]         = useState([]);
-  const [promotions, setPromotions]         = useState([]);
+  const [creditRequests, setCreditRequests] = useState([]);
   const [banners, setBanners]               = useState([]);
   const [discounts, setDiscounts]           = useState([]);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
     if (!token) return;
     (async () => {
       try {
-        const [statsR, usersR, postsR, restrictedR, settingsR, promoCodesR, promotionsR, bannersR, discountsR] =
+        const [statsR, usersR, postsR, restrictedR, settingsR, promoCodesR, creditRequestsR, bannersR, discountsR] =
           await Promise.allSettled([
             api.get("/admin/stats"),
             api.get("/admin/users"),
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
             api.get("/admin/users/restricted"),
             api.get("/admin"),
             api.get("/admin/promo-codes"),
-            api.get("/promotions/requests"),
+            api.get("/admin/credit-requests"),
             api.get("/banners"),
             api.get("/discounts"),
           ]);
@@ -157,9 +157,9 @@ export default function AdminDashboard() {
           const d = promoCodesR.value?.data;
           setPromoCodes(Array.isArray(d) ? d : Array.isArray(d?.data) ? d.data : []);
         }
-        if (promotionsR.status === "fulfilled") {
-          const d = promotionsR.value?.data;
-          setPromotions(Array.isArray(d) ? d : Array.isArray(d?.data) ? d.data : []);
+        if (creditRequestsR.status === "fulfilled") {
+          const d = creditRequestsR.value?.data;
+          setCreditRequests(Array.isArray(d) ? d : Array.isArray(d?.data) ? d.data : []);
         }
         if (bannersR.status === "fulfilled") {
           const d = bannersR.value?.data;
@@ -189,8 +189,8 @@ export default function AdminDashboard() {
   const usersWeek   = users.filter(u => new Date(u.createdAt) >= day7).length;
   const usersMonth  = users.filter(u => new Date(u.createdAt) >= day30).length;
 
-  const pendingPromos  = promotions.filter(p => p.status === "pending").length;
-  const approvedPromos = promotions.filter(p => p.status === "approved").length;
+  const pendingPayments  = creditRequests.filter(r => r.status === "pending").length;
+  const approvedPayments = creditRequests.filter(r => r.status === "approved").length;
   const activeBanners  = banners.filter(b => b.active).length;
   const activeDiscounts = discounts.filter(d => d.active).length;
 
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
         <StatCard icon={TrendingUp}   label="New Users / 7d"  value={usersWeek}       accent="emerald"  loading={loading} />
         <StatCard icon={Calendar}     label="Posts Today"     value={postsToday}      accent="pink"     loading={loading} />
         <StatCard icon={Calendar}     label="Posts / 7d"      value={postsWeek}       accent="pink"     loading={loading} />
-        <StatCard icon={Crown}        label="Pending Promos"  value={pendingPromos}   accent="amber"    loading={loading} />
+        <StatCard icon={Crown}        label="Pending Credits" value={pendingPayments} accent="amber"    loading={loading} />
         <StatCard icon={Megaphone}    label="Live Banners"    value={activeBanners}   accent="violet"   loading={loading} />
         <StatCard icon={Percent}      label="Live Discounts"  value={activeDiscounts} accent="sky"      loading={loading} />
       </div>
@@ -383,9 +383,9 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* Promotions summary */}
+        {/* Credit payments summary */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-5">
-          <SectionHead icon={Crown} label="Promotion Requests" />
+          <SectionHead icon={Crown} label="Credit Payments" />
           {loading ? (
             <div className="space-y-2">
               {[1,2,3].map(i => <div key={i} className="h-12 bg-neutral-800 rounded-xl animate-pulse" />)}
@@ -394,9 +394,9 @@ export default function AdminDashboard() {
             <>
               <div className="grid grid-cols-3 gap-3 mb-4">
                 {[
-                  { label: 'Pending',  value: pendingPromos,  color: 'text-amber-400'  },
-                  { label: 'Approved', value: approvedPromos, color: 'text-emerald-400'},
-                  { label: 'Total',    value: promotions.length, color: 'text-neutral-300'},
+                  { label: 'Pending',  value: pendingPayments,  color: 'text-amber-400'  },
+                  { label: 'Approved', value: approvedPayments, color: 'text-emerald-400'},
+                  { label: 'Total',    value: creditRequests.length, color: 'text-neutral-300'},
                 ].map(s => (
                   <div key={s.label} className="bg-neutral-800 rounded-xl p-3 text-center">
                     <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
@@ -405,11 +405,11 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
-              {pendingPromos > 0 && (
+              {pendingPayments > 0 && (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-950/40 border border-amber-800/40">
                   <AlertCircle size={13} className="text-amber-400 shrink-0" />
                   <p className="text-xs text-amber-300">
-                    {pendingPromos} promotion request{pendingPromos > 1 ? 's' : ''} awaiting review
+                    {pendingPayments} credit payment{pendingPayments > 1 ? 's' : ''} awaiting approval
                   </p>
                 </div>
               )}

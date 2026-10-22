@@ -39,6 +39,19 @@ export default function PostForm({ onSuccess, embedded = false }) {
     }
   }, [navigate]);
 
+  // Pre-fill from the provider's profile gender so the homepage gender filter
+  // can find this post even if the field below is never touched.
+  useEffect(() => {
+    const ACCOUNT_GENDER_TO_POST_GENDER = {
+      "Woman escort": "female",
+      "Man escort": "male",
+      "TS escort": "ts",
+    };
+    const mapped = ACCOUNT_GENDER_TO_POST_GENDER[user?.gender];
+    if (!mapped) return;
+    setFormData((prev) => (prev.gender ? prev : { ...prev, gender: mapped }));
+  }, [user]);
+
   // Check for active promo redemption
   useEffect(() => {
     if (user?.activePromoExpiry) {
@@ -408,7 +421,7 @@ export default function PostForm({ onSuccess, embedded = false }) {
           className="w-full border border-gray-300 p-2 sm:p-3 md:p-4 rounded-lg text-sm sm:text-base md:text-lg"
         />
         <div className="mt-2 text-xs text-gray-500">
-          <strong>Note:</strong> There are no limits on the number or size of images/videos you can upload. However, extremely large files or many uploads may be limited by your internet connection, server, or Cloudinary plan.
+          <strong>Note:</strong> There are no limits on the number or size of images/videos you can upload. However, extremely large files or many uploads may be limited by your internet connection or server.
         </div>
         
         <select

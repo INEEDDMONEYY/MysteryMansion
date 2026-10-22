@@ -6,12 +6,15 @@
   "main": "server.js",
   "scripts": {
     "test": "NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest",
-    "start": "node server.js"
+    "start": "node server.js",
+    "backfill:media-backups": "node scripts/backfillMediaBackups.js",
+    "backfill:post-gender": "node scripts/backfillPostGenderFromAccount.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1141.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.8.0",
     "cookie-parser": "^1.4.7",

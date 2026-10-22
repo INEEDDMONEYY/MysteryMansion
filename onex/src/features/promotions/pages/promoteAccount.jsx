@@ -58,10 +58,6 @@ export default function PromoteAccount() {
           <PromotionFAQ />
         </section>
 
-        {/* 💵 Promotion Payment */}
-        <section className="px-4 sm:px-6 lg:px-8 pb-10 sm:pb-12 lg:pb-16 max-w-7xl mx-auto">
-          <PromotionPayment />
-        </section>
       </main>
 
     </div>

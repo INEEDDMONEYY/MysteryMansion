@@ -10,6 +10,7 @@ import sendWelcomeEmail from "../../common/utils/sendWelcomeEmail.js";
 import sendResetEmail from "../../common/utils/sendResetEmail.js";
 import { ensureUserAdminConversation } from "../../common/utils/ensureAdminWelcomeConversation.js";
 import { createNotification } from "../notifications/notificationController.js";
+import { awardCredits, dayKey } from "../credits/creditEarnService.js";
 import { sendVerificationCode, confirmVerificationCode } from "./controllers/emailVerificationController.js";
 
 // 🔐 NEW: import combined middleware
@@ -106,6 +107,8 @@ router.post("/signup", async (req, res) => {
       referral.signupCount += 1;
       referral.save().catch(() => {});
 
+      awardCredits({ userId: referral.providerId, eventKey: 'referral_signup', refId: String(user._id) });
+
       createNotification({
         audience: 'user',
         type: 'referral_signup',
@@ -180,6 +183,8 @@ router.post("/signin", async (req, res) => {
       secure: env.NODE_ENV === "production",
       sameSite: "none",
     });
+
+    awardCredits({ userId: user._id, eventKey: 'daily_login', refId: dayKey() });
 
     res.json({
       message: "Login successful",

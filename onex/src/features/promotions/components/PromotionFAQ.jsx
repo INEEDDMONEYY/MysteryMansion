@@ -6,19 +6,24 @@ export default function PromotionFAQ() {
 
   const faqs = [
     {
-      question: "Can I refund after I promote my account?",
+      question: "Can I stack promotion duration time?",
       answer:
-        "No, refunds after account promotion are not valid. Once a user promotes their account, it will remain promoted for the duration they paid for.",
+        "Yes, promotion duration can be stacked. If you have enough credits in your account you can stack multiple promotion duration periods.",
     },
     {
       question: "After promoting account, how long will it take for the promotion to take effect?",
       answer:
-        "After promoting an account, the promotion will take effect within 2-5 minutes. If the promotion does not take effect after 2-5 minutes, please contact support.",
+        "After promoting an account, the promotion will take effect immediately. If it does not, please contact support.",
     },
     {
-      question: "Is there a limit on how many times I can promote my account?",
+      question: "When account is promoted, will it be shown in forums?",
       answer:
-        "No, there is no limit. Users can promote their account as many times as they want. However, users must wait until their current promotion expires before promoting again.",
+        "No, promoted accounts will not be shown in forums. Promotions only affect the visibility of your account within the main feed and relevant sections. However if your account is verified, it may receive additional visibility benefits within the forums page.",
+    },
+    {
+      question: "If I get the Blue Badge Verification, will the coins be deducted from my account monthly?",
+      answer:
+        "Yes, if you get the Blue Badge Verification, the coins will be deducted from your account on a monthly basis to keep your verified status active. If there is not enough credits in account to cover the monthly fee, your verified status will be deactivated until sufficient credits are available.",
     },
   ];
 

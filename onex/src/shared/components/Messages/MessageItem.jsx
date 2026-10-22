@@ -55,7 +55,7 @@ export default function MessageItem({ message, currentUserId, onReact }) {
               ? 'bg-pink-600 text-white rounded-br-sm'
               : 'bg-white text-gray-900 border border-gray-100 rounded-bl-sm'
           }`}>
-            <p className="text-sm leading-relaxed break-words">{message.text}</p>
+            <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{message.text}</p>
             {formattedTime && (
               <span className={`block text-[10px] mt-1 text-right ${ isOwn ? 'text-pink-200' : 'text-gray-400' }`}>
                 {formattedTime}

@@ -15,6 +15,7 @@ export default function UserNotificationBell({
   messagesPath = '/user/messages',
   creditsPath  = '/client/credits',
   milestonesPath = '/user/milestones',
+  reportsPath = '/user/reports',
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -52,6 +53,9 @@ export default function UserNotificationBell({
       case 'milestone_added':
       case 'milestone_achieved':
         navigate(milestonesPath);
+        break;
+      case 'flag_update':
+        navigate(reportsPath);
         break;
       default:
         break;

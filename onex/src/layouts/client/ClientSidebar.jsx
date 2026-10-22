@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Heart, MessageSquareText, User,
-  LogOut, Search, Bell, Coins, Trophy,
+  LogOut, Search, Bell, Coins, Trophy, Flag,
 } from 'lucide-react';
 import { useContext } from 'react';
 import { UserContext } from '@/context/UserContext';
@@ -20,6 +20,7 @@ export default function ClientSidebar({ isOpen, onClose, unreadMessages = 0 }) {
     { to: '/client/notifications',   label: 'Notifications', icon: Bell },
     { to: '/client/credits',         label: 'Credits',       icon: Coins },
     { to: '/client/milestones',      label: 'Milestones',    icon: Trophy },
+    { to: '/client/reports',         label: 'My Reports',    icon: Flag },
     { to: '/client/profile',         label: 'Edit Profile',  icon: User },
     { to: '/',                        label: 'Browse Listings', icon: Search },
   ];

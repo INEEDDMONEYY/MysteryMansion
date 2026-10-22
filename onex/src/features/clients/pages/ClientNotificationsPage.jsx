@@ -1,4 +1,4 @@
-import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus, Eye, Coins, Heart } from 'lucide-react';
+import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus, Eye, Coins, Heart, Flag } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import useNotifications from '@/shared/hooks/useNotifications';
 import { setSEO } from '@/shared/utils/seo';
@@ -18,6 +18,7 @@ const TYPE_META = {
   profile_visited:    { icon: Eye,            color: 'text-sky-600',     bg: 'bg-sky-100',     label: 'Profile Visit'   },
   low_credits:        { icon: Coins,          color: 'text-orange-600',  bg: 'bg-orange-100',  label: 'Low Credits'     },
   post_liked:         { icon: Heart,          color: 'text-rose-600',    bg: 'bg-rose-100',    label: 'Post Liked'      },
+  flag_update:        { icon: Flag,           color: 'text-red-600',     bg: 'bg-red-100',     label: 'Report Update'   },
 };
 
 export default function ClientNotificationsPage() {
@@ -43,6 +44,9 @@ export default function ClientNotificationsPage() {
         break;
       case 'low_credits':
         navigate('/client/credits');
+        break;
+      case 'flag_update':
+        navigate('/client/reports');
         break;
       default:
         break;

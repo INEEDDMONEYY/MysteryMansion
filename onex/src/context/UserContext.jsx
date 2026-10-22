@@ -74,6 +74,17 @@ export const UserProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Sessions can last days, so claim the daily-login reward once per day on load.
+  useEffect(() => {
+    if (!user?._id || !getAuthToken()) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const storageKey = `daily_login_${user._id}`;
+    if (localStorage.getItem(storageKey) === today) return;
+    api.post("/credits/earn/daily-login")
+      .then(() => localStorage.setItem(storageKey, today))
+      .catch(() => {});
+  }, [user?._id]);
+
   useEffect(() => {
     const restriction = user?.roleRestriction;
     if (!restriction) return;

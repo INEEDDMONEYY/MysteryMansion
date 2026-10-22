@@ -111,7 +111,7 @@ export default function Navbar() {
       { key: "home", label: "Home", icon: Home, to: "/", match: (p) => p === "/" },
       { key: "notifications", label: "Notifications", icon: Bell, to: "/client/notifications", badge: unreadNotifications },
       { key: "messages", label: "Messages", icon: MessageCircle, to: "/client/messages", badge: unreadMessages },
-      { key: "credits", label: "Credits", icon: CreditCard, to: "/client/credits" },
+      { key: "Forums", label: "Forums", icon: CreditCard, to: "/forum" },
       {
         key: "profile",
         label: "Profile",
@@ -121,14 +121,14 @@ export default function Navbar() {
           p.startsWith("/client") &&
           !p.startsWith("/client/notifications") &&
           !p.startsWith("/client/messages") &&
-          !p.startsWith("/client/credits"),
+          !p.startsWith("/client/forum"),
       },
     ];
   } else {
     mobileNavItems = [
       { key: "home", label: "Home", icon: Home, to: "/", match: (p) => p === "/" },
-      { key: "faq", label: "FAQ", icon: User, to: "/faq" },
-      { key: "referrals", label: "Referrals", icon: FileUser, to: "/referrals" },
+      { key: "credits", label: "Credits", icon: User, to: "/credits/how-it-works" },
+      { key: "Forum", label: "Forum", icon: FileUser, to: "/forum" },
       FEATURE_FLAGS.ENABLE_PROMOTE_ACCOUNT_NAV && {
         key: "support",
         label: "Support",
@@ -163,6 +163,14 @@ export default function Navbar() {
 
         <Link to="/signup" className="flex items-center gap-1 hover:text-pink-400">
           <FileUser size={18} /> Sign Up
+        </Link>
+
+        <Link to="/forum" className="flex items-center gap-1 hover:text-pink-400">
+          <FileUser size={18} /> Forums
+        </Link>
+
+        <Link to="/credit-packages" className="flex items-center gap-1 hover:text-pink-400">
+          <FileUser size={18} /> Credits
         </Link>
 
         {/* ✔ FEATURE FLAG APPLIED HERE */}

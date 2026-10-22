@@ -1,8 +1,12 @@
 // ❤️ Post Engagement
 
 import { Heart } from "lucide-react";
+import FlagButton from "@/features/flagging/components/FlagButton";
+import { FLAG_TARGET_TYPES } from "@/features/flagging/utils/flagTargets";
 
 export default function PostEngagement({
+  postId = "",
+  isOwner = false,
   liked = false,
   likeCount = 0,
   likeBusy = false,
@@ -57,6 +61,17 @@ export default function PostEngagement({
             Sign in to like and save this
             post
           </p>
+        )}
+
+        {!isOwner && postId && (
+          <FlagButton
+            targetType={FLAG_TARGET_TYPES.POST}
+            targetId={postId}
+            label="Report post"
+            showLabel
+            variant="dropdown"
+            className="rounded-full border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+          />
         )}
 
         {postedLabel && (

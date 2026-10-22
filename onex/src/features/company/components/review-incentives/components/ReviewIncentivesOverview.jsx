@@ -1,91 +1,63 @@
 import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 import { reviewIncentivesPageData } from "../data/reviewIncentivesPageData";
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.12,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: {
-    opacity: 0,
-    y: 30,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.55,
-      ease: "easeOut",
-    },
-  },
-};
 
 export default function ReviewIncentivesOverview() {
   const { overview } = reviewIncentivesPageData;
 
   return (
-    <section className="bg-white px-6 py-24 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <section className="relative overflow-hidden bg-black px-6 py-24 text-white lg:px-8">
+      <div className="relative mx-auto max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.6 }}
-          className="max-w-3xl"
+          className="mx-auto mb-14 max-w-3xl text-center"
         >
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-pink-600">
+          <p className="mb-5 text-sm font-semibold uppercase tracking-[0.2em] text-yellow-400">
             {overview.eyebrow}
           </p>
 
-          <h2 className="mt-4 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
+          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
             {overview.title}
           </h2>
 
-          <p className="mt-5 text-lg leading-8 text-gray-600">
+          <p className="mt-6 text-base leading-8 text-gray-300 sm:text-lg">
             {overview.description}
           </p>
         </motion.div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{
-            once: true,
-            amount: 0.15,
-          }}
-          className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
-        >
-          {overview.items.map((item) => {
-            const Icon = item.icon;
+        <div className="grid gap-5 md:grid-cols-3">
+          {overview.items.map((item, index) => {
+            const Icon = item.icon || Sparkles;
 
             return (
-              <motion.div
+              <motion.article
                 key={item.title}
-                variants={itemVariants}
-                whileHover={{ y: -6 }}
-                className="group rounded-2xl border border-gray-200 bg-white p-7 shadow-sm transition-shadow duration-300 hover:border-pink-200 hover:shadow-xl hover:shadow-pink-100/60"
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.45, delay: index * 0.1 }}
+                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-7 transition duration-300 hover:-translate-y-1 hover:border-pink-400/35"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pink-50 text-pink-600 transition-colors duration-300 group-hover:bg-pink-600 group-hover:text-white">
-                  <Icon className="h-6 w-6" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-pink-500 to-yellow-400 opacity-0 transition group-hover:opacity-100" />
+
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-pink-400/20 bg-pink-500/10 text-pink-300">
+                  <Icon size={25} aria-hidden="true" />
                 </div>
 
-                <h3 className="mt-6 text-xl font-bold text-gray-950">
+                <h3 className="mt-6 text-xl font-bold text-white">
                   {item.title}
                 </h3>
 
-                <p className="mt-3 text-sm leading-7 text-gray-600">
+                <p className="mt-3 text-sm leading-7 text-gray-400 sm:text-base">
                   {item.description}
                 </p>
-              </motion.div>
+              </motion.article>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

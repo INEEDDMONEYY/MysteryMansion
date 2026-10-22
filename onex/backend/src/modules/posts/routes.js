@@ -3,7 +3,7 @@ import express from 'express';
 import multer from 'multer';
 import * as postController from './controllers/postController.js';
 import { toggleLike, getLikeStatus } from './controllers/postLikeController.js';
-import { authMiddleware, optionalAuthMiddleware } from '../../common/middleware/authMiddleware.js';
+import { authMiddleware, optionalAuthMiddleware, adminOnlyMiddleware } from '../../common/middleware/authMiddleware.js';
 import { enforceRestriction } from '../../common/middleware/restrictionMiddleware.js';
 
 const router = express.Router();
@@ -111,6 +111,24 @@ router.get('/:id/like/status', optionalAuthMiddleware, getLikeStatus);
 
 // Update post
 router.put('/:id', authMiddleware, enforceRestriction('post:update'), postController.updatePost);
+
+// Restore a single flagged/broken picture or video (admin only)
+const uploadSingleMedia = (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (!err) return next();
+    if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ error: 'File must be 25MB or smaller.', code: err.code });
+    }
+    return res.status(400).json({ error: err?.message || 'Upload failed' });
+  });
+};
+router.put(
+  '/:id/media/:mediaType/:index',
+  authMiddleware,
+  adminOnlyMiddleware,
+  uploadSingleMedia,
+  postController.restorePostMedia
+);
 
 // Delete post
 router.delete('/:id', authMiddleware, enforceRestriction('post:delete'), postController.deletePost);

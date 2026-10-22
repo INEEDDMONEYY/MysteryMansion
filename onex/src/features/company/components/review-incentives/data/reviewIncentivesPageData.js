@@ -1,127 +1,373 @@
 import {
   BadgeCheck,
+  Coins,
+  CreditCard,
   Gift,
+  Link2,
   MessageSquareText,
   ShieldCheck,
-  Sparkles,
-  UserRoundCheck,
+  UserPlus,
+  Users,
+  Wallet,
 } from "lucide-react";
 
 export const reviewIncentivesPageData = {
   hero: {
-    eyebrow: "Review Incentives",
-    title: "Share your experience.",
-    highlightedTitle: "Help the community.",
+    eyebrow: "Provider Credits & Rewards",
+    title: "Share your link.",
+    highlightedTitle: "Earn as you grow.",
     description:
-      "Mystery Mansion uses review incentives to encourage thoughtful, honest feedback that helps providers and clients make more informed decisions.",
+      "Build your presence on Mystery Mansion, share your unique signup link, and earn credit rewards as eligible new users join through your referrals. Eligible milestones may also unlock monetary incentives through supported payout methods.",
     primaryCta: {
-      label: "Explore the Program",
-      href: "*",
+      label: "Become a Provider",
+      href: "/become-a-provider",
     },
     secondaryCta: {
-      label: "View Community Guidelines",
-      href: "/community-guidelines",
+      label: "Explore Reward Milestones",
+      href: "#incentive-milestones",
     },
     visual: {
-      label: "Review Program",
-      title: "A simple feedback cycle",
+      label: "Provider Incentives",
+      title: "From sharing to rewards",
       steps: [
-        "Complete an eligible interaction",
-        "Share an honest review",
-        "Review eligibility is checked",
-        "Receive an eligible incentive",
+        "Get your unique signup link",
+        "Share it with potential users",
+        "Reach verified signup milestones",
+        "Earn eligible credit rewards",
+        "Unlock eligible monetary incentives",
       ],
     },
   },
 
   overview: {
-    eyebrow: "Why Reviews Matter",
-    title: "Better feedback creates a better community.",
+    eyebrow: "The Incentive Program",
+    title: "Grow your network. Earn as you progress.",
     description:
-      "Reviews can help members understand experiences before making decisions while giving the community more useful information to work with.",
+      "The program rewards eligible provider participation by connecting referral activity with milestone-based incentives. Your tracked signup progress determines when you reach the next reward threshold.",
     items: [
       {
-        title: "Real Experiences",
+        title: "Your Signup Link",
         description:
-          "Thoughtful reviews give community members a clearer picture of what to expect from an interaction.",
-        icon: MessageSquareText,
+          "Share your unique referral signup link so new users can register through your invitation.",
+        icon: Link2,
       },
       {
-        title: "Useful Information",
+        title: "Credit Milestones",
         description:
-          "Detailed feedback can help people make more informed choices when exploring profiles and experiences.",
-        icon: Sparkles,
+          "Reach configured signup milestones to qualify for the corresponding credit rewards.",
+        icon: Coins,
       },
       {
-        title: "Verified Participation",
+        title: "Monetary Incentives",
         description:
-          "Eligible review activity can be tied to qualifying platform interactions and program requirements.",
-        icon: BadgeCheck,
-      },
-      {
-        title: "Community Trust",
-        description:
-          "Honest feedback contributes to a platform where members can learn from one another.",
-        icon: ShieldCheck,
+          "Eligible milestones may unlock monetary rewards that can be requested through supported payout methods under the program rules.",
+        icon: Wallet,
       },
     ],
   },
 
   howItWorks: {
     eyebrow: "How It Works",
-    title: "The review incentive process.",
+    title: "Five steps from referral to reward.",
     description:
-      "The program is designed to encourage genuine feedback without turning reviews into scripted or misleading endorsements.",
+      "The process starts with your personal signup link and continues as eligible registrations are tracked and milestone requirements are met.",
     steps: [
       {
         number: "01",
-        title: "Have an Eligible Interaction",
+        title: "Get Your Signup Link",
         description:
-          "Participate in an interaction or activity that qualifies under the current review incentive program.",
-        icon: UserRoundCheck,
+          "Access your unique provider referral link through the designated area of your account.",
+        icon: Link2,
       },
       {
         number: "02",
-        title: "Submit Your Review",
+        title: "Share Your Link",
         description:
-          "Share honest and useful feedback based on your actual experience.",
-        icon: MessageSquareText,
+          "Share your link with people who may be interested in joining Mystery Mansion. Use appropriate channels and follow platform rules.",
+        icon: Users,
       },
       {
         number: "03",
-        title: "Review Eligibility",
+        title: "Generate Eligible Signups",
         description:
-          "The submitted review may be checked against the program's current requirements and platform rules.",
-        icon: BadgeCheck,
+          "When a new user registers through your link, the platform can attribute the registration to your referral, subject to verification.",
+        icon: UserPlus,
       },
       {
         number: "04",
-        title: "Receive the Incentive",
+        title: "Reach Reward Milestones",
         description:
-          "Eligible participants receive the applicable incentive associated with the current program.",
+          "Your verified referral count progresses toward the thresholds listed below. Each qualifying reward should be recorded against the correct account.",
         icon: Gift,
+      },
+      {
+        number: "05",
+        title: "Receive Eligible Rewards",
+        description:
+          "Credit rewards are subject to the configured milestone rules. Eligible monetary incentives may be requested through a supported payout method after applicable checks.",
+        icon: CreditCard,
       },
     ],
   },
 
-  standards: {
-    eyebrow: "Review Standards",
-    title: "Incentives should never replace honesty.",
+  milestones: {
+    eyebrow: "Referral Milestones",
+    title: "Every milestone is progress.",
     description:
-      "A review incentive exists to encourage participation, not to influence what someone says about their experience.",
-    items: [
-      "Reviews should be based on a genuine experience.",
-      "Participants should describe their own experience honestly.",
-      "Reviews should not be created solely to obtain an incentive.",
-      "False, misleading, abusive, or manipulated reviews may be removed.",
-      "Program requirements may change as Mystery Mansion updates the platform.",
+      "Track your verified signups and work toward each reward threshold. Configure the exact credit amounts and monetary reward eligibility for each milestone below.",
+    countLabel: "Verified signups",
+    creditRewardLabel: "Credit reward",
+    moneyRewardLabel: "Monetary incentive",
+    rewardNote:
+      "Reward amounts and eligibility must be configured in the program data before the program is published with final reward promises.",
+    tiers: [
+      {
+        id: "milestone-5",
+        signups: 5,
+        label: "5 Signups",
+        creditsAwarded: 50,
+        moneyRewardEnabled: null,
+        moneyReward: null,
+        description:
+          "Reach your first referral milestone with five eligible registrations.",
+      },
+      {
+        id: "milestone-10",
+        signups: 10,
+        label: "10 Signups",
+        creditsAwarded: 150,
+        moneyRewardEnabled: null,
+        moneyReward: null,
+        description:
+          "Keep building your referral network and reach ten eligible registrations.",
+      },
+      {
+        id: "milestone-15",
+        signups: 15,
+        label: "15 Signups",
+        creditsAwarded: 220,
+        moneyRewardEnabled: null,
+        moneyReward: null,
+        description:
+          "Continue growing your network and reach your next milestone.",
+      },
+      {
+        id: "milestone-20",
+        signups: 20,
+        label: "20 Signups",
+        creditsAwarded: 270,
+        moneyRewardEnabled: true,
+        moneyReward: 30,
+        description:
+          "Build on your referral activity with twenty eligible registrations.",
+      },
+      {
+        id: "milestone-25",
+        signups: 25,
+        label: "25 Signups",
+        creditsAwarded: 345,
+        moneyRewardEnabled: true,
+        moneyReward: 50,
+        description:
+          "Reach twenty-five eligible registrations through your signup link.",
+      },
+      {
+        id: "milestone-40",
+        signups: 40,
+        label: "40 Signups",
+        creditsAwarded: 415,
+        moneyRewardEnabled: true,
+        moneyReward: 80,
+        description:
+          "Grow your referral activity toward forty eligible registrations.",
+      },
+      {
+        id: "milestone-45",
+        signups: 45,
+        label: "45 Signups",
+        creditsAwarded: 500,
+        moneyRewardEnabled: true,
+        moneyReward: 130,
+        description:
+          "Keep progressing toward your next referral reward threshold.",
+      },
+      {
+        id: "milestone-50",
+        signups: 50,
+        label: "50 Signups",
+        creditsAwarded: 600,
+        moneyRewardEnabled: true,
+        moneyReward: 225,
+        description:
+          "Reach fifty eligible registrations through your shared link.",
+      },
+      {
+        id: "milestone-100",
+        signups: 100,
+        label: "100+ Signups",
+        creditsAwarded: 1400,
+        moneyRewardEnabled: true,
+        moneyReward: 450,
+        isOpenEnded: true,
+        description:
+          "Reach one hundred eligible registrations and continue building your referral network.",
+      },
     ],
   },
 
-  closing: {
-    eyebrow: "Contribute to the Community",
-    title: "Your experience can help someone else.",
+  moneyIncentives: {
+    eyebrow: "Monetary Rewards",
+    title: "Eligible milestones may unlock monetary incentives.",
     description:
-      "Thoughtful feedback gives the community more information while helping Mystery Mansion build a more useful platform for everyone.",
+      "Where a milestone has a monetary reward enabled, eligible providers can follow the program's payout process and choose from the supported payout methods listed below.",
+    eligibilityDescription:
+      "Monetary rewards are separate from credit rewards. Eligibility, availability, verification, minimum payout requirements, and processing conditions should follow the program's published rules.",
+    payoutOptions: [],
   },
+
+  standards: {
+    eyebrow: "Program Standards",
+    title: "Fair rewards start with trustworthy activity.",
+    description:
+      "Referral tracking and review participation should remain transparent so the incentive program rewards genuine engagement.",
+    items: [
+      {
+        title: "Eligible Registrations Only",
+        description:
+          "Signup milestones should count completed, eligible registrations attributed to your link, not link clicks or incomplete signup attempts.",
+        icon: UserPlus,
+      },
+      {
+        title: "No Artificial Referrals",
+        description:
+          "Duplicate accounts, self-referrals, fraudulent activity, or attempts to manipulate the reward system should not qualify.",
+        icon: ShieldCheck,
+      },
+      {
+        title: "Honest Reviews",
+        description:
+          "When reviews are part of platform participation, they should reflect genuine experiences. Rewards must not depend on a review being positive.",
+        icon: MessageSquareText,
+      },
+      {
+        title: "Transparent Rewards",
+        description:
+          "Credit amounts, monetary incentive eligibility, payout methods, and any applicable restrictions should be clearly documented before rewards are offered.",
+        icon: BadgeCheck,
+      },
+    ],
+  },
+
+  cta: {
+    eyebrow: "Start Growing",
+    title: "Build your network on Mystery Mansion.",
+    description:
+      "Get started as a provider, share your referral signup link, and track your progress toward eligible incentive milestones.",
+    primaryCta: {
+      label: "Become a Provider",
+      href: "/become-a-provider",
+    },
+    secondaryCta: {
+      label: "Explore Referrals",
+      href: "/referrals",
+    },
+  },
+
+  
+reviewMilestones: {
+  eyebrow: "Review Milestones",
+  title: "Every eligible review counts.",
+  description:
+    "Earn rewards as you contribute eligible reviews. Milestones are based on verified reviews, not whether a review is positive or negative.",
+  countLabel: "Eligible reviews",
+  creditRewardLabel: "Credit reward",
+  moneyRewardLabel: "Monetary incentive",
+  rewardNote:
+    "Reward amounts and monetary eligibility must be configured before the program goes live. Reviews must meet the platform's eligibility and verification requirements.",
+  tiers: [
+    {
+      id: "review-milestone-5",
+      reviews: 5,
+      label: "5 Reviews",
+      creditsAwarded: null,
+      moneyRewardEnabled: null,
+      moneyReward: null,
+      description: "Reach 5 eligible reviews to unlock this milestone."
+    },
+    {
+      id: "review-milestone-10",
+      reviews: 10,
+      label: "10 Reviews",
+      creditsAwarded: null,
+      moneyRewardEnabled: null,
+      moneyReward: null,
+      description: "Build your review history with 10 eligible reviews."
+    },
+    {
+      id: "review-milestone-15",
+      reviews: 15,
+      label: "15 Reviews",
+      creditsAwarded: null,
+      moneyRewardEnabled: null,
+      moneyReward: null,
+      description: "Reach 15 eligible reviews and continue progressing."
+    },
+    {
+      id: "review-milestone-20",
+      reviews: 20,
+      label: "20 Reviews",
+      creditsAwarded: null,
+      moneyRewardEnabled: null,
+      moneyReward: null,
+      description: "Reach 20 eligible reviews."
+    },
+    {
+      id: "review-milestone-25",
+      reviews: 25,
+      label: "25 Reviews",
+      creditsAwarded: null,
+      moneyRewardEnabled: null,
+      moneyReward: null,
+      description: "Reach 25 eligible reviews and advance to the next milestone."
+    },
+    {
+      id: "review-milestone-40",
+      reviews: 40,
+      label: "40 Reviews",
+      creditsAwarded: null,
+      moneyRewardEnabled: null,
+      moneyReward: null,
+      description: "Reach 40 eligible reviews."
+    },
+    {
+      id: "review-milestone-45",
+      reviews: 45,
+      label: "45 Reviews",
+      creditsAwarded: null,
+      moneyRewardEnabled: null,
+      moneyReward: null,
+      description: "Reach 45 eligible reviews."
+    },
+    {
+      id: "review-milestone-50",
+      reviews: 50,
+      label: "50 Reviews",
+      creditsAwarded: null,
+      moneyRewardEnabled: null,
+      moneyReward: null,
+      description: "Reach 50 eligible reviews and continue building your contribution history."
+    },
+    {
+      id: "review-milestone-100",
+      reviews: 100,
+      label: "100+ Reviews",
+      creditsAwarded: null,
+      moneyRewardEnabled: null,
+      moneyReward: null,
+      isOpenEnded: true,
+      description: "Reach 100 eligible reviews and keep progressing beyond this milestone."
+    }
+  ]
+},
+
 };

@@ -51,6 +51,16 @@ const FALLBACK_FAQS = [
         question: "Is this a sister company of other platforms?",
         answer: "No. We do not participate in the operations or business dealings of any other company or platform. Mystery Mansion is owned and monitored solely by Fantome Technologies.",
     },
+    {
+        _id: 'f8',
+        question: "How Do Credits Work?",
+        answer: "Credits are the platform's virtual currency used for various actions such as promoting your account or obtaining the Blue Badge Verification. You can purchase credits through the platform, and they will be deducted from your account as you use them for different services.",
+    },
+    {
+        _id: 'f9',
+        question: "",
+        answer: "",
+    },
 ];
 
 const TRUST_ITEMS = [

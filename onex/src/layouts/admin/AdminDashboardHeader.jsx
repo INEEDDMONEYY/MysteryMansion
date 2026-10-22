@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Menu, Bell, Search, Settings, User, ImageIcon, Crown, ChevronDown, Loader2 } from 'lucide-react';
+import { Menu, Bell, Search, Settings, User, ImageIcon, Crown, ChevronDown, Loader2, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/context/useUser';
 import useNotifications from '@/shared/hooks/useNotifications';
@@ -30,6 +30,7 @@ export default function AdminDashboardHeader({
   title,
   menuOpen,
   onMenuToggle,
+  unreadMessages = 0,
 }) {
   const { user } = useUser();
   const navigate = useNavigate();
@@ -213,6 +214,20 @@ export default function AdminDashboardHeader({
             )}
           </div>
 
+          {/* Messages */}
+          <button
+            onClick={() => navigate('/admin/messages')}
+            className="relative h-10 w-10 rounded-2xl border border-neutral-800 bg-neutral-900 flex items-center justify-center text-neutral-300 hover:text-white transition-colors"
+            title="Messages"
+          >
+            <MessageCircle size={16} />
+            {unreadMessages > 0 && (
+              <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 flex items-center justify-center rounded-full bg-pink-500 text-[10px] font-bold text-white leading-none">
+                {unreadMessages > 9 ? '9+' : unreadMessages}
+              </span>
+            )}
+          </button>
+
           {/* Bell */}
           <div className="relative" ref={bellRef}>
             <button
@@ -234,6 +249,12 @@ export default function AdminDashboardHeader({
               loading={loading}
               markAllRead={markAllRead}
               markOneRead={markOneRead}
+              onItemClick={(n) => {
+                if (!n.read) markOneRead(n._id);
+                setBellOpen(false);
+                if (n.type === 'new_flag') navigate('/admin/reported-flags');
+                if (n.type === 'new_credit_request') navigate('/admin/credit-requests');
+              }}
               title="Admin Notifications"
               viewAllHref="/admin/notifications"
             />

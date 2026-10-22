@@ -84,15 +84,24 @@ export default function PostDetail() {
 
   // ── Derived post data ────────────────────────────────────────────────────
   const photoItems = Array.isArray(post?.pictures)
-    ? post.pictures.map((url) => ({ type: "image", url }))
+    ? post.pictures.map((url, index) => ({
+        type: "image",
+        url,
+        backupUrl: post?.pictureBackups?.[index] || "",
+      }))
     : [];
 
   const videoItems = Array.isArray(post?.videos)
-    ? post.videos.map((url) => ({ type: "video", url }))
+    ? post.videos.map((url, index) => ({
+        type: "video",
+        url,
+        backupUrl: post?.videoBackups?.[index] || "",
+      }))
     : [];
 
   // The hero shows the first uploaded photo; the Photos tab lists every photo, including that one.
   const heroImage = photoItems[0]?.url || post?.picture || "";
+  const heroImageBackup = photoItems[0]?.backupUrl || "";
 
   const postOwnerId =
     post?.userId?._id ||
@@ -610,6 +619,7 @@ export default function PostDetail() {
 
       <PostHero
         image={heroImage}
+        backupImage={heroImageBackup}
         title={post.title}
         username={
           effectiveUser?.username
@@ -721,6 +731,12 @@ export default function PostDetail() {
       )}
 
       <PostEngagement
+        postId={post._id}
+        isOwner={Boolean(
+          postOwnerId &&
+            currentUserId &&
+            postOwnerId === currentUserId
+        )}
         liked={liked}
         likeCount={likeCount}
         likeBusy={likeBusy}

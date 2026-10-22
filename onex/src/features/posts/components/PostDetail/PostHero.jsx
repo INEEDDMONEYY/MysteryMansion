@@ -1,9 +1,11 @@
 // 🎀 Post Detail Hero
 
 import { Link } from "react-router-dom";
+import { handleMediaError } from "@/shared/utils/mediaFallback";
 
 export default function PostHero({
   image = "",
+  backupImage = "",
   title = "",
   username = "",
   createdLabel = "",
@@ -16,6 +18,7 @@ export default function PostHero({
           <div className="mb-6 flex items-center justify-center overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
             <img
               src={image}
+              onError={handleMediaError(backupImage)}
               alt={title || "Post image"}
               className="max-h-[420px] w-auto max-w-full object-contain sm:max-h-[560px] lg:max-h-[720px]"
             />

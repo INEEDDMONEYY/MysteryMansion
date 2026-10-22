@@ -7,8 +7,9 @@ import {
 } from "recharts";
 import {
   FileText, Star, MessageCircle, Eye, Clock,
-  TrendingUp, Sparkles, CalendarDays,
+  TrendingUp, Sparkles, CalendarDays, Coins,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { UserContext } from "@/context/UserContext";
 import api from "@/shared/utils/api";
 import { setSEO } from "@/shared/utils/seo";
@@ -79,6 +80,29 @@ function StatCard({ label, value, icon: Icon, color, suffix = "" }) {
   );
 }
 
+// ── Credits card ──────────────────────────────────────────────────────────────
+function CreditsCard({ credits }) {
+  return (
+    <Link
+      to="/user/credits"
+      className="bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl p-5 shadow-md flex items-center gap-4 transition hover:bg-white/60"
+    >
+      <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-yellow-500 shadow-lg">
+        <Coins size={22} className="text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-0.5">Credits</p>
+        {credits == null ? (
+          <div className="h-7 w-20 bg-white/50 rounded animate-pulse" />
+        ) : (
+          <p className="text-2xl font-bold text-gray-900 leading-none">{credits.toLocaleString()}</p>
+        )}
+      </div>
+      <span className="shrink-0 text-xs font-semibold text-pink-600">Top up</span>
+    </Link>
+  );
+}
+
 // ── Custom tooltip ────────────────────────────────────────────────────────────
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -99,6 +123,7 @@ export default function UserDashboard() {
   const { user } = useContext(UserContext);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [credits, setCredits] = useState(null);
 
   useEffect(() => {
     setSEO("Dashboard | Mystery Mansion", "", { robots: "noindex, nofollow" });
@@ -106,6 +131,9 @@ export default function UserDashboard() {
       .then(({ data }) => setData(data))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
+    api.get("/credits/balance")
+      .then(({ data }) => setCredits(Number(data?.credits ?? 0)))
+      .catch(() => setCredits(0));
   }, []);
 
   const SHOW_WHATS_NEW_BADGE = true;
@@ -169,6 +197,9 @@ export default function UserDashboard() {
           {restrictionLabelMap[restriction] || restriction}
         </div>
       )}
+
+      {/* ── Credits ── */}
+      <CreditsCard credits={credits} />
 
       {/* ── Stat Cards ── */}
       {loading ? (

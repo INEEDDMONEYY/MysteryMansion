@@ -7,7 +7,7 @@ export default function PromotionTiers() {
   const tiers = [
     {
       label: "1 Week Promotion",
-      price: "$12",
+      price: "200 Credits",
       benefits: [
         "Priority placement for 7 full days",
         "Increased profile visibility in feed",
@@ -22,7 +22,7 @@ export default function PromotionTiers() {
     },
     {
       label: "2 Weeks Promotion",
-      price: "$24",
+      price: "450 Credits",
       benefits: [
         "14 days of boosted placement",
         "Steady visibility across key sections",
@@ -37,7 +37,7 @@ export default function PromotionTiers() {
     },
     {
       label: "2 Weeks Promotion + Verification",
-      price: "$27",
+      price: "600 Credits",
       benefits: [
         "14 days of promoted visibility",
         "Blue verification badge included",
@@ -50,7 +50,7 @@ export default function PromotionTiers() {
     },
     {
       label: "3 Weeks Promotion",
-      price: "$32",
+      price: "800 Credits",
       benefits: [
         "21 days of continuous priority exposure",
         "Longer campaign for sustained reach",
@@ -65,7 +65,7 @@ export default function PromotionTiers() {
     },
     {
       label: "3 Weeks Promotion + Verification",
-      price: "$35",
+      price: "900 Credits",
       benefits: [
         "21 days of premium promoted reach",
         "Blue verification badge included",
@@ -78,7 +78,7 @@ export default function PromotionTiers() {
     },
     {
       label: "Blue Badge Verification",
-      price: "$3 / Monthly",
+      price: "50 Credits / Monthly",
       benefits: [
         "Blue badge shown on your profile and posts",
         "Builds trust with potential clients",

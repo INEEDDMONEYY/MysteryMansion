@@ -26,6 +26,7 @@ function useCountdown(expiryDate) {
   const [remaining, setRemaining] = useState(calcRemaining);
 
   useEffect(() => {
+    setRemaining(calcRemaining());
     const id = setInterval(() => {
       const next = calcRemaining();
       setRemaining(next);
@@ -208,13 +209,19 @@ export default function PromotedPosts() {
     const handlePromoUpdated = () => {
       fetchPromoted();
     };
+    // Picks up stacked time bought in another tab as soon as this tab is shown.
+    const handleVisible = () => {
+      if (document.visibilityState === "visible") fetchPromoted();
+    };
     window.addEventListener("promo-updated", handlePromoUpdated);
+    document.addEventListener("visibilitychange", handleVisible);
 
     // Re-fetch every 60 s so expired accounts drop off without a full page reload
     const id = setInterval(fetchPromoted, 60_000);
     return () => {
       clearInterval(id);
       window.removeEventListener("promo-updated", handlePromoUpdated);
+      document.removeEventListener("visibilitychange", handleVisible);
     };
   }, []);
 

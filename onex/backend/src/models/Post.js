@@ -7,6 +7,12 @@ const PostSchema = new mongoose.Schema(
     description: { type: String, required: true },
     pictures: [{ type: String }], // <-- Changed to an array for multiple images
     videos: [{ type: String }],
+    // Index-aligned with pictures/videos above; used by the frontend as a
+    // fallback src if the primary URL fails. Pictures upload to Cloudinary
+    // with a Cloudflare R2 backup copy here; videos upload directly to R2
+    // (no Cloudinary), so their backup entry is normally empty.
+    pictureBackups: [{ type: String, default: "" }],
+    videoBackups: [{ type: String, default: "" }],
     city: { type: String },
     state: { type: String },
     country: { type: String },

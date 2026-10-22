@@ -458,7 +458,22 @@ export default function HomeContent({
       return;
     }
 
-    if (posts.length === 0) {
+    const hasActiveServerFilter =
+      Boolean(activeFilters.state) ||
+      Boolean(activeFilters.city) ||
+      Boolean(activeFilters.gender);
+
+    const hasActiveSearch =
+      typeof searchQuery === "string" &&
+      searchQuery.trim().length > 0;
+
+    // An empty result from an active filter/search is a valid "no matches"
+    // state — only auto-retry when the unfiltered feed itself came back empty.
+    if (
+      posts.length === 0 &&
+      !hasActiveServerFilter &&
+      !hasActiveSearch
+    ) {
       fetchPosts();
     }
 
@@ -479,6 +494,8 @@ export default function HomeContent({
     users.length,
     popularProviders.length,
     filterOptions.states.length,
+    activeFilters,
+    searchQuery,
     fetchPosts,
     fetchUsers,
     fetchPopularProviders,

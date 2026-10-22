@@ -1,14 +1,16 @@
 import { useContext, useEffect, useState } from 'react';
-import { Coins, Plus, Clock, CheckCircle, XCircle, AlertCircle, Star, Zap, Copy, DollarSign } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Coins, Plus, Clock, CheckCircle, XCircle, AlertCircle, Star, Zap, Copy, DollarSign, Rocket, BadgeCheck } from 'lucide-react';
 import { UserContext } from '@/context/UserContext';
 import api from '@/shared/utils/api';
 import { setSEO } from '@/shared/utils/seo';
+import EarnCreditsPanel from '@/shared/components/credits/EarnCreditsPanel';
 
 function fmt(cents) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-function PackageCard({ pkg, onSelect, selected }) {
+function PackageCard({ pkg, onSelect, selected, showMessages = true }) {
   return (
     <button
       type="button"
@@ -33,7 +35,9 @@ function PackageCard({ pkg, onSelect, selected }) {
         <Coins size={13} className="text-yellow-500" />
         <span className="text-sm font-semibold text-yellow-700">{pkg.credits.toLocaleString()} credits</span>
       </div>
-      <p className="text-[11px] text-gray-400 mt-0.5">≈ {Math.floor(pkg.credits / 20)} messages</p>
+      {showMessages && (
+        <p className="text-[11px] text-gray-400 mt-0.5">≈ {Math.floor(pkg.credits / 20)} messages</p>
+      )}
       {selected && (
         <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-blue-700">
           <Zap size={11} /> Selected — fill your payment note below
@@ -110,8 +114,77 @@ function RequestRow({ req }) {
   );
 }
 
+const formatDate = (value) =>
+  new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+function PromotionStatusCard({ status, onCancelBadge, cancelling, message }) {
+  const hasPromo = Boolean(status.activePromoExpiry);
+  const hasBadge = status.badgeType === 'blue';
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <h2 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <Rocket size={15} className="text-pink-500" /> Promotion &amp; Badge
+        </h2>
+        <Link to="/promote" className="text-xs font-semibold text-pink-600 hover:underline">
+          Browse promotion tiers
+        </Link>
+      </div>
+
+      <div className="space-y-2 text-sm">
+        <p className="text-gray-700">
+          Promotion:{' '}
+          {hasPromo ? (
+            <strong>Active until {formatDate(status.activePromoExpiry)}</strong>
+          ) : (
+            <span className="text-gray-500">None active</span>
+          )}
+        </p>
+
+        <p className="text-gray-700 flex items-center gap-1.5">
+          <BadgeCheck size={14} className="text-blue-600" />
+          Blue badge:{' '}
+          {status.badgeAutoRenew ? (
+            <strong>
+              Active — {status.badgeMonthlyCredits} credits renew monthly on {formatDate(status.badgeExpiresAt)}
+            </strong>
+          ) : hasBadge ? (
+            <strong>
+              Active{status.badgeExpiresAt ? ` until ${formatDate(status.badgeExpiresAt)}` : ''}
+            </strong>
+          ) : (
+            <span className="text-gray-500">Not active</span>
+          )}
+        </p>
+      </div>
+
+      {status.badgeAutoRenew && (
+        <button
+          type="button"
+          onClick={onCancelBadge}
+          disabled={cancelling}
+          className="mt-4 rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+        >
+          {cancelling ? 'Cancelling…' : 'Cancel monthly renewal'}
+        </button>
+      )}
+
+      {message && (
+        <p role="status" className="mt-3 text-xs text-gray-600">
+          {message}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function ClientCreditsPage() {
   const { user } = useContext(UserContext);
+  const isProvider = (user?.accountType || 'provider') === 'provider' && user?.role !== 'admin';
+  const [promoStatus, setPromoStatus]   = useState(null);
+  const [cancelling, setCancelling]     = useState(false);
+  const [statusMsg, setStatusMsg]       = useState('');
   const [credits, setCredits]           = useState(null);
   const [requests, setRequests]         = useState([]);
   const [packages, setPackages]         = useState([]);
@@ -130,13 +203,17 @@ export default function ClientCreditsPage() {
 
   const fetchData = async () => {
     setLoadingData(true);
-    const [balR, reqR, pkgR] = await Promise.allSettled([
+    const [balR, reqR, pkgR, statusR] = await Promise.allSettled([
       api.get('/credits/balance'),
       api.get('/credits/requests'),
       api.get('/credits/packages'),
+      isProvider ? api.get('/promotions/status') : Promise.reject(new Error('not a provider')),
     ]);
     if (balR.status === 'fulfilled') {
-      setCredits(balR.value.data?.credits ?? 200);
+      setCredits(balR.value.data?.credits ?? (isProvider ? 0 : 200));
+    }
+    if (statusR.status === 'fulfilled') {
+      setPromoStatus(statusR.value.data?.data || null);
     }
     if (reqR.status === 'fulfilled') {
       setRequests(Array.isArray(reqR.value.data) ? reqR.value.data : []);
@@ -181,8 +258,22 @@ export default function ClientCreditsPage() {
     }
   };
 
+  const handleCancelBadge = async () => {
+    setCancelling(true);
+    setStatusMsg('');
+    try {
+      await api.post('/promotions/badge/cancel');
+      setStatusMsg('Monthly renewal cancelled. Your badge stays active until the end of the paid month.');
+      fetchData();
+    } catch (err) {
+      setStatusMsg(err?.response?.data?.error || 'Failed to cancel renewal.');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   const messages = credits !== null ? Math.floor(credits / CREDITS_PER_MESSAGE) : null;
-  const isLow    = credits !== null && credits < CREDITS_PER_MESSAGE;
+  const isLow    = !isProvider && credits !== null && credits < CREDITS_PER_MESSAGE;
 
   return (
     <div className="min-h-full -m-4 md:-m-6 p-4 md:p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-white">
@@ -193,7 +284,9 @@ export default function ClientCreditsPage() {
           <Coins size={24} className="text-blue-600" /> My Credits
         </h1>
         <p className="text-gray-500 text-sm mt-0.5">
-          Credits are required to message providers. Each message costs {CREDITS_PER_MESSAGE} credits.
+          {isProvider
+            ? 'Credits pay for promotions and your monthly Blue Badge. Top up below with Cash App.'
+            : `Credits are required to message providers. Each message costs ${CREDITS_PER_MESSAGE} credits.`}
         </p>
       </div>
 
@@ -215,7 +308,7 @@ export default function ClientCreditsPage() {
                 {credits?.toLocaleString() ?? '—'}
               </p>
               <p className="text-sm text-gray-500 mt-1">
-                {messages !== null ? `≈ ${messages} message${messages !== 1 ? 's' : ''} remaining` : ''}
+                {!isProvider && messages !== null ? `≈ ${messages} message${messages !== 1 ? 's' : ''} remaining` : ''}
               </p>
             </>
           )}
@@ -226,6 +319,17 @@ export default function ClientCreditsPage() {
           </div>
         )}
       </div>
+
+      {isProvider && promoStatus && (
+        <PromotionStatusCard
+          status={promoStatus}
+          onCancelBadge={handleCancelBadge}
+          cancelling={cancelling}
+          message={statusMsg}
+        />
+      )}
+
+      <EarnCreditsPanel />
 
       {/* Pricing packages */}
       {packages.length > 0 && (
@@ -243,6 +347,7 @@ export default function ClientCreditsPage() {
                 pkg={pkg}
                 onSelect={handleSelectPackage}
                 selected={selectedPkg?._id === pkg._id}
+                showMessages={!isProvider}
               />
             ))}
           </div>

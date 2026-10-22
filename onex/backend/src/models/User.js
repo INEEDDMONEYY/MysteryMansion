@@ -155,6 +155,16 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Credit-purchased blue badge. null expiry + no auto-renew on a blue badge = admin-granted (permanent).
+    badgeExpiresAt: {
+      type: Date,
+      default: null,
+    },
+    // Monthly blue badge subscription — 50 credits deducted at each badgeExpiresAt.
+    badgeAutoRenew: {
+      type: Boolean,
+      default: false,
+    },
     // Account type: provider (escort/advertiser) or client (browser/buyer)
     // Default is "provider" for backwards compatibility — all pre-overhaul
     // users are providers. New signups set this explicitly via the signup form.

@@ -4,12 +4,12 @@
   "portsAttributes": {
     "5173": {
       "label": "Frontend (Vite)",
-      "onAutoForward": "openBrowser",
+      "onAutoForward": "silent",
       "visibility": "public"
     },
     "5020": {
       "label": "Backend (Express)",
-      "onAutoForward": "notify",
+      "onAutoForward": "silent",
       "visibility": "public"
     }
   },

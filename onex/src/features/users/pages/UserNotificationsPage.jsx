@@ -1,4 +1,5 @@
-import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus, Eye, Coins, Heart } from 'lucide-react';
+import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus, Eye, Coins, Heart, Flag } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import useNotifications from '@/shared/hooks/useNotifications';
 
@@ -15,11 +16,13 @@ const TYPE_META = {
   profile_visited:    { icon: Eye,            color: 'text-sky-400',     bg: 'bg-sky-400/10',     label: 'Profile Visit'   },
   low_credits:        { icon: Coins,          color: 'text-orange-400',  bg: 'bg-orange-400/10',  label: 'Low Credits'     },
   post_liked:         { icon: Heart,          color: 'text-pink-400',    bg: 'bg-pink-400/10',    label: 'Post Liked'      },
+  flag_update:        { icon: Flag,           color: 'text-red-400',     bg: 'bg-red-400/10',     label: 'Report Update'   },
 };
 
 export default function UserNotificationsPage() {
   const { notifications, unreadCount, loading, refresh, markAllRead, markOneRead } =
     useNotifications('user');
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-5 pb-8 max-w-3xl">
@@ -68,7 +71,10 @@ export default function UserNotificationsPage() {
             return (
               <button
                 key={n._id}
-                onClick={() => !n.read && markOneRead(n._id)}
+                onClick={() => {
+                  if (!n.read) markOneRead(n._id);
+                  if (n.type === 'flag_update') navigate('/user/reports');
+                }}
                 className={`w-full text-left flex items-start gap-4 px-5 py-4 hover:bg-neutral-800/40 transition-colors ${n.read ? 'opacity-60' : ''}`}
               >
                 <span className={`mt-0.5 shrink-0 h-10 w-10 rounded-2xl flex items-center justify-center ${meta.bg}`}>

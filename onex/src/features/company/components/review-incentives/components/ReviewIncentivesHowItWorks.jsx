@@ -1,101 +1,78 @@
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowDown, Sparkles } from "lucide-react";
 import { reviewIncentivesPageData } from "../data/reviewIncentivesPageData";
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.12,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: {
-    opacity: 0,
-    y: 30,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.55,
-      ease: "easeOut",
-    },
-  },
-};
-
 export default function ReviewIncentivesHowItWorks() {
-  const { howItWorks } =
-    reviewIncentivesPageData;
+  const { howItWorks } = reviewIncentivesPageData;
 
   return (
-    <section className="bg-gray-50 px-6 py-24 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <section className="relative overflow-hidden bg-black px-6 py-24 text-white lg:px-8">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -bottom-36 left-1/3 h-80 w-80 rounded-full bg-pink-600/10 blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.6 }}
-          className="max-w-3xl"
+          className="mx-auto mb-14 max-w-3xl text-center"
         >
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-pink-600">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-pink-400/30 bg-pink-500/10 px-4 py-2 text-sm font-medium text-pink-300">
+            <Sparkles size={16} aria-hidden="true" />
             {howItWorks.eyebrow}
-          </p>
+          </div>
 
-          <h2 className="mt-4 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
+          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
             {howItWorks.title}
           </h2>
 
-          <p className="mt-5 text-lg leading-8 text-gray-600">
+          <p className="mt-6 text-base leading-8 text-gray-300 sm:text-lg">
             {howItWorks.description}
           </p>
         </motion.div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{
-            once: true,
-            amount: 0.1,
-          }}
-          className="mt-14 grid gap-6 md:grid-cols-2"
-        >
-          {howItWorks.steps.map((step) => {
-            const Icon = step.icon;
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          {howItWorks.steps.map((step, index) => {
+            const Icon = step.icon || Sparkles;
 
             return (
-              <motion.div
+              <motion.article
                 key={step.number}
-                variants={itemVariants}
-                whileHover={{ y: -5 }}
-                className="group relative rounded-2xl border border-gray-200 bg-white p-7 shadow-sm transition-all duration-300 hover:border-pink-200 hover:shadow-xl hover:shadow-pink-100/60"
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.45, delay: index * 0.07 }}
+                className="relative rounded-2xl border border-white/10 bg-white/[0.04] p-6 transition duration-300 hover:-translate-y-1 hover:border-pink-400/40"
               >
-                <div className="flex items-start justify-between gap-6">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-pink-50 text-pink-600 transition-all duration-300 group-hover:bg-pink-600 group-hover:text-white">
-                    <Icon className="h-5 w-5" />
-                  </div>
-
-                  <span className="text-5xl font-black leading-none text-gray-100 transition-colors duration-300 group-hover:text-pink-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-black tracking-[0.2em] text-pink-400">
                     {step.number}
                   </span>
+
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-pink-500/10 text-pink-300">
+                    <Icon size={21} aria-hidden="true" />
+                  </div>
                 </div>
 
-                <h3 className="mt-7 text-xl font-bold text-gray-950">
+                <h3 className="mt-7 text-lg font-bold text-white">
                   {step.title}
                 </h3>
 
-                <p className="mt-3 max-w-xl text-sm leading-7 text-gray-600">
+                <p className="mt-3 text-sm leading-7 text-gray-400">
                   {step.description}
                 </p>
 
-                <ArrowRight className="absolute bottom-7 right-7 h-5 w-5 text-gray-300 transition-all duration-300 group-hover:translate-x-1 group-hover:text-pink-500" />
-              </motion.div>
+                {index < howItWorks.steps.length - 1 && (
+                  <div className="mt-6 hidden items-center justify-center text-yellow-400/70 lg:flex">
+                    <ArrowDown size={15} aria-hidden="true" />
+                  </div>
+                )}
+              </motion.article>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

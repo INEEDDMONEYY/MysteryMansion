@@ -22,8 +22,11 @@ export default function HomeFilters({
       ? filterOptions.states
       : [];
 
-  const cities =
-    Array.isArray(filterOptions?.cities)
+  // Scope the city list to the selected state; fall back to every city
+  // (across all states) when no state is chosen yet.
+  const cities = pendingState
+    ? filterOptions?.citiesByState?.[pendingState] || []
+    : Array.isArray(filterOptions?.cities)
       ? filterOptions.cities
       : [];
 

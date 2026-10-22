@@ -12,6 +12,14 @@ import {
 } from "lucide-react";
 import api from "@/shared/utils/api";
 import { hasPermanentProviderBadge } from "@/features/users/services/providerBadgeEligibility.js";
+import { FEATURE_FLAGS } from "@/config/featureFlags";
+import useAccountRank from "@/features/account-ranking/hooks/useAccountRank";
+import FlagButton from "@/features/flagging/components/FlagButton";
+import { FLAG_TARGET_TYPES } from "@/features/flagging/utils/flagTargets";
+
+// Stable reference — not connected to real criterion data yet, so the score
+// preview always reflects a fresh/unranked account until the backend lands.
+const EMPTY_CRITERION_SCORES = {};
 
 export default function UserProfileHeader({
   propUser = null,
@@ -29,6 +37,7 @@ export default function UserProfileHeader({
   const [user, setUser] = useState({
     username: "",
     role: "",
+    accountType: "",
     bio: "",
     age: null,
     createdAt: null,
@@ -75,6 +84,11 @@ export default function UserProfileHeader({
         String(displayUserId)
   );
 
+  const { rank: accountRank } = useAccountRank({
+    role: user.accountType === "client" ? "client" : "provider",
+    criterionScores: EMPTY_CRITERION_SCORES,
+  });
+
   // ─────────────────────────────────────────────────────────────
   // STORAGE
   // ─────────────────────────────────────────────────────────────
@@ -120,6 +134,7 @@ export default function UserProfileHeader({
       setUser({
         username: profileData.username || "",
         role: profileData.role || "",
+        accountType: profileData.accountType || "provider",
         bio: profileData.bio || "",
         age: profileData.age ?? null,
         createdAt:
@@ -500,6 +515,16 @@ export default function UserProfileHeader({
           </button>
         )}
 
+        {!isOwner && displayUserId && (
+          <FlagButton
+            targetType={FLAG_TARGET_TYPES.USER}
+            targetId={displayUserId}
+            label="Report user"
+            showLabel
+            className="absolute right-4 top-4 z-10 rounded-lg border border-white/20 bg-black/60 text-white shadow-lg backdrop-blur-sm hover:bg-black/80 sm:right-6 sm:top-6 lg:right-8"
+          />
+        )}
+
         <input
           ref={fileInputRef}
           type="file"
@@ -653,6 +678,23 @@ export default function UserProfileHeader({
                     />
 
                     Founding Provider
+                  </span>
+                )}
+
+                {/* ACCOUNT SCORE (frontend preview — not wired to real data yet) */}
+
+                {FEATURE_FLAGS.ENABLE_ACCOUNT_SCORE && accountRank && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full bg-neutral-800 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
+                    aria-label="Account Score"
+                    title={`Account Score: ${Math.round(accountRank.score)} — ${accountRank.rank?.name || "Unranked"}`}
+                  >
+                    <Star
+                      size={12}
+                      className="fill-current text-yellow-400"
+                    />
+
+                    {accountRank.rank?.name || "Unranked"} · {Math.round(accountRank.score)}
                   </span>
                 )}
 

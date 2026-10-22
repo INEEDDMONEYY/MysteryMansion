@@ -1,77 +1,65 @@
 import { motion } from "framer-motion";
-import {
-  BadgeCheck,
-  ShieldCheck,
-} from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { reviewIncentivesPageData } from "../data/reviewIncentivesPageData";
 
 export default function ReviewIncentivesStandards() {
-  const { standards } =
-    reviewIncentivesPageData;
+  const { standards } = reviewIncentivesPageData;
 
   return (
-    <section className="bg-white px-6 py-24 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-          <motion.div
-            initial={{ opacity: 0, x: -25 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{
-              once: true,
-              amount: 0.2,
-            }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
-              <ShieldCheck className="h-6 w-6" />
-            </div>
+    <section className="relative overflow-hidden border-y border-white/10 bg-neutral-950 px-6 py-24 text-white lg:px-8">
+      <div className="pointer-events-none absolute -right-32 top-0 h-96 w-96 rounded-full bg-yellow-400/[0.06] blur-3xl" />
 
-            <p className="mt-7 text-sm font-bold uppercase tracking-[0.2em] text-pink-600">
-              {standards.eyebrow}
-            </p>
+      <div className="relative mx-auto max-w-7xl">
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.55 }}
+          className="mx-auto mb-14 max-w-3xl text-center"
+        >
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-yellow-400/25 bg-yellow-400/[0.07] px-4 py-2 text-sm font-medium text-yellow-300">
+            <ShieldCheck size={16} aria-hidden="true" />
+            {standards.eyebrow}
+          </div>
 
-            <h2 className="mt-4 text-4xl font-black tracking-tight text-gray-950 sm:text-5xl">
-              {standards.title}
-            </h2>
+          <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
+            {standards.title}
+          </h2>
 
-            <p className="mt-5 text-lg leading-8 text-gray-600">
-              {standards.description}
-            </p>
-          </motion.div>
+          <p className="mt-6 text-base leading-8 text-gray-300 sm:text-lg">
+            {standards.description}
+          </p>
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 25 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{
-              once: true,
-              amount: 0.2,
-            }}
-            transition={{ duration: 0.6 }}
-            className="rounded-3xl border border-gray-200 bg-gray-50 p-8 sm:p-10"
-          >
-            <div className="space-y-6">
-              {standards.items.map((item, index) => (
-                <div
-                  key={item}
-                  className="flex gap-4 border-b border-gray-200 pb-6 last:border-b-0 last:pb-0"
-                >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-pink-600 shadow-sm">
-                    <BadgeCheck className="h-4 w-4" />
-                  </div>
+        <div className="grid gap-5 sm:grid-cols-2">
+          {standards.items.map((item, index) => {
+            const Icon = item.icon || ShieldCheck;
 
-                  <div>
-                    <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-400">
-                      Standard {index + 1}
-                    </span>
-
-                    <p className="text-sm leading-7 text-gray-600">
-                      {item}
-                    </p>
-                  </div>
+            return (
+              <motion.article
+                key={item.title}
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.45, delay: (index % 2) * 0.1 }}
+                className="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition hover:border-yellow-400/25 sm:p-7"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-pink-400/20 bg-pink-500/10 text-pink-300">
+                  <Icon size={22} aria-hidden="true" />
                 </div>
-              ))}
-            </div>
-          </motion.div>
+
+                <div>
+                  <h3 className="text-lg font-bold text-white">
+                    {item.title}
+                  </h3>
+
+                  <p className="mt-3 text-sm leading-7 text-gray-400 sm:text-base">
+                    {item.description}
+                  </p>
+                </div>
+              </motion.article>
+            );
+          })}
         </div>
       </div>
     </section>

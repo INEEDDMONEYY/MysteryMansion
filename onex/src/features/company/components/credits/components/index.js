@@ -3,3 +3,7 @@ export { default as CreditsCta } from "./CreditsCta";
 export { default as CreditsHero } from "./CreditsHero";
 export { default as CreditsHowItWorks } from "./CreditsHowItWorks";
 export { default as CreditsOverview } from "./CreditsOverview";
+export { default as CreditPackageCard } from "./CreditPackageCard";
+export { default as CreditPackagesCta } from "./CreditPackagesCta";
+export { default as CreditPackagesGrid } from "./CreditPackagesGrid";
+export { default as CreditPackagesHero } from "./CreditPackagesHero";

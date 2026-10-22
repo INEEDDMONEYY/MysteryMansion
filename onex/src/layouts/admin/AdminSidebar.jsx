@@ -19,6 +19,7 @@ import {
   PersonStanding,
   ChartArea,
   BookPlus,
+  Flag,
 } from 'lucide-react';
 import { useUser } from '@/context/useUser';
 
@@ -29,6 +30,7 @@ const ADMIN_NAV = [
   { to: '/admin/categories',      label: 'Categories',      icon: Tag },
   { to: '/admin/credit-requests', label: 'Credit Requests', icon: Coins },
   { to: '/admin/credit-packages', label: 'Credit Packages', icon: Coins },
+  { to: '/admin/credit-earn-rules', label: 'Earn Rules', icon: Coins },
   { to: '/admin/create-user',     label: 'Create Users', icon: UserPlus },
   { to: '/admin/discounts',       label: 'Discounts',    icon: Percent },
   { to: '/admin/email-users',     label: 'Email Users',     icon: MailCheck },
@@ -36,6 +38,8 @@ const ADMIN_NAV = [
   { to: '/admin/milestones', label: 'Milestones', icon: BookPlus },
   { to: '/admin/messages',        label: 'Messages',     icon: Mail },
   { to: '/admin/notifications',   label: 'Notifications',icon: Bell },
+  { to: '/admin/reported-flags', label: 'Reported Flags', icon: Flag },
+  { to: '/admin/reported-flags-timeline', label: 'Reported Flags Timeline', icon: Flag },
   { to: '/admin/referrals',       label: 'Referral Analytics',    icon: PersonStanding },
   { to: '/admin/shared-link-analytics', label: 'Shared Link Analytics', icon: ChartArea },
   { to: '/admin/settings',        label: 'Settings',        icon: Settings },
@@ -46,6 +50,7 @@ export default function AdminSidebar({
   isOpen,
   onClose,
   unreadMessages = 0,
+  pendingCreditRequests = 0,
 }) {
   const navigate = useNavigate();
   const { user } = useUser();
@@ -176,6 +181,30 @@ export default function AdminSidebar({
               <span className="text-sm font-medium">
                 {label}
               </span>
+
+              {label === 'Credit Requests' &&
+                pendingCreditRequests > 0 && (
+                  <span
+                    className="
+                      ml-auto
+                      min-w-[22px]
+                      h-[22px]
+                      px-1
+
+                      rounded-full
+                      bg-amber-500
+                      text-black
+                      text-xs
+                      font-semibold
+
+                      flex items-center
+                      justify-center
+                    "
+                    aria-label={`${pendingCreditRequests} pending credit requests`}
+                  >
+                    {pendingCreditRequests}
+                  </span>
+                )}
 
               {label === 'Messages' &&
                 unreadMessages > 0 && (

@@ -50,12 +50,16 @@ const PromoteAccount = lazy(() => import("@/features/promotions/pages/promoteAcc
 const ReviewsPage = lazy(() => import("@/features/reviews/pages/ReviewsPage"));
 const PlatformUpdates = lazy(() => import("@/features/updates/pages/PlatformUpdatesPage"));
 const FAQPage = lazy(() => import("@/features/admin/pages/FAQPage"));
+const ForumPage = lazy(() => import("@/features/forum/pages/ForumPage"));
 const ContactPage = lazy(() => import("@/features/admin/pages/ContactPage"));
 const TermsOfUsePage = lazy(() => import("@/features/company/pages/TermsOfUsePage"));
 const PrivacyPolicy = lazy(() => import("@/features/company/pages/PrivacyPolicyPage"));
 const BecomeAClientPage = lazy(() => import("@/features/company/pages/BecomeAClientPage"));
 const BecomeAProviderPage = lazy(() => import("@/features/company/pages/BecomeAProviderPage"));
+const CreditsPage = lazy(() => import("@/features/company/pages/CreditsPage"));
 const CreditsHowItWorksPage = lazy(() => import("@/features/company/pages/CreditsHowItWorksPage"));
+const CreditsLearnMorePage = lazy(() => import("@/features/company/pages/CreditsLearnMorePage"));
+const CreditPackagesPage = lazy(() => import("@/features/company/pages/CreditPackagesPage"));
 const CommunityGuidelinesPage = lazy(() => import("@/features/company/pages/CommunityGuidelinesPage"));
 const ReviewIncentivesPage = lazy(() => import("@/features/company/pages/ReviewIncentivesPage"));
 const ReferralsPage = lazy(() => import("@/features/company/pages/ReferralsPage"));
@@ -93,10 +97,14 @@ const AdminDiscounts = lazy(() => import("@/features/admin/pages/AdminDiscountsP
 const AdminEmailUsers = lazy(() => import("@/features/admin/pages/AdminEmailUsersPage"));
 const AdminCreditRequests = lazy(() => import("@/features/admin/pages/AdminCreditRequestsPage"));
 const AdminCreditPackages = lazy(() => import("@/features/admin/pages/AdminCreditPackagesPage"));
+const AdminCreditEarnRules = lazy(() => import("@/features/admin/pages/AdminCreditEarnRulesPage"));
 const AdminFAQPage = lazy(() => import("@/features/admin/pages/AdminFAQPage"));
 const AdminCategoriesPage = lazy(() => import("@/features/admin/pages/AdminCategoriesPage"));
 const AdminMilestonesPage = lazy(() => import("@/features/admin/pages/AdminMilestonesPage"));
 const AdminReferralsPage = lazy(() => import("@/features/admin/pages/AdminReferralsPage"));
+const AdminReportedFlagsPage = lazy(() => import("@/features/admin/pages/AdminReportedFlagsPage"));
+const AdminReportedFlagsTimelinePage = lazy(() => import("@/features/admin/pages/AdminReportedFlagsTimelinePage"));
+const MyReportsPage = lazy(() => import("@/features/flagging/pages/MyReportsPage"));
 const UserNotifications = lazy(() => import("@/features/users/pages/UserNotificationsPage"));
 const ClientDashboard = lazy(() => import("@/features/clients/pages/ClientDashboard"));
 const ClientProfilePage = lazy(() => import("@/features/clients/pages/ClientProfilePage"));
@@ -127,12 +135,16 @@ const router = createBrowserRouter([
       { path: "/milestones", element: <MilestonesPage /> },
       { path: "/platform-updates", element: <PlatformUpdates /> },
       { path: "/faq", element: <FAQPage /> },
+      { path: "/forum", element: <ForumPage /> },
       { path: "/contact", element: <ContactPage /> },
       { path: "/terms-policy", element: <TermsOfUsePage /> },
       { path: "/privacy-policy", element: <PrivacyPolicy /> },
       { path: "/become-a-client", element: <BecomeAClientPage /> },
       { path: "/become-a-provider", element: <BecomeAProviderPage /> },
+      { path: "/credits", element: <CreditsPage /> },
       { path: "/credits/how-it-works", element: <CreditsHowItWorksPage /> },
+      { path: "/credits/learn-more", element: <CreditsLearnMorePage /> },
+      { path: "/credit-packages", element: <CreditPackagesPage /> },
       { path: "/community-guidelines", element: <CommunityGuidelinesPage /> },
       { path: "/privacy-policy", element: <PrivacyPolicy /> },
       { path: "/terms-of-use", element: <TermsOfUsePage /> },
@@ -172,7 +184,9 @@ const router = createBrowserRouter([
           { path: "/user/notifications", element: <UserNotifications /> },
           { path: "/user/liked-posts", element: <LikedPostsPage /> },
           { path: "/user/milestones", element: <UserMilestonesPage /> },
+          { path: "/user/credits", element: <ClientCreditsPage /> },
           { path: "/user/referrals", element: <UserReferralsPage /> },
+          { path: "/user/reports", element: <MyReportsPage /> },
         ],
       },
     ],
@@ -192,6 +206,7 @@ const router = createBrowserRouter([
           { path: "/client/notifications", element: <ClientNotifications /> },
           { path: "/client/credits", element: <ClientCreditsPage /> },
           { path: "/client/milestones", element: <UserMilestonesPage /> },
+          { path: "/client/reports", element: <MyReportsPage /> },
         ],
       },
     ],
@@ -216,10 +231,13 @@ const router = createBrowserRouter([
           { path: "/admin/email-users", element: <AdminEmailUsers /> },
           { path: "/admin/credit-requests", element: <AdminCreditRequests /> },
           { path: "/admin/credit-packages", element: <AdminCreditPackages /> },
+          { path: "/admin/credit-earn-rules", element: <AdminCreditEarnRules /> },
           { path: "/admin/faqs", element: <AdminFAQPage /> },
           { path: "/admin/categories", element: <AdminCategoriesPage /> },
           { path: "/admin/milestones", element: <AdminMilestonesPage /> },
           { path: "/admin/referrals", element: <AdminReferralsPage /> },
+          { path: "/admin/reported-flags", element: <AdminReportedFlagsPage /> },
+          { path: "/admin/reported-flags-timeline", element: <AdminReportedFlagsTimelinePage /> },
         ],
       },
     ],

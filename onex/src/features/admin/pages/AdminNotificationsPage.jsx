@@ -1,4 +1,4 @@
-import { Bell, UserPlus, MessageSquare, TrendingUp, CheckCheck, RefreshCw } from 'lucide-react';
+import { Bell, UserPlus, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Flag, Coins } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import useNotifications from '@/shared/hooks/useNotifications';
 
@@ -10,6 +10,8 @@ const TYPE_META = {
   promo_approved:     { icon: TrendingUp,    color: 'text-amber-400',   bg: 'bg-amber-400/10',   label: 'Promo Approved'    },
   promo_expiring:     { icon: TrendingUp,    color: 'text-orange-400',  bg: 'bg-orange-400/10',  label: 'Promo Expiring'    },
   account_restricted: { icon: Bell,          color: 'text-red-400',     bg: 'bg-red-400/10',     label: 'Account Restricted'},
+  new_flag:           { icon: Flag,          color: 'text-red-400',     bg: 'bg-red-400/10',     label: 'New Report'        },
+  new_credit_request: { icon: Coins,         color: 'text-amber-400',   bg: 'bg-amber-400/10',   label: 'Credit Request'    },
 };
 
 export default function AdminNotificationsPage() {

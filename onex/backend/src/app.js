@@ -44,14 +44,17 @@ import faqRoutes from './modules/faqs/routes.js';
 import categoryRoutes from './modules/categories/routes.js';
 import referralRoutes from './modules/referrals/routes.js';
 import milestoneRoutes from './modules/milestones/routes.js';
+import flagRoutes from './modules/flags/routes.js';
 
 // Utilities
 import { startPromoExpiryReminderJob } from './common/utils/promoExpiryReminderJob.js';
 import { startProfileViewNotificationJob } from './common/utils/profileViewNotificationJob.js';
 import { startMilestoneAchievementJob } from './common/utils/milestoneAchievementJob.js';
 import { startAccountInactivityEmailJob } from './common/utils/accountInactivityEmailJob.js';
+import { startBadgeRenewalJob } from './common/utils/badgeRenewalJob.js';
 import { seedDefaultFAQs } from './common/utils/seedFAQs.js';
 import { seedDefaultCategories } from './common/utils/seedCategories.js';
+import { seedDefaultEarnRules } from './modules/credits/creditEarnService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -114,8 +117,10 @@ const connectDB = async () => {
     startProfileViewNotificationJob();
     startMilestoneAchievementJob();
     startAccountInactivityEmailJob();
+    startBadgeRenewalJob();
     await seedDefaultFAQs();
     await seedDefaultCategories();
+    await seedDefaultEarnRules();
     console.log('✅ Background jobs started');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
@@ -186,6 +191,8 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/referrals', referralRoutes);
 // Milestone Routes
 app.use('/api/milestones', milestoneRoutes);
+
+app.use('/api/flags', flagRoutes);
 /**
  * ==========================================
  * STATIC FILES & PUBLIC ROUTES

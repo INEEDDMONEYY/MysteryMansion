@@ -8,6 +8,16 @@ import env from '../../../config/env.js';
 import { normalizeState } from '../../../common/utils/stateNormalizer.js';
 import { createNotification } from '../../notifications/notificationController.js';
 import { sendAccountActivityEmail } from '../../../common/utils/sendAccountActivityEmail.js';
+import { uploadBackupCopy } from '../../../common/utils/backupStorage.js';
+import { awardCredits } from '../../credits/creditEarnService.js';
+
+// Maps the account-level gender (set on the user's profile) to the post-level
+// gender enum, used as a fallback when a post itself doesn't specify one.
+const ACCOUNT_GENDER_TO_POST_GENDER = {
+  'Woman escort': 'female',
+  'Man escort': 'male',
+  'TS escort': 'ts',
+};
 
 const normalizeCategories = ({ categories, category }) => {
   const rawCategories = Array.isArray(categories)
@@ -47,10 +57,14 @@ export async function createPost(req, res) {
     const normalizedCity = city?.trim() || '';
     const normalizedState = normalizeState(state);
     const normalizedCountry = country?.trim() || '';
-    const normalizedGender = ['female', 'male', 'ts'].includes(gender) ? gender : '';
+    const normalizedGender = ['female', 'male', 'ts'].includes(gender)
+      ? gender
+      : ACCOUNT_GENDER_TO_POST_GENDER[req.user.gender] || '';
 
     let imageUrls = [];
     let videoUrls = [];
+    let imageBackupUrls = [];
+    let videoBackupUrls = [];
 
     const uploadedFiles = Array.isArray(req.files)
       ? req.files
@@ -59,30 +73,56 @@ export async function createPost(req, res) {
           ...(Array.isArray(req.files?.videos) ? req.files.videos : []),
         ];
 
-    // Upload files to Cloudinary and split by media type.
+    // Images go to Cloudinary (+ a redundant backup copy on Cloudflare R2).
+    // Videos go straight to Cloudflare R2 as the primary store, since
+    // Cloudinary's moderation has been flagging/removing legitimate videos.
     if (uploadedFiles.length > 0) {
-      const uploadPromises = uploadedFiles.map((file) =>
-        new Promise((resolve, reject) => {
-          const isVideo = file.mimetype?.startsWith('video/');
+      const uploadPromises = uploadedFiles.map((file) => {
+        const isVideo = file.mimetype?.startsWith('video/');
+
+        if (isVideo) {
+          return uploadBackupCopy({
+            buffer: file.buffer,
+            folder: 'posts',
+            userId: req.user._id,
+            originalName: file.originalname,
+            contentType: file.mimetype,
+          }).then((uploaded) => {
+            if (!uploaded) throw new Error('Video upload failed: Cloudflare storage is not configured');
+            return { url: uploaded.url, backupUrl: '', type: 'video' };
+          });
+        }
+
+        return new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
             { folder: 'posts', resource_type: 'auto' },
-            (error, result) => {
+            async (error, result) => {
               if (error) return reject(error);
+              const backup = await uploadBackupCopy({
+                buffer: file.buffer,
+                folder: 'posts',
+                userId: req.user._id,
+                originalName: file.originalname,
+                contentType: file.mimetype,
+              });
               resolve({
                 url: result.secure_url,
-                type: isVideo ? 'video' : 'image',
+                backupUrl: backup?.url || '',
+                type: 'image',
               });
             }
           );
           streamifier.createReadStream(file.buffer).pipe(stream);
-        })
-      );
+        });
+      });
 
       const uploadedMedia = await Promise.all(uploadPromises);
       imageUrls = uploadedMedia.filter((m) => m.type === 'image').map((m) => m.url);
+      imageBackupUrls = uploadedMedia.filter((m) => m.type === 'image').map((m) => m.backupUrl);
       videoUrls = uploadedMedia.filter((m) => m.type === 'video').map((m) => m.url);
+      videoBackupUrls = uploadedMedia.filter((m) => m.type === 'video').map((m) => m.backupUrl);
       console.log('✅ Uploaded images to Cloudinary:', imageUrls);
-      console.log('✅ Uploaded videos to Cloudinary:', videoUrls);
+      console.log('✅ Uploaded videos to Cloudflare R2:', videoUrls);
     }
 
     const newPost = new Post({
@@ -98,6 +138,8 @@ export async function createPost(req, res) {
       visibility,
       pictures: imageUrls,
       videos: videoUrls,
+      pictureBackups: imageBackupUrls,
+      videoBackups: videoBackupUrls,
       isPromo: hasActivePromo,
       promoExpiresAt: hasActivePromo ? promoExpiry : null,
       // Set badgeType to match the user's badgeType (e.g., 'blue', 'pink', or '')
@@ -105,6 +147,8 @@ export async function createPost(req, res) {
     });
 
     const savedPost = await newPost.save();
+
+    awardCredits({ userId: req.user._id, eventKey: 'create_post', refId: String(savedPost._id) });
 
     // Reset inactivity tracking now that the user has posted again.
     await User.findByIdAndUpdate(req.user._id, {
@@ -114,7 +158,7 @@ export async function createPost(req, res) {
 
     const populatedPost = await Post.findById(savedPost._id).populate({
       path: 'userId',
-      select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry createdAt',
+      select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry createdAt badgeType',
     });
 
     res.status(201).json(populatedPost);
@@ -194,11 +238,25 @@ export async function getPosts(req, res) {
     if (userId) filter.userId = userId;
     if (state) filter.state = { $regex: new RegExp(`^${state.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
     if (city)  filter.city  = { $regex: new RegExp(city.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') };
-    if (gender && ['female', 'male', 'ts'].includes(gender)) filter.gender = gender;
+
+    if (gender && ['female', 'male', 'ts'].includes(gender)) {
+      // Many posts predate the per-post gender field or skip it, so also match
+      // posts owned by a provider whose profile gender maps to the same value.
+      const accountGender = Object.entries(ACCOUNT_GENDER_TO_POST_GENDER)
+        .find(([, mapped]) => mapped === gender)?.[0];
+      const genderOwnerIds = accountGender
+        ? await User.find({ gender: accountGender }).select('_id').lean()
+        : [];
+
+      filter.$or = [
+        { gender },
+        { gender: { $in: ['', null] }, userId: { $in: genderOwnerIds.map((u) => u._id) } },
+      ];
+    }
 
     const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
-      .populate({ path: 'userId', select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry createdAt' });
+      .populate({ path: 'userId', select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry createdAt badgeType' });
 
     res.json(posts);
   } catch (err) {
@@ -212,7 +270,7 @@ export async function getPostById(req, res) {
   try {
     const post = await Post.findById(req.params.id).populate({
       path: 'userId',
-      select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry createdAt',
+      select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry createdAt badgeType',
     });
 
     if (!post) return res.status(404).json({ error: 'Post not found' });
@@ -247,13 +305,93 @@ export async function updatePost(req, res) {
 
     const updatedPost = await Post.findByIdAndUpdate(req.params.id, updateData, { new: true }).populate({
       path: 'userId',
-      select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry',
+      select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry badgeType',
     });
 
     res.json(updatedPost);
   } catch (err) {
     console.error('❌ [updatePost] Error:', err);
     res.status(500).json({ error: 'Failed to update post', details: err.message });
+  }
+}
+
+// ---------------- Restore a single flagged/broken media file (admin) ----------------
+// Re-uploads a replacement file (images to Cloudinary + R2 backup, videos
+// straight to Cloudflare R2) and swaps it into the post's pictures/videos
+// array at the given index, so a takedown of one asset doesn't require
+// recreating the whole post.
+export async function restorePostMedia(req, res) {
+  try {
+    const { id, mediaType, index } = req.params;
+    if (!['pictures', 'videos'].includes(mediaType)) {
+      return res.status(400).json({ error: "mediaType must be 'pictures' or 'videos'" });
+    }
+
+    const idx = Number(index);
+    if (!Number.isInteger(idx) || idx < 0) {
+      return res.status(400).json({ error: 'Invalid media index' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'A replacement file is required' });
+    }
+
+    const post = await Post.findById(id);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+
+    const urls = post[mediaType] || [];
+    if (idx >= urls.length) {
+      return res.status(400).json({ error: 'Media index out of range' });
+    }
+
+    let primaryUrl;
+    let backupUrl = '';
+
+    if (mediaType === 'videos') {
+      const uploaded = await uploadBackupCopy({
+        buffer: req.file.buffer,
+        folder: 'posts',
+        userId: post.userId,
+        originalName: req.file.originalname,
+        contentType: req.file.mimetype,
+      });
+      if (!uploaded) {
+        return res.status(500).json({ error: 'Video upload failed: Cloudflare storage is not configured' });
+      }
+      primaryUrl = uploaded.url;
+    } else {
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'posts', resource_type: 'auto' },
+          (error, result) => (error ? reject(error) : resolve(result))
+        );
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+      });
+      primaryUrl = uploadResult.secure_url;
+
+      const backup = await uploadBackupCopy({
+        buffer: req.file.buffer,
+        folder: 'posts',
+        userId: post.userId,
+        originalName: req.file.originalname,
+        contentType: req.file.mimetype,
+      });
+      backupUrl = backup?.url || '';
+    }
+
+    const backupField = mediaType === 'pictures' ? 'pictureBackups' : 'videoBackups';
+    if (!Array.isArray(post[backupField])) post[backupField] = [];
+
+    post[mediaType][idx] = primaryUrl;
+    post[backupField][idx] = backupUrl;
+    post.markModified(mediaType);
+    post.markModified(backupField);
+
+    await post.save();
+    return res.json({ success: true, post });
+  } catch (err) {
+    console.error('❌ [restorePostMedia] Error:', err);
+    return res.status(500).json({ error: 'Failed to restore media', details: err.message });
   }
 }
 
@@ -324,6 +462,8 @@ export async function createPostComment(req, res) {
     // Notify the post owner (skip if they commented on their own post)
     const post = await Post.findById(postId).select('userId title').lean();
     if (post && String(post.userId) !== String(userId)) {
+      awardCredits({ userId, eventKey: 'comment_post', refId: String(created._id) });
+
       const commenterName = populated.userId?.username || 'Someone';
       const commentPreview = `${text.slice(0, 80)}${text.length > 80 ? '…' : ''}`;
       createNotification({

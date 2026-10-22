@@ -4,6 +4,16 @@ import CreditRequest from '../../models/CreditRequest.js';
 
 const router = express.Router();
 
+// ── GET /api/admin/credit-requests/pending-count ─────────────────────────────
+router.get('/pending-count', async (req, res) => {
+  try {
+    res.json({ count: await CreditRequest.countDocuments({ status: 'pending' }) });
+  } catch (err) {
+    console.error('❌ GET /admin/credit-requests/pending-count:', err);
+    res.status(500).json({ error: 'Failed to fetch pending count' });
+  }
+});
+
 // ── GET /api/admin/credit-requests ───────────────────────────────────────────
 // List all credit requests, optionally filtered by status.
 router.get('/', async (req, res) => {

@@ -71,12 +71,21 @@ export default function ReviewIncentivesHero() {
                 <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
 
-              <Link
-                to={hero.secondaryCta.href}
-                className="inline-flex items-center rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
-              >
-                {hero.secondaryCta.label}
-              </Link>
+              {hero.secondaryCta.href.startsWith("#") ? (
+                <a
+                  href={hero.secondaryCta.href}
+                  className="inline-flex items-center rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
+                >
+                  {hero.secondaryCta.label}
+                </a>
+              ) : (
+                <Link
+                  to={hero.secondaryCta.href}
+                  className="inline-flex items-center rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
+                >
+                  {hero.secondaryCta.label}
+                </Link>
+              )}
             </motion.div>
           </motion.div>
 

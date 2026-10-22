@@ -11,9 +11,13 @@ import { Outlet, useMatches } from 'react-router-dom';
 import AdminSidebar from './admin/AdminSidebar';
 import AdminDashboardHeader from './admin/AdminDashboardHeader';
 import ScrollToTop from '@/shared/components/ScrollToTop';
+import useUnreadMessages from '@/shared/hooks/useUnreadMessages';
+import usePendingCreditRequests from '@/shared/hooks/usePendingCreditRequests';
 
 export default function AdminLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { unreadCount: unreadMessages } = useUnreadMessages();
+  const { count: pendingCreditRequests } = usePendingCreditRequests();
 
   // Derive a page title from the current route's pathname for the header
   const matches = useMatches();
@@ -29,6 +33,8 @@ export default function AdminLayout() {
       <AdminSidebar
         isOpen={menuOpen}
         onClose={() => setMenuOpen(false)}
+        unreadMessages={unreadMessages}
+        pendingCreditRequests={pendingCreditRequests}
       />
 
       {/* ── Main column — offset by sidebar width on lg+ ── */}
@@ -37,6 +43,7 @@ export default function AdminLayout() {
           title={pageTitle}
           menuOpen={menuOpen}
           onMenuToggle={() => setMenuOpen((o) => !o)}
+          unreadMessages={unreadMessages}
         />
 
         {/* Scrollable page content — intentionally a <div> to avoid the global main{overflow:hidden} rule */}

@@ -1,4 +1,5 @@
 // 🖼️ Post Media Gallery
+import { handleMediaError } from "@/shared/utils/mediaFallback";
 
 export default function PostMediaGallery({ mediaItems = [], fallbackImage = "" }) {
   if (mediaItems.length === 0 && !fallbackImage) {
@@ -32,6 +33,7 @@ export default function PostMediaGallery({ mediaItems = [], fallbackImage = "" }
             >
               <video
                 src={media.url}
+                onError={handleMediaError(media.backupUrl)}
                 controls
                 className="h-full max-h-[620px] w-full object-cover"
               />
@@ -46,6 +48,7 @@ export default function PostMediaGallery({ mediaItems = [], fallbackImage = "" }
           >
             <img
               src={media.url}
+              onError={handleMediaError(media.backupUrl)}
               alt={`Post image ${index + 1}`}
               className="h-full max-h-[620px] w-full object-cover"
             />

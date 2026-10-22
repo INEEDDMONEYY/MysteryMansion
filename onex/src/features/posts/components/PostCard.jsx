@@ -10,8 +10,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import api from "@/shared/utils/api";
+import { handleMediaError } from "@/shared/utils/mediaFallback";
 import { hasPermanentProviderBadge } from "@/features/users/services/providerBadgeEligibility";
 import { getPostCategories } from "../services/postCategories";
+import FlagButton from "@/features/flagging/components/FlagButton";
+import { FLAG_TARGET_TYPES } from "@/features/flagging/utils/flagTargets";
 
 const getPostedAgoLabel = (createdAt) => {
   if (!createdAt) {
@@ -127,22 +130,24 @@ export default function PostCard({
     return [
       ...(Array.isArray(post?.pictures)
         ? post.pictures
-            .filter(Boolean)
-            .map((url) => ({
+            .map((url, index) => ({
               type: "image",
               url,
+              backupUrl: post?.pictureBackups?.[index] || "",
             }))
+            .filter((item) => Boolean(item.url))
         : []),
       ...(Array.isArray(post?.videos)
         ? post.videos
-            .filter(Boolean)
-            .map((url) => ({
+            .map((url, index) => ({
               type: "video",
               url,
+              backupUrl: post?.videoBackups?.[index] || "",
             }))
+            .filter((item) => Boolean(item.url))
         : []),
     ];
-  }, [post?.pictures, post?.videos]);
+  }, [post?.pictures, post?.videos, post?.pictureBackups, post?.videoBackups]);
 
   const totalMedia = mediaItems.length;
 
@@ -356,6 +361,11 @@ export default function PostCard({
                       currentImage
                     ]?.url
                   }
+                  onError={handleMediaError(
+                    mediaItems[
+                      currentImage
+                    ]?.backupUrl
+                  )}
                   controls
                   className={`h-28 w-full rounded-md border object-cover ${
                     showBlueBadge
@@ -372,6 +382,11 @@ export default function PostCard({
                       currentImage
                     ]?.url
                   }
+                  onError={handleMediaError(
+                    mediaItems[
+                      currentImage
+                    ]?.backupUrl
+                  )}
                   alt={`Post media ${
                     currentImage + 1
                   }`}
@@ -647,6 +662,16 @@ export default function PostCard({
           >
             <Trash2 size={16} />
           </button>
+        )}
+
+        {!isOwner && (
+          <FlagButton
+            targetType={FLAG_TARGET_TYPES.POST}
+            targetId={post._id}
+            label="Report post"
+            variant="dropdown"
+            className="absolute bottom-2 right-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70"
+          />
         )}
       </div>
     </article>

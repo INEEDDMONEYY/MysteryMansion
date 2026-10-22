@@ -2,7 +2,11 @@ import express from 'express';
 import User from '../../models/User.js';
 import CreditRequest from '../../models/CreditRequest.js';
 import CreditPackage from '../../models/CreditPackage.js';
+import CreditEarnRule from '../../models/CreditEarnRule.js';
+import CreditTransaction from '../../models/CreditTransaction.js';
 import { authMiddleware } from '../../common/middleware/authMiddleware.js';
+import { awardCredits, dayKey, getEarnOverview } from './creditEarnService.js';
+import { createNotification } from '../notifications/notificationController.js';
 
 const router = express.Router();
 
@@ -39,6 +43,61 @@ router.get('/balance', async (req, res) => {
   }
 });
 
+// ── GET /api/credits/earn/rules ───────────────────────────────────────────────
+// Active ways to earn credits for the caller's role, with their progress.
+router.get('/earn/rules', async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('role accountType').lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(await getEarnOverview(user));
+  } catch (err) {
+    console.error('❌ GET /credits/earn/rules:', err);
+    res.status(500).json({ error: 'Failed to fetch earn rules' });
+  }
+});
+
+// ── GET /api/credits/earn/history ─────────────────────────────────────────────
+router.get('/earn/history', async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 20, 100);
+    const transactions = await CreditTransaction.find({ userId: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    const labels = new Map(
+      (await CreditEarnRule.find({ key: { $in: [...new Set(transactions.map((t) => t.ruleKey))] } })
+        .select('key label')
+        .lean()).map((r) => [r.key, r.label])
+    );
+
+    res.json(
+      transactions.map((t) => ({
+        _id: t._id,
+        ruleKey: t.ruleKey,
+        label: labels.get(t.ruleKey) || t.ruleKey,
+        amount: t.amount,
+        balanceAfter: t.balanceAfter,
+        createdAt: t.createdAt,
+      }))
+    );
+  } catch (err) {
+    console.error('❌ GET /credits/earn/history:', err);
+    res.status(500).json({ error: 'Failed to fetch earning history' });
+  }
+});
+
+// ── POST /api/credits/earn/daily-login ────────────────────────────────────────
+// Idempotent per UTC day. Covers sessions that stay signed in for days.
+router.post('/earn/daily-login', async (req, res) => {
+  const result = await awardCredits({
+    userId: req.user._id,
+    eventKey: 'daily_login',
+    refId: dayKey(),
+  });
+  res.json(result);
+});
+
 // ── GET /api/credits/requests ─────────────────────────────────────────────────
 // Returns the authenticated user's own top-up request history.
 router.get('/requests', async (req, res) => {
@@ -54,14 +113,9 @@ router.get('/requests', async (req, res) => {
 });
 
 // ── POST /api/credits/request ─────────────────────────────────────────────────
-// Client submits a new top-up request for admin approval.
+// Any authenticated account submits a new top-up request for admin approval.
 router.post('/request', async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('accountType').lean();
-    if (!user || user.accountType !== 'client') {
-      return res.status(403).json({ error: 'Only client accounts can request credits.' });
-    }
-
     const amount = Number(req.body.amount);
     if (!amount || amount < 1 || amount > 10000 || !Number.isInteger(amount)) {
       return res.status(400).json({ error: 'Amount must be a whole number between 1 and 10,000.' });
@@ -82,6 +136,14 @@ router.post('/request', async (req, res) => {
       amount,
       note,
     });
+
+    createNotification({
+      audience: 'admin',
+      type: 'new_credit_request',
+      title: 'New credit request',
+      message: `${req.user.username} requested ${amount} credits.`,
+      meta: { creditRequestId: request._id },
+    }).catch((err) => console.error('❌ credit request notification:', err.message));
 
     res.status(201).json(request);
   } catch (err) {

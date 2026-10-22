@@ -364,7 +364,7 @@ export const promoteUser = async (req, res) => {
     if (cancel) {
       const updatedUser = await User.findByIdAndUpdate(
         userId,
-        { badgeType: "", activePromoExpiry: null },
+        { badgeType: "", activePromoExpiry: null, badgeAutoRenew: false, badgeExpiresAt: null },
         { new: true }
       ).select("-password");
       if (!updatedUser) {
@@ -404,7 +404,14 @@ export const promoteUser = async (req, res) => {
     // If only promoActive is set, allow just promo
     // If both, set both
     const userUpdate = {};
-    if (newBadgeType !== undefined) userUpdate.badgeType = newBadgeType;
+    if (newBadgeType !== undefined) {
+      userUpdate.badgeType = newBadgeType;
+      // An explicit admin badge choice replaces any credit subscription.
+      if (badgeType !== undefined) {
+        userUpdate.badgeAutoRenew = false;
+        userUpdate.badgeExpiresAt = null;
+      }
+    }
     if (setPromo) userUpdate.activePromoExpiry = promoExpiry || null;
     if (!setPromo) userUpdate.activePromoExpiry = null;
 
@@ -499,7 +506,7 @@ export const cancelAllPromotions = async (req, res) => {
 
     const userResult = await User.updateMany(
       { activePromoExpiry: { $ne: null } },
-      { activePromoExpiry: null, badgeType: "" }
+      { activePromoExpiry: null, badgeType: "", badgeAutoRenew: false, badgeExpiresAt: null }
     );
 
     await Post.updateMany(

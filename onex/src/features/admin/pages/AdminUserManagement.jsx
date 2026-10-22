@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import api from "@/shared/utils/api";
-import PromoteAccountSettings from "@/shared/components/admin/settings/PromoteAccountSettings";
 import PromocodeSettings from "@/shared/components/admin/settings/PromocodeSettings";
-import PromotionRequestsAdmin from "@/shared/components/admin/settings/PromotionRequestsAdmin.jsx";
 
 const ACCOUNT_TYPE_LABELS = {
   provider: { label: 'Provider', color: 'bg-pink-500/15 text-pink-400 border-pink-500/30' },
@@ -275,18 +273,7 @@ export default function AdminUserManagement() {
 
       {/* Admin management tools */}
       <div className="space-y-5">
-        <PromoteAccountSettings
-          users={users}
-          onUserPromoted={(userId, expiresAt) =>
-            setUsers((prev) =>
-              prev.map((u) =>
-                u._id === userId ? { ...u, activePromoExpiry: expiresAt } : u
-              )
-            )
-          }
-        />
         <PromocodeSettings />
-        <PromotionRequestsAdmin />
       </div>
     </div>
   );

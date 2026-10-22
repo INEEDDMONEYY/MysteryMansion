@@ -12,7 +12,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   User, MessageSquareText, BarChart3, LogOut, Home,
-  Rocket, LayoutDashboard, BookMarked, Heart, SquareM, Share2,
+  Rocket, LayoutDashboard, BookMarked, Heart, SquareM, Share2, Flag, Coins,
 } from 'lucide-react';
 import { useContext } from 'react';
 import { UserContext } from '@/context/UserContext';
@@ -33,7 +33,9 @@ export default function UserSidebar({ isOpen, onClose, unreadMessages = 0 }) {
     { to: '/user/profile',     label: 'Edit Profile',  icon: User },
     { to: '/user/messages',    label: 'Messages',      icon: MessageSquareText, badge: unreadMessages },
     { to: '/user/milestones', label: 'Milestones', icon: SquareM },
+    { to: '/user/credits',     label: 'Credits',      icon: Coins },
     { to: '/user/referrals', label: 'Referrals', icon: Share2 },
+    { to: '/user/reports', label: 'My Reports', icon: Flag },
     { to: '/promote',          label: 'Promote',        icon: Rocket },
   ];
 
