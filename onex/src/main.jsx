@@ -51,6 +51,10 @@ const ReviewsPage = lazy(() => import("@/features/reviews/pages/ReviewsPage"));
 const PlatformUpdates = lazy(() => import("@/features/updates/pages/PlatformUpdatesPage"));
 const FAQPage = lazy(() => import("@/features/admin/pages/FAQPage"));
 const ForumPage = lazy(() => import("@/features/forum/pages/ForumPage"));
+const AllDiscussionsPage = lazy(() => import("@/features/forum/pages/AllDiscussionsPage"));
+const ForumCategoryPage = lazy(() => import("@/features/forum/pages/ForumCategoryPage"));
+const ForumThreadPage = lazy(() => import("@/features/forum/pages/ForumThreadPage"));
+const CreateThreadPage = lazy(() => import("@/features/forum/pages/CreateThreadPage"));
 const ContactPage = lazy(() => import("@/features/admin/pages/ContactPage"));
 const TermsOfUsePage = lazy(() => import("@/features/company/pages/TermsOfUsePage"));
 const PrivacyPolicy = lazy(() => import("@/features/company/pages/PrivacyPolicyPage"));
@@ -136,6 +140,10 @@ const router = createBrowserRouter([
       { path: "/platform-updates", element: <PlatformUpdates /> },
       { path: "/faq", element: <FAQPage /> },
       { path: "/forum", element: <ForumPage /> },
+      { path: "/forum/discussions", element: <AllDiscussionsPage /> },
+      { path: "/forum/category/:slug", element: <ForumCategoryPage /> },
+      { path: "/forum/thread/:threadId", element: <ForumThreadPage /> },
+      { path: "/forum/create", element: <CreateThreadPage /> },
       { path: "/contact", element: <ContactPage /> },
       { path: "/terms-policy", element: <TermsOfUsePage /> },
       { path: "/privacy-policy", element: <PrivacyPolicy /> },

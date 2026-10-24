@@ -197,7 +197,7 @@ export const reviewIncentivesPageData = {
         label: "50 Signups",
         creditsAwarded: 600,
         moneyRewardEnabled: true,
-        moneyReward: 225,
+        moneyReward: 170,
         description:
           "Reach fifty eligible registrations through your shared link.",
       },
@@ -207,7 +207,7 @@ export const reviewIncentivesPageData = {
         label: "100+ Signups",
         creditsAwarded: 1400,
         moneyRewardEnabled: true,
-        moneyReward: 450,
+        moneyReward: 250,
         isOpenEnded: true,
         description:
           "Reach one hundred eligible registrations and continue building your referral network.",

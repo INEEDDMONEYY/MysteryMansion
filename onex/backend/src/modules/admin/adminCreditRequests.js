@@ -1,6 +1,7 @@
 import express from 'express';
 import User from '../../models/User.js';
 import CreditRequest from '../../models/CreditRequest.js';
+import { createNotification } from '../notifications/notificationController.js';
 
 const router = express.Router();
 
@@ -60,6 +61,15 @@ router.post('/:id/approve', async (req, res) => {
     request.reviewedBy = req.user._id;
     request.reviewedAt = new Date();
     await request.save();
+
+    createNotification({
+      audience: 'user',
+      type: 'credits_added',
+      title: `+${request.amount} credits added`,
+      message: `Your top-up was approved. New balance: ${updatedUser.credits} credits.`,
+      userId: request.userId,
+      meta: { amount: request.amount, balance: updatedUser.credits },
+    }).catch((err) => console.error('❌ top-up notification:', err.message));
 
     res.json({
       message: `Approved. ${updatedUser.username} now has ${updatedUser.credits} credits.`,

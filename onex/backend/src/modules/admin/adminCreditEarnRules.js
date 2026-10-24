@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import User from '../../models/User.js';
 import CreditEarnRule, { EARN_ROLES } from '../../models/CreditEarnRule.js';
 import CreditTransaction from '../../models/CreditTransaction.js';
-import { awardCredits, HOOKED_KEYS } from '../credits/creditEarnService.js';
+import { awardCredits, announceEarnRule, HOOKED_KEYS } from '../credits/creditEarnService.js';
 
 const router = express.Router();
 
@@ -105,6 +105,7 @@ router.post('/', async (req, res) => {
       trigger,
       isSystem: false,
     });
+    if (rule.isActive) announceEarnRule(rule);
     res.status(201).json({ ...rule.toObject(), hooked: HOOKED_KEYS.has(key), totalAwards: 0, totalCredits: 0 });
   } catch (err) {
     console.error('❌ POST /admin/credit-earn-rules:', err);
@@ -140,8 +141,12 @@ router.put('/:id', async (req, res) => {
     const { update, error } = parseRuleFields(req.body, { partial: true });
     if (error) return res.status(400).json({ error });
 
+    const before = await CreditEarnRule.findById(req.params.id).select('isActive').lean();
+    if (!before) return res.status(404).json({ error: 'Rule not found' });
+
     const rule = await CreditEarnRule.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
     if (!rule) return res.status(404).json({ error: 'Rule not found' });
+    if (!before.isActive && rule.isActive) announceEarnRule(rule);
     res.json({ ...rule.toObject(), hooked: HOOKED_KEYS.has(rule.key) });
   } catch (err) {
     console.error('❌ PUT /admin/credit-earn-rules/:id:', err);

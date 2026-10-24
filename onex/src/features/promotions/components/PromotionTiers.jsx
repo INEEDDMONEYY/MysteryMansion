@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Star, CheckCircle2, ShieldCheck, Minus, Percent, Coins } from "lucide-react";
 import api from "@/shared/utils/api";
 import { UserContext } from "@/context/UserContext";
+import { showAppToast } from "@/shared/utils/appToast";
 
 // ids and credit prices mirror backend/src/modules/promotions/promotionCatalog.js (server charges its own price)
 const TIERS = [
@@ -71,7 +72,7 @@ const TIERS = [
   {
     id: "promo-3w-verified",
     label: "3 Weeks Promotion + Verification",
-    credits: 1100,
+    credits: 1400,
     benefits: [
       "21 days of premium promoted reach",
       "Blue verification badge included",
@@ -190,6 +191,16 @@ export default function PromotionTiers() {
       setFeedback({
         type: "success",
         message: `${confirmTier.label} purchased for ${data?.cost ?? confirmTier.cost} credits.`,
+      });
+
+      const spent = data?.cost ?? confirmTier.cost;
+      const until = data?.badgeExpiresAt || data?.promoExpiry;
+      showAppToast({
+        type: "promo_purchased",
+        title: `${confirmTier.label} purchased`,
+        message: confirmTier.monthly
+          ? `${spent} credits used. Renews ${formatDate(until)}.`
+          : `${spent} credits used. Active until ${formatDate(until)}.`,
       });
       setConfirmTier(null);
       await Promise.all([loadStatus(), refreshUser?.().catch(() => {})]);

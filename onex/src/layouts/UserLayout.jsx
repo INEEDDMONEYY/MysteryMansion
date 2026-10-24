@@ -13,6 +13,7 @@ import UserSidebar from './user/UserSidebar';
 import UserDashboardHeader from './user/UserDashboardHeader';
 import api from '@/shared/utils/api';
 import ScrollToTop from '@/shared/components/ScrollToTop';
+import NotificationToastHost from '@/shared/components/Notifications/NotificationToastHost';
 import { useContext } from 'react';
 import { UserContext } from '@/context/UserContext';
 
@@ -55,6 +56,7 @@ export default function UserLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <ScrollToTop />
+      <NotificationToastHost />
 
       {/* ── Sidebar (fixed, 280 px, hidden on mobile until open) ── */}
       <UserSidebar

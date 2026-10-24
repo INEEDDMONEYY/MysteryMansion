@@ -49,9 +49,12 @@ const FlagModal = ({
       }
     };
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
+      document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, isSubmitting, onClose]);
@@ -91,7 +94,7 @@ const FlagModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !isSubmitting) {
@@ -103,16 +106,16 @@ const FlagModal = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="flag-modal-title"
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-neutral-800 bg-neutral-950 shadow-2xl"
+        className="flex max-h-[92dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-neutral-800 bg-neutral-950 shadow-2xl sm:max-h-[90dvh] sm:rounded-xl"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-neutral-800 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-900">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-neutral-800 px-4 py-3 sm:px-5 sm:py-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-900">
               <Flag size={17} className="text-white" />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <h2
                 id="flag-modal-title"
                 className="text-base font-semibold text-white"
@@ -120,7 +123,7 @@ const FlagModal = ({
                 Flag content
               </h2>
 
-              <p className="text-xs text-neutral-500">
+              <p className="truncate text-xs text-neutral-500">
                 Help us understand the issue.
               </p>
             </div>
@@ -131,32 +134,30 @@ const FlagModal = ({
             onClick={handleClose}
             disabled={isSubmitting}
             aria-label="Close flag dialog"
-            className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-neutral-400 transition hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="p-5">
-          {!isValidTarget ? (
+        {!isValidTarget ? (
+          <div className="p-4 sm:p-5">
             <div className="rounded-lg border border-neutral-800 bg-neutral-900 p-4 text-sm text-neutral-400">
               This content cannot currently be flagged.
             </div>
-          ) : isSuccess ? (
+          </div>
+        ) : isSuccess ? (
+          <div className="overflow-y-auto overscroll-contain px-4 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)] sm:px-5 sm:pb-5">
             <FlagConfirmation onClose={onClose} />
-          ) : (
-            <form onSubmit={handleSubmit}>
-              <div>
-                <p className="text-sm font-medium text-white">
-                  Why are you flagging this?
-                </p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5 sm:py-4">
+              <p className="text-sm font-medium text-white">
+                Why are you flagging this?
+              </p>
 
-                <p className="mt-1 text-xs leading-relaxed text-neutral-500">
-                  Select the reason that best describes the issue.
-                </p>
-              </div>
-
-              <div className="mt-4">
+              <div className="mt-3">
                 <FlagReasonList
                   reasons={reasons}
                   selectedReason={selectedReason}
@@ -165,7 +166,7 @@ const FlagModal = ({
                 />
               </div>
 
-              <div className="mt-5">
+              <div className="mt-4">
                 <label
                   htmlFor="flag-details"
                   className="block text-sm font-medium text-white"
@@ -181,10 +182,10 @@ const FlagModal = ({
                   value={details}
                   onChange={(event) => setDetails(event.target.value)}
                   disabled={isSubmitting}
-                  rows={4}
+                  rows={3}
                   maxLength={1000}
                   placeholder="Provide any additional information that may help with the review."
-                  className="mt-2 w-full resize-none rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-neutral-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-2 w-full resize-none rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-white outline-none placeholder:text-neutral-600 focus:border-neutral-600 disabled:cursor-not-allowed disabled:opacity-60"
                 />
 
                 <div className="mt-1 text-right text-xs text-neutral-600">
@@ -195,33 +196,33 @@ const FlagModal = ({
               {isError && (
                 <div
                   role="alert"
-                  className="mt-4 rounded-lg border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-neutral-300"
+                  className="mt-3 rounded-lg border border-neutral-800 bg-neutral-900 px-4 py-3 text-sm text-neutral-300"
                 >
                   {error || "Something went wrong while submitting the flag."}
                 </div>
               )}
+            </div>
 
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  disabled={isSubmitting}
-                  className="rounded-lg border border-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Cancel
-                </button>
+            <div className="flex shrink-0 justify-end gap-3 border-t border-neutral-800 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] pt-3 sm:px-5 sm:pb-4">
+              <button
+                type="button"
+                onClick={handleClose}
+                disabled={isSubmitting}
+                className="min-h-11 flex-1 rounded-lg border border-neutral-800 px-4 text-sm font-medium text-neutral-300 transition hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+              >
+                Cancel
+              </button>
 
-                <button
-                  type="submit"
-                  disabled={!selectedReason || isSubmitting}
-                  className="rounded-lg bg-white px-4 py-2.5 text-sm font-medium text-black transition hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {isSubmitting ? "Submitting..." : "Submit flag"}
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
+              <button
+                type="submit"
+                disabled={!selectedReason || isSubmitting}
+                className="min-h-11 flex-1 rounded-lg bg-white px-4 text-sm font-medium text-black transition hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
+              >
+                {isSubmitting ? "Submitting..." : "Submit flag"}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

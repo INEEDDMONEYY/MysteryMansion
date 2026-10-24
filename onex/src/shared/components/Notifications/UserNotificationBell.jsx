@@ -13,7 +13,7 @@ import NotificationModal from '@/shared/components/Notifications/NotificationMod
 export default function UserNotificationBell({
   viewAllHref = '/user/notifications',
   messagesPath = '/user/messages',
-  creditsPath  = '/client/credits',
+  creditsPath  = '/user/credits',
   milestonesPath = '/user/milestones',
   reportsPath = '/user/reports',
 }) {
@@ -48,6 +48,9 @@ export default function UserNotificationBell({
         navigate(viewAllHref);
         break;
       case 'low_credits':
+      case 'credits_earned':
+      case 'credits_added':
+      case 'earn_rule_added':
         navigate(creditsPath);
         break;
       case 'milestone_added':
@@ -56,6 +59,12 @@ export default function UserNotificationBell({
         break;
       case 'flag_update':
         navigate(reportsPath);
+        break;
+      case 'forum_reply':
+        if (n.meta?.threadId) navigate(`/forum/thread/${n.meta.threadId}`);
+        break;
+      case 'new_comment':
+        if (n.meta?.postId) navigate(`/posts/${n.meta.postId}`);
         break;
       default:
         break;

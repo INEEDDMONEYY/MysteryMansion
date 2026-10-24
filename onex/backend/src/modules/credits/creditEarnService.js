@@ -2,6 +2,7 @@ import User from '../../models/User.js';
 import CreditEarnRule from '../../models/CreditEarnRule.js';
 import CreditTransaction from '../../models/CreditTransaction.js';
 import { createNotification } from '../notifications/notificationController.js';
+import Notification from '../../models/Notification.js';
 
 /**
  * Built-in earn events. To add a new one:
@@ -20,16 +21,23 @@ export const EVENT_DEFINITIONS = [
   { key: 'leave_review', label: 'Leave a review', description: 'Write a review for another member.', credits: 10, roles: ['provider', 'client'], limitPerDay: 3 },
   { key: 'receive_review', label: 'Receive a review', description: 'Another member reviews you.', credits: 5, roles: ['provider'], limitPerDay: 5 },
   { key: 'referral_signup', label: 'Referral signs up', description: 'Someone creates an account with your referral link.', credits: 25, roles: ['provider'], limitPerDay: 0 },
+  { key: 'post_twice', label: 'Publish a post twice', description: 'Post twice times a day', credits: 25, roles: ['provider'], limitPerDay: 2 },
+  { key: 'promote_account', label: 'Promote account', description: 'Promote your account.', credits: 40, roles: ['provider'], limitPerDay: 1 },
+  
 ];
 
-// Events that application code currently triggers. The forum has no backend yet.
+// Events that application code currently triggers.
 export const HOOKED_KEYS = new Set([
   'daily_login',
   'create_post',
+  'thread_post',
+  'thread_reply',
   'comment_post',
   'leave_review',
   'receive_review',
   'referral_signup',
+  'post_twice',
+  'promote_account',
 ]);
 
 export const dayKey = (date = new Date()) => date.toISOString().slice(0, 10);
@@ -158,6 +166,42 @@ export async function awardCredits({
   } catch (err) {
     console.error(`❌ awardCredits(${eventKey}) failed:`, err.message);
     return skipped('error');
+  }
+}
+
+/**
+ * Tells every eligible member that a rule is now live. Call when a rule is created active
+ * or switched on. Never throws.
+ */
+export async function announceEarnRule(rule) {
+  try {
+    const accountTypes = (rule.roles || []).filter((r) => r !== 'admin');
+    if (accountTypes.length === 0) return 0;
+
+    // Legacy accounts have no stored accountType and count as providers.
+    const typeFilter = [{ accountType: { $in: accountTypes } }];
+    if (accountTypes.includes('provider')) typeFilter.push({ accountType: { $exists: false } });
+
+    const users = await User.find({ role: 'user', status: 'active', $or: typeFilter })
+      .select('_id')
+      .lean();
+    if (users.length === 0) return 0;
+
+    const limit = rule.limitPerDay > 0 ? ` (up to ${rule.limitPerDay}/day)` : '';
+    await Notification.insertMany(
+      users.map((u) => ({
+        audience: 'user',
+        type: 'earn_rule_added',
+        title: 'New way to earn credits',
+        message: `${rule.label}: earn ${rule.credits} credits${limit}.`,
+        userId: u._id,
+        meta: { ruleKey: rule.key, credits: rule.credits },
+      }))
+    );
+    return users.length;
+  } catch (err) {
+    console.error('❌ announceEarnRule failed:', err.message);
+    return 0;
   }
 }
 

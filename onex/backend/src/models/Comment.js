@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { AttachmentSchema } from "./AttachmentSchema.js";
 
 const CommentSchema = new mongoose.Schema(
   {
@@ -16,10 +17,15 @@ const CommentSchema = new mongoose.Schema(
     },
     text: {
       type: String,
-      required: true,
+      // An image-only comment is allowed.
+      required: function requiresText() {
+        return !this.attachments?.length;
+      },
       trim: true,
       maxlength: 1200,
+      default: "",
     },
+    attachments: { type: [AttachmentSchema], default: [] },
   },
   { timestamps: true }
 );

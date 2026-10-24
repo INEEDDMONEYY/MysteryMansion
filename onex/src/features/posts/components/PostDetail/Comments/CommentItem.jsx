@@ -7,6 +7,8 @@ import {
   X,
 } from "lucide-react";
 
+import AttachmentGallery from "@/shared/components/attachments/AttachmentGallery";
+
 export default function CommentItem({
   comment,
   currentUserId,
@@ -147,9 +149,18 @@ export default function CommentItem({
           </div>
         </div>
       ) : (
-        <p className="mt-3 max-h-28 overflow-y-auto break-words whitespace-pre-wrap pr-1 text-sm text-gray-700">
-          {comment?.text || ""}
-        </p>
+        <>
+          {comment?.text && (
+            <p className="mt-3 max-h-28 overflow-y-auto break-words whitespace-pre-wrap pr-1 text-sm text-gray-700">
+              {comment.text}
+            </p>
+          )}
+
+          <AttachmentGallery
+            attachments={comment?.attachments}
+            className="mt-3"
+          />
+        </>
       )}
     </div>
   );

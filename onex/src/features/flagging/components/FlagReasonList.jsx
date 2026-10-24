@@ -15,7 +15,7 @@ const FlagReasonList = ({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5 sm:space-y-2">
       {reasons.map((reason) => {
         const isSelected = selectedReason === reason.id;
 
@@ -25,7 +25,7 @@ const FlagReasonList = ({
             type="button"
             onClick={() => onSelect(reason.id)}
             disabled={disabled}
-            className={`flex w-full items-start gap-3 rounded-lg border p-4 text-left transition ${
+            className={`flex w-full items-start gap-3 rounded-lg border p-3 text-left transition sm:p-4 ${
               isSelected
                 ? "border-neutral-500 bg-neutral-800"
                 : "border-neutral-800 bg-neutral-900 hover:border-neutral-700 hover:bg-neutral-800/70"
@@ -51,7 +51,7 @@ const FlagReasonList = ({
               </span>
 
               {reason.description && (
-                <span className="mt-1 block text-xs leading-relaxed text-neutral-400">
+                <span className="mt-1 hidden text-xs leading-relaxed text-neutral-400 sm:block">
                   {reason.description}
                 </span>
               )}

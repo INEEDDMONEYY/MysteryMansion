@@ -1,4 +1,4 @@
-import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus, Eye, Coins, Heart, Flag } from 'lucide-react';
+import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus, Eye, Coins, Heart, Flag, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import useNotifications from '@/shared/hooks/useNotifications';
@@ -17,6 +17,10 @@ const TYPE_META = {
   low_credits:        { icon: Coins,          color: 'text-orange-400',  bg: 'bg-orange-400/10',  label: 'Low Credits'     },
   post_liked:         { icon: Heart,          color: 'text-pink-400',    bg: 'bg-pink-400/10',    label: 'Post Liked'      },
   flag_update:        { icon: Flag,           color: 'text-red-400',     bg: 'bg-red-400/10',     label: 'Report Update'   },
+  forum_reply:        { icon: MessageSquare,  color: 'text-pink-400',    bg: 'bg-pink-400/10',    label: 'Forum Reply'     },
+  credits_earned:     { icon: Coins,          color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Credits Earned'  },
+  credits_added:      { icon: Coins,          color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Credits Added'   },
+  earn_rule_added:    { icon: Sparkles,       color: 'text-pink-400',    bg: 'bg-pink-400/10',    label: 'New Way to Earn' },
 };
 
 export default function UserNotificationsPage() {
@@ -74,6 +78,11 @@ export default function UserNotificationsPage() {
                 onClick={() => {
                   if (!n.read) markOneRead(n._id);
                   if (n.type === 'flag_update') navigate('/user/reports');
+                  if (n.type === 'forum_reply' && n.meta?.threadId) navigate(`/forum/thread/${n.meta.threadId}`);
+                  if (n.type === 'new_comment' && n.meta?.postId) navigate(`/posts/${n.meta.postId}`);
+                  if (['credits_earned', 'credits_added', 'earn_rule_added', 'low_credits'].includes(n.type)) {
+                    navigate('/user/credits');
+                  }
                 }}
                 className={`w-full text-left flex items-start gap-4 px-5 py-4 hover:bg-neutral-800/40 transition-colors ${n.read ? 'opacity-60' : ''}`}
               >

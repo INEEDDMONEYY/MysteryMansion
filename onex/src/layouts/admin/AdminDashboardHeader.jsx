@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { Menu, Bell, Search, Settings, User, ImageIcon, Crown, ChevronDown, Loader2, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/context/useUser';
@@ -45,8 +45,32 @@ export default function AdminDashboardHeader({
   const [searching, setSearching]         = useState(false);
   const searchRef = useRef(null);
 
-  const { notifications, unreadCount, loading, markAllRead, markOneRead } =
-    useNotifications('admin');
+  // Platform alerts (admin audience) plus notifications addressed to this admin personally.
+  const platform = useNotifications('admin');
+  const personal = useNotifications('user');
+
+  const notifications = useMemo(
+    () =>
+      [...platform.notifications, ...personal.notifications]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 30),
+    [platform.notifications, personal.notifications]
+  );
+  const unreadCount = platform.unreadCount + personal.unreadCount;
+  const loading = platform.loading && personal.loading;
+
+  const markAllRead = useCallback(
+    () => Promise.all([platform.markAllRead(), personal.markAllRead()]),
+    [platform, personal]
+  );
+
+  const markOneRead = useCallback(
+    (id) =>
+      personal.notifications.some((n) => n._id === id)
+        ? personal.markOneRead(id)
+        : platform.markOneRead(id),
+    [platform, personal]
+  );
 
   const profilePic =
     localStorage.getItem('profilePicture') ||
@@ -254,6 +278,8 @@ export default function AdminDashboardHeader({
                 setBellOpen(false);
                 if (n.type === 'new_flag') navigate('/admin/reported-flags');
                 if (n.type === 'new_credit_request') navigate('/admin/credit-requests');
+                if (n.type === 'forum_reply' && n.meta?.threadId) navigate(`/forum/thread/${n.meta.threadId}`);
+                if (n.type === 'new_comment' && n.meta?.postId) navigate(`/posts/${n.meta.postId}`);
               }}
               title="Admin Notifications"
               viewAllHref="/admin/notifications"

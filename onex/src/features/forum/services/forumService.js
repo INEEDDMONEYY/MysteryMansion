@@ -1,88 +1,63 @@
 import {
-  DEFAULT_FORUM_CATEGORIES,
-  FORUM_CATEGORY_SOURCES,
-  FORUM_CATEGORY_STATUSES,
-  getActiveForumCategories,
-  getForumCategoryById as findForumCategoryById,
-  getForumCategoryBySlug as findForumCategoryBySlug,
-} from "../data/forumCategories";
-
-import {
   DEFAULT_FORUM_SORT,
   FORUM_SORT_OPTIONS,
   getForumSortOption,
 } from "../data/forumSortOptions";
 
-export const getForum = async ({
-  categories = DEFAULT_FORUM_CATEGORIES,
-  sort = DEFAULT_FORUM_SORT,
-} = {}) => {
-  const selectedSort = getForumSortOption(
-    sort,
-    FORUM_SORT_OPTIONS
-  );
+import { forumRequest } from "./forumApi";
 
-  return {
-    categories: getActiveForumCategories(categories),
-    sort: selectedSort,
-  };
+export const getForumCategories = async () => {
+  const categories = await forumRequest({
+    method: "get",
+    url: "/forum/categories",
+  });
+
+  return Array.isArray(categories) ? categories : [];
 };
 
-export const getForumCategories = async ({
-  categories = DEFAULT_FORUM_CATEGORIES,
-  includeArchived = false,
-} = {}) => {
-  if (includeArchived) {
-    return categories;
-  }
+export const getForum = async ({
+  sort = DEFAULT_FORUM_SORT,
+} = {}) => ({
+  categories: await getForumCategories(),
+  sort: getForumSortOption(sort, FORUM_SORT_OPTIONS),
+});
 
-  return getActiveForumCategories(categories);
+const findCategory = async (categories, matches) => {
+  const list =
+    Array.isArray(categories) && categories.length
+      ? categories
+      : await getForumCategories();
+
+  return list.find(matches) || null;
 };
 
 export const getForumCategory = async ({
   categoryId,
-  categories = DEFAULT_FORUM_CATEGORIES,
-} = {}) => {
-  return findForumCategoryById(
-    categoryId,
-    categories
-  );
-};
+  categories,
+} = {}) =>
+  categoryId
+    ? findCategory(categories, (category) => category.id === categoryId)
+    : null;
 
 export const getForumCategoryBySlug = async ({
   slug,
-  categories = DEFAULT_FORUM_CATEGORIES,
-} = {}) => {
-  return findForumCategoryBySlug(
-    slug,
-    categories
-  );
-};
+  categories,
+} = {}) =>
+  slug
+    ? findCategory(categories, (category) => category.slug === slug)
+    : null;
 
 export const createForumCategory = async ({
   name,
   description = "",
-  createdBy,
 } = {}) => {
   if (!name?.trim()) {
-    throw new Error(
-      "A forum category name is required."
-    );
+    throw new Error("A forum category name is required.");
   }
 
-  if (!createdBy) {
-    throw new Error(
-      "An authenticated user is required to create a forum category."
-    );
-  }
-
-  return {
-    id: null,
-    name: name.trim(),
-    description: description.trim(),
-    createdBy,
-    source: FORUM_CATEGORY_SOURCES.USER,
-    status: FORUM_CATEGORY_STATUSES.PENDING,
-    archived: false,
-  };
+  return forumRequest({
+    method: "post",
+    url: "/forum/categories",
+    data: { name: name.trim(), description: description.trim() },
+  });
 };

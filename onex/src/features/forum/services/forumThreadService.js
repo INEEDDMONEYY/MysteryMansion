@@ -1,32 +1,29 @@
-import {
-  canEditThread,
-  canDeleteThread,
-} from "../utils/threadUtils";
+import { forumRequest, toRequestData } from "./forumApi";
 
 export const getForumThreads = async ({
   categoryId = null,
+  categorySlug = null,
   sort = "latest",
+  query = "",
   page = 1,
   limit = 20,
 } = {}) => {
-  /*
-   * Future backend implementation:
-   *
-   * const response = await api.get("/forum/threads", {
-   *   params: {
-   *     categoryId,
-   *     sort,
-   *     page,
-   *     limit,
-   *   },
-   * });
-   *
-   * return response.data;
-   */
+  const result = await forumRequest({
+    method: "get",
+    url: "/forum/threads",
+    params: {
+      categoryId: categoryId || undefined,
+      categorySlug: categorySlug || undefined,
+      q: query?.trim() || undefined,
+      sort,
+      page,
+      limit,
+    },
+  });
 
   return {
-    threads: [],
-    pagination: {
+    threads: Array.isArray(result?.threads) ? result.threads : [],
+    pagination: result?.pagination || {
       page,
       limit,
       total: 0,
@@ -37,138 +34,56 @@ export const getForumThreads = async ({
   };
 };
 
-export const getForumThread = async ({
-  threadId,
-} = {}) => {
+export const getForumThread = async ({ threadId } = {}) => {
   if (!threadId) {
     throw new Error("A thread ID is required.");
   }
 
-  /*
-   * Future backend implementation:
-   *
-   * const response = await api.get(
-   *   `/forum/threads/${threadId}`
-   * );
-   *
-   * return response.data;
-   */
-
-  return null;
+  return forumRequest({
+    method: "get",
+    url: `/forum/threads/${encodeURIComponent(threadId)}`,
+  });
 };
 
 export const createForumThread = async ({
   title,
   content,
   categoryId,
-  authorId,
+  tags = [],
+  attachments = [],
 } = {}) => {
-  if (!title?.trim()) {
-    throw new Error("A thread title is required.");
-  }
+  if (!title?.trim()) throw new Error("A thread title is required.");
+  if (!content?.trim()) throw new Error("Thread content is required.");
+  if (!categoryId) throw new Error("A forum category is required.");
 
-  if (!content?.trim()) {
-    throw new Error("Thread content is required.");
-  }
-
-  if (!categoryId) {
-    throw new Error("A forum category is required.");
-  }
-
-  if (!authorId) {
-    throw new Error(
-      "An authenticated user is required to create a thread."
-    );
-  }
-
-  /*
-   * Future backend implementation:
-   *
-   * return api.post("/forum/threads", {
-   *   title,
-   *   content,
-   *   categoryId,
-   * });
-   */
-
-  return {
-    id: null,
-    title: title.trim(),
-    content: content.trim(),
-    categoryId,
-    authorId,
-    pinned: false,
-    archived: false,
-    locked: false,
-  };
+  return forumRequest({
+    method: "post",
+    url: "/forum/threads",
+    data: toRequestData(
+      { title: title.trim(), content: content.trim(), categoryId, tags },
+      attachments
+    ),
+  });
 };
 
 export const updateForumThread = async ({
   thread,
-  userId,
-  isAdmin = false,
   updates = {},
 } = {}) => {
-  if (!thread) {
-    throw new Error("A thread is required.");
-  }
+  if (!thread?.id) throw new Error("A thread is required.");
 
-  if (
-    !canEditThread({
-      thread,
-      userId,
-      isAdmin,
-    })
-  ) {
-    throw new Error(
-      "You do not have permission to edit this thread."
-    );
-  }
-
-  /*
-   * Future backend implementation:
-   *
-   * return api.patch(
-   *   `/forum/threads/${thread.id}`,
-   *   updates
-   * );
-   */
-
-  return {
-    ...thread,
-    ...updates,
-  };
+  return forumRequest({
+    method: "patch",
+    url: `/forum/threads/${encodeURIComponent(thread.id)}`,
+    data: updates,
+  });
 };
 
-export const deleteForumThread = async ({
-  thread,
-  userId,
-  isAdmin = false,
-} = {}) => {
-  if (!thread) {
-    throw new Error("A thread is required.");
-  }
+export const deleteForumThread = async ({ thread } = {}) => {
+  if (!thread?.id) throw new Error("A thread is required.");
 
-  if (
-    !canDeleteThread({
-      thread,
-      userId,
-      isAdmin,
-    })
-  ) {
-    throw new Error(
-      "You do not have permission to delete this thread."
-    );
-  }
-
-  /*
-   * Future backend implementation:
-   *
-   * await api.delete(`/forum/threads/${thread.id}`);
-   */
-
-  return {
-    success: true,
-    threadId: thread.id,
-  };
+  return forumRequest({
+    method: "delete",
+    url: `/forum/threads/${encodeURIComponent(thread.id)}`,
+  });
 };

@@ -8,8 +8,9 @@ import env from '../../../config/env.js';
 import { normalizeState } from '../../../common/utils/stateNormalizer.js';
 import { createNotification } from '../../notifications/notificationController.js';
 import { sendAccountActivityEmail } from '../../../common/utils/sendAccountActivityEmail.js';
-import { uploadBackupCopy } from '../../../common/utils/backupStorage.js';
+import { uploadBackupCopy, deleteBackupCopy } from '../../../common/utils/backupStorage.js';
 import { awardCredits } from '../../credits/creditEarnService.js';
+import { saveAttachments } from '../../../common/utils/attachmentUpload.js';
 
 // Maps the account-level gender (set on the user's profile) to the post-level
 // gender enum, used as a fallback when a post itself doesn't specify one.
@@ -440,12 +441,13 @@ export async function createPostComment(req, res) {
     const { id: postId } = req.params;
     const userId = req.user?._id;
     const text = String(req.body?.text || '').trim();
+    const hasFiles = Boolean(req.files?.length);
 
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    if (!text) {
-      return res.status(400).json({ error: 'Comment text is required' });
+    if (!text && !hasFiles) {
+      return res.status(400).json({ error: 'Comment text or an image is required' });
     }
 
     const postExists = await Post.exists({ _id: postId });
@@ -453,7 +455,14 @@ export async function createPostComment(req, res) {
       return res.status(404).json({ error: 'Post not found' });
     }
 
-    const created = await Comment.create({ postId, userId, text });
+    let attachments = [];
+    try {
+      attachments = await saveAttachments(req.files, { userId, folder: 'comments' });
+    } catch (uploadErr) {
+      return res.status(400).json({ error: uploadErr.message });
+    }
+
+    const created = await Comment.create({ postId, userId, text, attachments });
     const populated = await Comment.findById(created._id).populate({
       path: 'userId',
       select: 'username profilePic role',
@@ -465,7 +474,7 @@ export async function createPostComment(req, res) {
       awardCredits({ userId, eventKey: 'comment_post', refId: String(created._id) });
 
       const commenterName = populated.userId?.username || 'Someone';
-      const commentPreview = `${text.slice(0, 80)}${text.length > 80 ? '…' : ''}`;
+      const commentPreview = `${text.slice(0, 80)}${text.length > 80 ? '…' : ''}` || 'sent an image';
       createNotification({
         audience: 'user',
         type: 'new_comment',
@@ -556,6 +565,7 @@ export async function deletePostComment(req, res) {
     }
 
     await Comment.findByIdAndDelete(comment._id);
+    Promise.allSettled((comment.attachments || []).map((a) => deleteBackupCopy(a.key)));
     return res.json({ message: 'Comment deleted successfully' });
   } catch (err) {
     console.error('❌ [deletePostComment] Error:', err);

@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Coins } from "lucide-react";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
+
+import { UserContext } from "@/context/UserContext";
 
 const formatPrice = (price) =>
   new Intl.NumberFormat("en-US", {
@@ -12,9 +15,15 @@ const formatCredits = (credits) =>
   new Intl.NumberFormat("en-US").format(credits);
 
 export default function CreditPackageCard({ pack, index = 0 }) {
+  const { user } = useContext(UserContext) || {};
+
   if (!pack) return null;
 
-  const signupHref = `/signup?package=${encodeURIComponent(pack.id)}`;
+  const isLoggedIn = Boolean(user?._id);
+  const creditsPath = user?.accountType === "client" ? "/client/credits" : "/user/credits";
+  const packageHref = isLoggedIn
+    ? `${creditsPath}?credits=${pack.credits}&package=${encodeURIComponent(pack.name)}`
+    : `/signup?package=${encodeURIComponent(pack.id)}`;
 
   return (
     <motion.article
@@ -77,7 +86,7 @@ export default function CreditPackageCard({ pack, index = 0 }) {
 
       <div className="mt-7 border-t border-white/10 pt-6">
         <Link
-          to={signupHref}
+          to={packageHref}
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-fuchsia-400/30 bg-fuchsia-500/10 px-5 py-3.5 text-sm font-semibold text-fuchsia-200 transition hover:border-fuchsia-400/60 hover:bg-fuchsia-500/20 focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-offset-2 focus:ring-offset-neutral-950"
         >
           Choose Package
@@ -85,7 +94,9 @@ export default function CreditPackageCard({ pack, index = 0 }) {
         </Link>
 
         <p className="mt-3 text-center text-xs leading-5 text-neutral-500">
-          Continue through your account to proceed.
+          {isLoggedIn
+            ? "Finish your refill from your credits dashboard."
+            : "Continue through your account to proceed."}
         </p>
       </div>
     </motion.article>

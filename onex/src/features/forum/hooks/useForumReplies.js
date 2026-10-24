@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
-  getForumReplies,
   createForumReply,
+  deleteForumReply,
+  getForumReplies,
+  updateForumReply,
 } from "../services/forumReplyService";
 
 const INITIAL_STATE = {
   replies: [],
   pagination: {
     page: 1,
-    limit: 25,
+    limit: 50,
     total: 0,
     hasNextPage: false,
   },
@@ -19,31 +21,19 @@ const INITIAL_STATE = {
   error: null,
 };
 
+const toMessage = (error, fallback) =>
+  error instanceof Error ? error.message : fallback;
+
 const useForumReplies = ({
   threadId,
-  limit = 25,
+  limit = 50,
   autoLoad = true,
 } = {}) => {
-  const [state, setState] = useState(
-    INITIAL_STATE
-  );
+  const [state, setState] = useState(INITIAL_STATE);
 
   const loadReplies = useCallback(
-    async ({
-      page = 1,
-      append = false,
-    } = {}) => {
-      if (!threadId) {
-        setState((current) => ({
-          ...current,
-          replies: [],
-          loading: false,
-          loadingMore: false,
-          error: "A thread ID is required.",
-        }));
-
-        return null;
-      }
+    async ({ page = 1, append = false } = {}) => {
+      if (!threadId) return null;
 
       setState((current) => ({
         ...current,
@@ -53,44 +43,26 @@ const useForumReplies = ({
       }));
 
       try {
-        const result = await getForumReplies({
-          threadId,
-          page,
-          limit,
-        });
-
-        const replies = Array.isArray(result?.replies)
-          ? result.replies
-          : [];
+        const result = await getForumReplies({ threadId, page, limit });
 
         setState((current) => ({
+          ...current,
           replies: append
-            ? [...current.replies, ...replies]
-            : replies,
-          pagination: result?.pagination || {
-            page,
-            limit,
-            total: replies.length,
-            hasNextPage: false,
-          },
+            ? [...current.replies, ...result.replies]
+            : result.replies,
+          pagination: result.pagination,
           loading: false,
           loadingMore: false,
-          submitting: false,
           error: null,
         }));
 
         return result;
       } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Unable to load forum replies.";
-
         setState((current) => ({
           ...current,
           loading: false,
           loadingMore: false,
-          error: message,
+          error: toMessage(error, "Unable to load replies."),
         }));
 
         return null;
@@ -112,83 +84,101 @@ const useForumReplies = ({
       page: state.pagination.page + 1,
       append: true,
     });
-  }, [
-    loadReplies,
-    state.loading,
-    state.loadingMore,
-    state.pagination,
-  ]);
+  }, [loadReplies, state.loading, state.loadingMore, state.pagination]);
 
+  // Rejects with the server message so forms can show it inline.
   const addReply = useCallback(
-    async ({
-      content,
-      authorId,
-      parentReplyId = null,
-    } = {}) => {
-      if (!threadId) {
-        throw new Error("A thread ID is required.");
-      }
-
-      setState((current) => ({
-        ...current,
-        submitting: true,
-        error: null,
-      }));
+    async ({ content, parentReplyId = null, attachments = [] } = {}) => {
+      setState((current) => ({ ...current, submitting: true }));
 
       try {
         const reply = await createForumReply({
           threadId,
           content,
-          authorId,
           parentReplyId,
+          attachments,
         });
 
         setState((current) => ({
           ...current,
-          replies: reply?.id
-            ? [...current.replies, reply]
-            : current.replies,
+          replies: [...current.replies, reply],
+          pagination: {
+            ...current.pagination,
+            total: current.pagination.total + 1,
+          },
           submitting: false,
-          error: null,
         }));
 
         return reply;
       } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Unable to create the reply.";
-
-        setState((current) => ({
-          ...current,
-          submitting: false,
-          error: message,
-        }));
-
-        return null;
+        setState((current) => ({ ...current, submitting: false }));
+        throw error;
       }
     },
     [threadId]
   );
 
+  const editReply = useCallback(async (reply, content) => {
+    const updated = await updateForumReply({ reply, content });
+
+    setState((current) => ({
+      ...current,
+      replies: current.replies.map((item) =>
+        item.id === updated.id ? updated : item
+      ),
+    }));
+
+    return updated;
+  }, []);
+
+  const removeReply = useCallback(async (reply) => {
+    await deleteForumReply({ reply });
+
+    setState((current) => ({
+      ...current,
+      replies: current.replies.map((item) =>
+        item.id === reply.id
+          ? {
+              ...item,
+              isDeleted: true,
+              isSolution: false,
+              content: "[This reply was deleted]",
+            }
+          : item
+      ),
+    }));
+  }, []);
+
+  // Local patch used after a vote or solution change.
+  const patchReply = useCallback((replyId, patch) => {
+    setState((current) => ({
+      ...current,
+      replies: current.replies.map((item) =>
+        item.id === replyId ? { ...item, ...patch } : item
+      ),
+    }));
+  }, []);
+
+  // Only one reply can be the accepted answer.
+  const setSolution = useCallback((replyId) => {
+    setState((current) => ({
+      ...current,
+      replies: current.replies.map((item) => ({
+        ...item,
+        isSolution: Boolean(replyId) && item.id === replyId,
+      })),
+    }));
+  }, []);
+
   const refresh = useCallback(
-    () =>
-      loadReplies({
-        page: 1,
-        append: false,
-      }),
+    () => loadReplies({ page: 1, append: false }),
     [loadReplies]
   );
 
   useEffect(() => {
-    if (!autoLoad) {
-      return;
-    }
+    if (!autoLoad) return;
 
-    loadReplies({
-      page: 1,
-      append: false,
-    });
+    loadReplies({ page: 1, append: false });
   }, [autoLoad, loadReplies]);
 
   return {
@@ -201,6 +191,10 @@ const useForumReplies = ({
     loadReplies,
     loadMore,
     addReply,
+    editReply,
+    removeReply,
+    patchReply,
+    setSolution,
     refresh,
   };
 };

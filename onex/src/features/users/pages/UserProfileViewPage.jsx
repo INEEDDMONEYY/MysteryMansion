@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useContext } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -9,7 +9,15 @@ import {
   FileCheck2,
   LayoutGrid,
   MessageSquareText,
+  Images,
+  Flag,
+  ShieldCheck,
 } from "lucide-react";
+
+import { UserContext } from "@/context/UserContext";
+import AdminActivityFeed from "@/features/users/components/admin-profile/AdminActivityFeed";
+import AdminMediaLibrary from "@/features/users/components/admin-profile/AdminMediaLibrary";
+import AdminResolvedFlags from "@/features/users/components/admin-profile/AdminResolvedFlags";
 
 import UserProfileHeader from "@/features/users/components/UserProfileHeader";
 import PostList from "@/features/posts/components/PostList";
@@ -49,6 +57,11 @@ export default function UserProfileViewPage({
   const [prices, setPrices] = useState({});
   const [reviewCount, setReviewCount] = useState(0);
 
+  // Admin accounts get their own tabs instead of the provider ones.
+  const [profile, setProfile] = useState({ loaded: false, isAdmin: false });
+  const { user: viewer } = useContext(UserContext) || {};
+  const viewerIsAdmin = viewer?.role === "admin";
+
   // ─────────────────────────────────────────────────────────────
   // FETCH PROFILE DETAILS
   // ─────────────────────────────────────────────────────────────
@@ -58,12 +71,16 @@ export default function UserProfileViewPage({
 
     let cancelled = false;
 
+    setProfile({ loaded: false, isAdmin: false });
+
     api
       .get(`/public/users/id/${userId}`)
       .then((res) => {
         if (cancelled) return;
 
         const u = res?.data || {};
+
+        setProfile({ loaded: true, isAdmin: u.role === "admin" });
 
         const rawAvail = u.availability;
 
@@ -101,6 +118,8 @@ export default function UserProfileViewPage({
       .catch(() => {
         if (cancelled) return;
 
+        setProfile({ loaded: true, isAdmin: false });
+
         setAvailability({
           status: "",
         });
@@ -128,7 +147,7 @@ export default function UserProfileViewPage({
   // optional trailing URL segment (e.g. /user/:userId/references).
   // ─────────────────────────────────────────────────────────────
 
-  const TAB_KEYS = ["references", "completed-dates", "availability", "pricing", "reviews"];
+  const TAB_KEYS = ["references", "completed-dates", "availability", "pricing", "reviews", "media", "resolved-flags"];
 
   const { basePath, requestedTab } = useMemo(() => {
     const segments = location.pathname.split("/").filter(Boolean);
@@ -144,7 +163,7 @@ export default function UserProfileViewPage({
     return { basePath: location.pathname, requestedTab: "posts" };
   }, [location.pathname]);
 
-  const tabs = [
+  const providerTabs = [
     { key: "posts", label: "Posts", icon: LayoutGrid, path: basePath, show: true },
     { key: "references", label: "References", icon: FileCheck2, path: `${basePath}/references`, show: true },
     { key: "completed-dates", label: "Completed Dates", icon: CalendarCheck, path: `${basePath}/completed-dates`, show: true },
@@ -152,6 +171,19 @@ export default function UserProfileViewPage({
     { key: "pricing", label: "Pricing", icon: DollarSign, path: `${basePath}/pricing`, show: hasPrices },
     { key: "reviews", label: "Reviews", icon: MessageSquareText, path: `${basePath}/reviews`, show: true, count: reviewCount },
   ];
+
+  // Moderation tabs are only visible to admins; other visitors just see the header.
+  const adminTabs = [
+    { key: "posts", label: "Posts", icon: LayoutGrid, path: basePath, show: viewerIsAdmin },
+    { key: "media", label: "Media Library", icon: Images, path: `${basePath}/media`, show: viewerIsAdmin },
+    { key: "resolved-flags", label: "Resolved Flags", icon: Flag, path: `${basePath}/resolved-flags`, show: viewerIsAdmin },
+  ];
+
+  const tabs = !profile.loaded
+    ? providerTabs.slice(0, 1)
+    : profile.isAdmin
+      ? adminTabs
+      : providerTabs;
 
   const visibleTabs = tabs.filter((tab) => tab.show);
   const activeTab = visibleTabs.some((tab) => tab.key === requestedTab) ? requestedTab : "posts";
@@ -298,7 +330,83 @@ export default function UserProfileViewPage({
                 POSTS
             ─────────────────────────────────────────────── */}
 
-            {activeTab === "posts" && (
+            {activeTab === "posts" && profile.isAdmin && (
+              <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div className="border-b border-gray-200 px-5 py-5 sm:px-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
+                      {viewerIsAdmin ? <LayoutGrid size={19} /> : <ShieldCheck size={19} />}
+                    </div>
+
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900">
+                        {viewerIsAdmin ? "Posts" : "Administrator"}
+                      </h2>
+
+                      <p className="text-sm text-gray-500">
+                        {viewerIsAdmin
+                          ? "All thread posts, thread replies and platform comments."
+                          : "This is an official Mystery Mansion administrator account."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {viewerIsAdmin && (
+                  <div className="p-4 sm:p-6">
+                    <AdminActivityFeed />
+                  </div>
+                )}
+              </section>
+            )}
+
+            {activeTab === "media" && profile.isAdmin && viewerIsAdmin && (
+              <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div className="border-b border-gray-200 px-5 py-5 sm:px-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
+                      <Images size={19} />
+                    </div>
+
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900">Media Library</h2>
+                      <p className="text-sm text-gray-500">
+                        Images and GIFs uploaded through comments, thread posts and replies.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-6">
+                  <AdminMediaLibrary />
+                </div>
+              </section>
+            )}
+
+            {activeTab === "resolved-flags" && profile.isAdmin && viewerIsAdmin && (
+              <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                <div className="border-b border-gray-200 px-5 py-5 sm:px-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                      <Flag size={19} />
+                    </div>
+
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900">Resolved Flags</h2>
+                      <p className="text-sm text-gray-500">
+                        Reports resolved by this administrator, with their full timelines.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 sm:p-6">
+                  <AdminResolvedFlags adminId={userId} />
+                </div>
+              </section>
+            )}
+
+            {activeTab === "posts" && !profile.isAdmin && (
               <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 {/* Section Header */}
 
@@ -495,7 +603,7 @@ export default function UserProfileViewPage({
           MOBILE ACTION BAR
       ═══════════════════════════════════════════════════════ */}
 
-      {!disableActionButtons && (
+      {!disableActionButtons && !profile.isAdmin && (
         <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white/95 p-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md sm:hidden">
           <div className="flex gap-2">
 

@@ -8,6 +8,8 @@ export default function CommentSection({
   commentsLoading = false,
   commentText,
   setCommentText,
+  commentFiles = [],
+  setCommentFiles,
   editingCommentId,
   editingText,
   setEditingText,
@@ -36,6 +38,8 @@ export default function CommentSection({
             setCommentText={
               setCommentText
             }
+            files={commentFiles}
+            setFiles={setCommentFiles}
             onSubmit={onCreateComment}
             busy={
               commentBusyId === "new"

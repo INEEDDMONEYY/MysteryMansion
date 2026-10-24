@@ -40,6 +40,8 @@ import bannerRoutes from './modules/banners/routes.js';
 import discountRoutes from './modules/discounts/routes.js';
 import savedPostRoutes from './modules/savedPosts/routes.js';
 import creditsRoutes from './modules/credits/routes.js';
+import forumRoutes from './modules/forum/routes.js';
+import { seedDefaultForumCategories } from './modules/forum/forumHelpers.js';
 import faqRoutes from './modules/faqs/routes.js';
 import categoryRoutes from './modules/categories/routes.js';
 import referralRoutes from './modules/referrals/routes.js';
@@ -121,6 +123,7 @@ const connectDB = async () => {
     await seedDefaultFAQs();
     await seedDefaultCategories();
     await seedDefaultEarnRules();
+    await seedDefaultForumCategories();
     console.log('✅ Background jobs started');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
@@ -183,6 +186,8 @@ app.use('/api/discounts', discountRoutes);
 app.use('/api/saved-posts', savedPostRoutes);
 // Credits Routes
 app.use('/api/credits', creditsRoutes);
+// Forum Routes
+app.use('/api/forum', forumRoutes);
 // FAQ Routes
 app.use('/api/faqs', faqRoutes);
 // Category Routes

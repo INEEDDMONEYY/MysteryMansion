@@ -2,6 +2,7 @@ import User from "../../models/User.js";
 import Post from "../../models/Post.js";
 import SiteDiscount from "../../models/SiteDiscount.js";
 import { createNotification } from "../notifications/notificationController.js";
+import { notifyIfLowCredits } from "../credits/creditAlerts.js";
 import {
   PROMOTION_TIERS,
   BLUE_BADGE_MONTHLY_CREDITS,
@@ -191,6 +192,7 @@ export async function purchaseTier(userId, tierId) {
       tierId: tier.id,
       cost,
     });
+    await notifyIfLowCredits(userId, charged.credits);
 
     return {
       ok: true,
@@ -252,6 +254,7 @@ export async function processBadgeRenewals(now = new Date()) {
         "Blue Badge renewed",
         `${BLUE_BADGE_MONTHLY_CREDITS} credits were deducted. Next renewal ${next.toLocaleDateString("en-US")}.`,
       );
+      await notifyIfLowCredits(_id, renewed.credits);
       continue;
     }
 

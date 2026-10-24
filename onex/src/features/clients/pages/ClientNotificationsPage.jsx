@@ -1,4 +1,4 @@
-import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus, Eye, Coins, Heart, Flag } from 'lucide-react';
+import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus, Eye, Coins, Heart, Flag, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import useNotifications from '@/shared/hooks/useNotifications';
 import { setSEO } from '@/shared/utils/seo';
@@ -19,6 +19,10 @@ const TYPE_META = {
   low_credits:        { icon: Coins,          color: 'text-orange-600',  bg: 'bg-orange-100',  label: 'Low Credits'     },
   post_liked:         { icon: Heart,          color: 'text-rose-600',    bg: 'bg-rose-100',    label: 'Post Liked'      },
   flag_update:        { icon: Flag,           color: 'text-red-600',     bg: 'bg-red-100',     label: 'Report Update'   },
+  forum_reply:        { icon: MessageSquare,  color: 'text-pink-600',    bg: 'bg-pink-100',    label: 'Forum Reply'     },
+  credits_earned:     { icon: Coins,          color: 'text-emerald-600', bg: 'bg-emerald-100', label: 'Credits Earned'  },
+  credits_added:      { icon: Coins,          color: 'text-emerald-600', bg: 'bg-emerald-100', label: 'Credits Added'   },
+  earn_rule_added:    { icon: Sparkles,       color: 'text-pink-600',    bg: 'bg-pink-100',    label: 'New Way to Earn' },
 };
 
 export default function ClientNotificationsPage() {
@@ -43,10 +47,19 @@ export default function ClientNotificationsPage() {
         if (n.meta?.postId) navigate(`/posts/${n.meta.postId}`);
         break;
       case 'low_credits':
+      case 'credits_earned':
+      case 'credits_added':
+      case 'earn_rule_added':
         navigate('/client/credits');
         break;
       case 'flag_update':
         navigate('/client/reports');
+        break;
+      case 'forum_reply':
+        if (n.meta?.threadId) navigate(`/forum/thread/${n.meta.threadId}`);
+        break;
+      case 'new_comment':
+        if (n.meta?.postId) navigate(`/posts/${n.meta.postId}`);
         break;
       default:
         break;

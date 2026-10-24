@@ -1,159 +1,55 @@
+import { forumRequest } from "./forumApi";
+
 export const voteOnForumItem = async ({
   targetType,
   targetId,
   value,
 } = {}) => {
-  if (!targetType) {
-    throw new Error(
-      "A forum target type is required."
-    );
-  }
-
-  if (!targetId) {
-    throw new Error(
-      "A forum target ID is required."
-    );
-  }
-
+  if (!targetType) throw new Error("A forum target type is required.");
+  if (!targetId) throw new Error("A forum target ID is required.");
   if (![1, -1, 0].includes(value)) {
-    throw new Error(
-      "Forum vote value must be 1, -1, or 0."
-    );
+    throw new Error("Forum vote value must be 1, -1, or 0.");
   }
 
-  /*
-   * Future backend implementation:
-   *
-   * return api.post("/forum/interactions/vote", {
-   *   targetType,
-   *   targetId,
-   *   value,
-   * });
-   */
-
-  return {
-    targetType,
-    targetId,
-    value,
-  };
+  return forumRequest({
+    method: "post",
+    url: "/forum/interactions/vote",
+    data: { targetType, targetId, value },
+  });
 };
 
 export const toggleForumBookmark = async ({
-  targetType,
+  targetType = "thread",
   targetId,
 } = {}) => {
-  if (!targetType) {
-    throw new Error(
-      "A forum target type is required."
-    );
-  }
+  if (!targetId) throw new Error("A forum target ID is required.");
 
-  if (!targetId) {
-    throw new Error(
-      "A forum target ID is required."
-    );
-  }
-
-  /*
-   * Future backend implementation:
-   *
-   * return api.post("/forum/interactions/bookmark", {
-   *   targetType,
-   *   targetId,
-   * });
-   */
-
-  return {
-    targetType,
-    targetId,
-  };
-};
-
-export const markForumReplyHelpful = async ({
-  replyId,
-} = {}) => {
-  if (!replyId) {
-    throw new Error("A reply ID is required.");
-  }
-
-  /*
-   * Future backend implementation:
-   *
-   * return api.post(
-   *   `/forum/replies/${replyId}/helpful`
-   * );
-   */
-
-  return {
-    replyId,
-    helpful: true,
-  };
+  return forumRequest({
+    method: "post",
+    url: "/forum/interactions/bookmark",
+    data: { targetType, targetId },
+  });
 };
 
 export const markForumReplySolution = async ({
   threadId,
   replyId,
-  userId,
 } = {}) => {
-  if (!threadId) {
-    throw new Error("A thread ID is required.");
-  }
+  if (!threadId) throw new Error("A thread ID is required.");
+  if (!replyId) throw new Error("A reply ID is required.");
 
-  if (!replyId) {
-    throw new Error("A reply ID is required.");
-  }
-
-  if (!userId) {
-    throw new Error(
-      "An authenticated user is required."
-    );
-  }
-
-  /*
-   * The backend should verify that the authenticated
-   * user is the thread author before accepting this action.
-   *
-   * Future backend implementation:
-   *
-   * return api.post(
-   *   `/forum/threads/${threadId}/solution`,
-   *   { replyId }
-   * );
-   */
-
-  return {
-    threadId,
-    replyId,
-    markedBy: userId,
-    solution: true,
-  };
+  return forumRequest({
+    method: "post",
+    url: `/forum/threads/${encodeURIComponent(threadId)}/solution`,
+    data: { replyId },
+  });
 };
 
-export const removeForumReplySolution = async ({
-  threadId,
-  userId,
-} = {}) => {
-  if (!threadId) {
-    throw new Error("A thread ID is required.");
-  }
+export const removeForumReplySolution = async ({ threadId } = {}) => {
+  if (!threadId) throw new Error("A thread ID is required.");
 
-  if (!userId) {
-    throw new Error(
-      "An authenticated user is required."
-    );
-  }
-
-  /*
-   * Future backend implementation:
-   *
-   * return api.delete(
-   *   `/forum/threads/${threadId}/solution`
-   * );
-   */
-
-  return {
-    threadId,
-    removedBy: userId,
-    solution: false,
-  };
+  return forumRequest({
+    method: "delete",
+    url: `/forum/threads/${encodeURIComponent(threadId)}/solution`,
+  });
 };

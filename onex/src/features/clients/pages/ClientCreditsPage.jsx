@@ -1,5 +1,5 @@
-import { useContext, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Coins, Plus, Clock, CheckCircle, XCircle, AlertCircle, Star, Zap, Copy, DollarSign, Rocket, BadgeCheck } from 'lucide-react';
 import { UserContext } from '@/context/UserContext';
 import api from '@/shared/utils/api';
@@ -195,11 +195,32 @@ export default function ClientCreditsPage() {
   const [submitting, setSubmitting]     = useState(false);
   const [success, setSuccess]           = useState('');
   const [error, setError]               = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const prefilledRef = useRef(false);
 
   useEffect(() => {
     setSEO('My Credits | Mystery Mansion', '', { robots: 'noindex, nofollow' });
     fetchData();
   }, []);
+
+  // Arrived from a package on the public credits page: preselect it for the refill form.
+  useEffect(() => {
+    if (loadingData || prefilledRef.current) return;
+    const wanted = Number(searchParams.get('credits'));
+    if (!Number.isInteger(wanted) || wanted < 1 || wanted > 10000) return;
+    prefilledRef.current = true;
+
+    const match = packages.find((p) => p.credits === wanted);
+    if (match) {
+      handleSelectPackage(match);
+    } else {
+      const name = searchParams.get('package');
+      setAmount(String(wanted));
+      setNote(`Requesting ${wanted} credits${name ? ` — ${name.slice(0, 40)} package` : ''}. `);
+      setTimeout(() => document.getElementById('topup-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+    setSearchParams({}, { replace: true });
+  }, [loadingData, packages, searchParams]);
 
   const fetchData = async () => {
     setLoadingData(true);

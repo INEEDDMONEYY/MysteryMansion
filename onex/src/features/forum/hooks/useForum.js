@@ -19,7 +19,10 @@ const useForum = ({
   sort = DEFAULT_FORUM_SORT,
   autoLoad = true,
 } = {}) => {
-  const [state, setState] = useState(INITIAL_STATE);
+  const [state, setState] = useState(() => ({
+    ...INITIAL_STATE,
+    loading: autoLoad,
+  }));
 
   const loadForum = useCallback(async () => {
     setState((current) => ({

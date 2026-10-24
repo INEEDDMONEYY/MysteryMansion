@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { submitFlag } from "../services/flagService";
+import { showAppToast } from "@/shared/utils/appToast";
 
 const INITIAL_STATE = {
   status: "idle",
@@ -24,6 +25,15 @@ const useFlag = () => {
         status: "success",
         error: null,
         result,
+      });
+
+      showAppToast({
+        type: "flag_submitted",
+        title: "Report submitted",
+        message:
+          payload?.targetType === "user"
+            ? "Thanks. Our team will review this account."
+            : "Thanks. Our team will review this post.",
       });
 
       return result;

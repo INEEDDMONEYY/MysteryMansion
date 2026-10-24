@@ -63,6 +63,8 @@ export default function PostDetail() {
     useState(false);
   const [commentText, setCommentText] =
     useState("");
+  const [commentFiles, setCommentFiles] =
+    useState([]);
   const [
     editingCommentId,
     setEditingCommentId,
@@ -449,15 +451,21 @@ export default function PostDetail() {
       commentText || ""
     ).trim();
 
-    if (!text) return;
+    if (!text && commentFiles.length === 0) return;
 
     try {
       setCommentBusyId("new");
       setCommentError("");
 
+      const payload = new FormData();
+      payload.append("text", text);
+      commentFiles.forEach((file) =>
+        payload.append("images", file)
+      );
+
       const { data } = await api.post(
         `/posts/${postId}/comments`,
-        { text }
+        payload
       );
 
       setComments((prev) => [
@@ -466,6 +474,7 @@ export default function PostDetail() {
       ]);
 
       setCommentText("");
+      setCommentFiles([]);
     } catch (err) {
       console.error(
         "Failed to create comment:",
@@ -760,6 +769,10 @@ export default function PostDetail() {
           commentText={commentText}
           setCommentText={
             setCommentText
+          }
+          commentFiles={commentFiles}
+          setCommentFiles={
+            setCommentFiles
           }
           editingCommentId={
             editingCommentId
