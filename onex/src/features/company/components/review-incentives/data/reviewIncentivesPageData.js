@@ -126,8 +126,8 @@ export const reviewIncentivesPageData = {
         signups: 5,
         label: "5 Signups",
         creditsAwarded: 50,
-        moneyRewardEnabled: null,
-        moneyReward: null,
+        moneyRewardEnabled: true,
+        moneyReward: 5,
         description:
           "Reach your first referral milestone with five eligible registrations.",
       },
@@ -136,8 +136,8 @@ export const reviewIncentivesPageData = {
         signups: 10,
         label: "10 Signups",
         creditsAwarded: 150,
-        moneyRewardEnabled: null,
-        moneyReward: null,
+        moneyRewardEnabled: true,
+        moneyReward: 10,
         description:
           "Keep building your referral network and reach ten eligible registrations.",
       },
@@ -146,8 +146,8 @@ export const reviewIncentivesPageData = {
         signups: 15,
         label: "15 Signups",
         creditsAwarded: 220,
-        moneyRewardEnabled: null,
-        moneyReward: null,
+        moneyRewardEnabled: true,
+        moneyReward: 15,
         description:
           "Continue growing your network and reach your next milestone.",
       },
@@ -157,7 +157,7 @@ export const reviewIncentivesPageData = {
         label: "20 Signups",
         creditsAwarded: 270,
         moneyRewardEnabled: true,
-        moneyReward: 30,
+        moneyReward: 20,
         description:
           "Build on your referral activity with twenty eligible registrations.",
       },
@@ -167,7 +167,7 @@ export const reviewIncentivesPageData = {
         label: "25 Signups",
         creditsAwarded: 345,
         moneyRewardEnabled: true,
-        moneyReward: 50,
+        moneyReward: 25,
         description:
           "Reach twenty-five eligible registrations through your signup link.",
       },
@@ -177,7 +177,7 @@ export const reviewIncentivesPageData = {
         label: "40 Signups",
         creditsAwarded: 415,
         moneyRewardEnabled: true,
-        moneyReward: 80,
+        moneyReward: 30,
         description:
           "Grow your referral activity toward forty eligible registrations.",
       },
@@ -187,7 +187,7 @@ export const reviewIncentivesPageData = {
         label: "45 Signups",
         creditsAwarded: 500,
         moneyRewardEnabled: true,
-        moneyReward: 130,
+        moneyReward: 35,
         description:
           "Keep progressing toward your next referral reward threshold.",
       },
@@ -197,7 +197,7 @@ export const reviewIncentivesPageData = {
         label: "50 Signups",
         creditsAwarded: 600,
         moneyRewardEnabled: true,
-        moneyReward: 170,
+        moneyReward: 40,
         description:
           "Reach fifty eligible registrations through your shared link.",
       },
@@ -207,7 +207,7 @@ export const reviewIncentivesPageData = {
         label: "100+ Signups",
         creditsAwarded: 1400,
         moneyRewardEnabled: true,
-        moneyReward: 250,
+        moneyReward: 45,
         isOpenEnded: true,
         description:
           "Reach one hundred eligible registrations and continue building your referral network.",

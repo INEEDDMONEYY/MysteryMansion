@@ -46,8 +46,8 @@ export const MEMBERSHIP_TIERS = Object.freeze({
     id: 'Premium',
     name: 'Premium Plan',
     description: 'More boosts, thread pinning and a membership badge on your profile.',
-    monthlyCoinCost: 3600,
-    monthlyCoinAllocation: 800,
+    monthlyCoinCost: 2600,
+    monthlyCoinAllocation: 600,
     featured: true,
     perks: {
       ...NO_PERKS,
@@ -59,7 +59,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
     },
     benefits: [
       'Access to better search filter options',
-      '800 monthly coin allocation',
+      '600 monthly coin allocation',
       'Edit forum posts',
       '8 post boosts',
       'Pin forum thread',
@@ -70,8 +70,8 @@ export const MEMBERSHIP_TIERS = Object.freeze({
     id: 'Elite',
     name: 'Elite Plan',
     description: 'The full toolkit: uploads, categories, maximum boosts and every new feature.',
-    monthlyCoinCost: 4600,
-    monthlyCoinAllocation: 1500,
+    monthlyCoinCost: 4000,
+    monthlyCoinAllocation: 1000,
     featured: false,
     perks: {
       boostsPerMonth: 14,
@@ -85,7 +85,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
     },
     benefits: [
       'Access to all new features',
-      '1500 monthly coin allocation',
+      '1000 monthly coin allocation',
       'Membership status on your profile',
       'Edit forum posts',
       '14 post boosts',
