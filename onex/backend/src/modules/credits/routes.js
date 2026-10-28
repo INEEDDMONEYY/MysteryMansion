@@ -88,7 +88,7 @@ router.get('/earn/history', async (req, res) => {
 });
 
 // ── POST /api/credits/earn/daily-login ────────────────────────────────────────
-// Idempotent per UTC day. Covers sessions that stay signed in for days.
+// Idempotent per Mountain-time day. Covers sessions that stay signed in for days.
 router.post('/earn/daily-login', async (req, res) => {
   const result = await awardCredits({
     userId: req.user._id,

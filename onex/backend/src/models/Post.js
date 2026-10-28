@@ -39,6 +39,11 @@ const PostSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Membership boost: the listing ranks first until this time.
+    boostedUntil: {
+      type: Date,
+      default: null,
+    },
     promoExpiresAt: {
       type: Date,
       default: null,

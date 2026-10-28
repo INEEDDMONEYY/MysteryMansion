@@ -12,12 +12,18 @@ import {
   Images,
   Flag,
   ShieldCheck,
+  MessagesSquare,
+  MessageCircle,
 } from "lucide-react";
 
 import { UserContext } from "@/context/UserContext";
 import AdminActivityFeed from "@/features/users/components/admin-profile/AdminActivityFeed";
 import AdminMediaLibrary from "@/features/users/components/admin-profile/AdminMediaLibrary";
 import AdminResolvedFlags from "@/features/users/components/admin-profile/AdminResolvedFlags";
+import ClientForumActivity from "@/features/users/components/client-profile/ClientForumActivity";
+import ClientLibrary from "@/features/users/components/client-profile/ClientLibrary";
+import ClientReviewsGiven from "@/features/users/components/client-profile/ClientReviewsGiven";
+import ClientComments from "@/features/users/components/client-profile/ClientComments";
 
 import UserProfileHeader from "@/features/users/components/UserProfileHeader";
 import PostList from "@/features/posts/components/PostList";
@@ -28,6 +34,28 @@ import ReferencesLinks from "@/shared/components/References/ReferencesLinks.jsx"
 import CompletedDates from "@/shared/components/References/CompletedDates.jsx";
 import ReviewsPanel from "@/features/reviews/components/ReviewsPanel";
 import api from "@/shared/utils/api.js";
+
+// eslint-disable-next-line no-unused-vars -- Icon is rendered as <Icon />
+function ProfilePanel({ icon: Icon, title, subtitle, children }) {
+  return (
+    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="border-b border-gray-200 px-5 py-5 sm:px-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-50 text-pink-600">
+            <Icon size={19} />
+          </div>
+
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+            <p className="text-sm text-gray-500">{subtitle}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 sm:p-6">{children}</div>
+    </section>
+  );
+}
 
 export default function UserProfileViewPage({
   userId: propUserId = null,
@@ -57,8 +85,8 @@ export default function UserProfileViewPage({
   const [prices, setPrices] = useState({});
   const [reviewCount, setReviewCount] = useState(0);
 
-  // Admin accounts get their own tabs instead of the provider ones.
-  const [profile, setProfile] = useState({ loaded: false, isAdmin: false });
+  // Admin and client accounts get their own tabs instead of the provider ones.
+  const [profile, setProfile] = useState({ loaded: false, isAdmin: false, isClient: false });
   const { user: viewer } = useContext(UserContext) || {};
   const viewerIsAdmin = viewer?.role === "admin";
 
@@ -71,7 +99,7 @@ export default function UserProfileViewPage({
 
     let cancelled = false;
 
-    setProfile({ loaded: false, isAdmin: false });
+    setProfile({ loaded: false, isAdmin: false, isClient: false });
 
     api
       .get(`/public/users/id/${userId}`)
@@ -80,7 +108,11 @@ export default function UserProfileViewPage({
 
         const u = res?.data || {};
 
-        setProfile({ loaded: true, isAdmin: u.role === "admin" });
+        setProfile({
+          loaded: true,
+          isAdmin: u.role === "admin",
+          isClient: u.role !== "admin" && u.accountType === "client",
+        });
 
         const rawAvail = u.availability;
 
@@ -118,7 +150,7 @@ export default function UserProfileViewPage({
       .catch(() => {
         if (cancelled) return;
 
-        setProfile({ loaded: true, isAdmin: false });
+        setProfile({ loaded: true, isAdmin: false, isClient: false });
 
         setAvailability({
           status: "",
@@ -147,7 +179,7 @@ export default function UserProfileViewPage({
   // optional trailing URL segment (e.g. /user/:userId/references).
   // ─────────────────────────────────────────────────────────────
 
-  const TAB_KEYS = ["references", "completed-dates", "availability", "pricing", "reviews", "media", "resolved-flags"];
+  const TAB_KEYS = ["references", "completed-dates", "availability", "pricing", "reviews", "media", "resolved-flags", "forum-activity", "library", "comments"];
 
   const { basePath, requestedTab } = useMemo(() => {
     const segments = location.pathname.split("/").filter(Boolean);
@@ -179,14 +211,25 @@ export default function UserProfileViewPage({
     { key: "resolved-flags", label: "Resolved Flags", icon: Flag, path: `${basePath}/resolved-flags`, show: viewerIsAdmin },
   ];
 
+  const clientTabs = [
+    { key: "forum-activity", label: "Forum Activity", icon: MessagesSquare, path: basePath, show: true },
+    { key: "library", label: "Library", icon: Images, path: `${basePath}/library`, show: true },
+    { key: "reviews", label: "Reviews", icon: MessageSquareText, path: `${basePath}/reviews`, show: true },
+    { key: "comments", label: "Comments", icon: MessageCircle, path: `${basePath}/comments`, show: true },
+  ];
+
   const tabs = !profile.loaded
-    ? providerTabs.slice(0, 1)
+    ? []
     : profile.isAdmin
       ? adminTabs
-      : providerTabs;
+      : profile.isClient
+        ? clientTabs
+        : providerTabs;
 
   const visibleTabs = tabs.filter((tab) => tab.show);
-  const activeTab = visibleTabs.some((tab) => tab.key === requestedTab) ? requestedTab : "posts";
+  const activeTab = visibleTabs.some((tab) => tab.key === requestedTab)
+    ? requestedTab
+    : visibleTabs[0]?.key || "posts";
 
   // ─────────────────────────────────────────────────────────────
   // ACTIONS
@@ -406,7 +449,7 @@ export default function UserProfileViewPage({
               </section>
             )}
 
-            {activeTab === "posts" && !profile.isAdmin && (
+            {activeTab === "posts" && profile.loaded && !profile.isAdmin && !profile.isClient && (
               <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 {/* Section Header */}
 
@@ -589,11 +632,37 @@ export default function UserProfileViewPage({
                 REVIEWS
             ─────────────────────────────────────────────── */}
 
-            {activeTab === "reviews" && (
+            {activeTab === "reviews" && profile.loaded && !profile.isAdmin && !profile.isClient && (
               <ReviewsPanel
                 targetUserId={userId}
                 onMeta={({ count }) => setReviewCount(count)}
               />
+            )}
+
+            {/* Client profile panels */}
+
+            {profile.isClient && activeTab === "forum-activity" && (
+              <ProfilePanel icon={MessagesSquare} title="Forum Activity" subtitle="Discussions started and replies posted in the forum.">
+                <ClientForumActivity userId={userId} />
+              </ProfilePanel>
+            )}
+
+            {profile.isClient && activeTab === "library" && (
+              <ProfilePanel icon={Images} title="Library" subtitle="Images and GIFs uploaded in the forum and on comments.">
+                <ClientLibrary userId={userId} />
+              </ProfilePanel>
+            )}
+
+            {profile.isClient && activeTab === "reviews" && (
+              <ProfilePanel icon={MessageSquareText} title="Reviews" subtitle="Reviews left on provider accounts.">
+                <ClientReviewsGiven userId={userId} />
+              </ProfilePanel>
+            )}
+
+            {profile.isClient && activeTab === "comments" && (
+              <ProfilePanel icon={MessageCircle} title="Comments" subtitle="Comments left on posts.">
+                <ClientComments userId={userId} />
+              </ProfilePanel>
             )}
           </div>
         </div>
@@ -603,7 +672,7 @@ export default function UserProfileViewPage({
           MOBILE ACTION BAR
       ═══════════════════════════════════════════════════════ */}
 
-      {!disableActionButtons && !profile.isAdmin && (
+      {!disableActionButtons && !profile.isAdmin && !profile.isClient && (
         <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white/95 p-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md sm:hidden">
           <div className="flex gap-2">
 

@@ -14,6 +14,8 @@ import { attachmentUpload, saveAttachments } from '../../common/utils/attachment
 import { deleteBackupCopy } from '../../common/utils/backupStorage.js';
 import { awardCredits } from '../credits/creditEarnService.js';
 import { createNotification } from '../notifications/notificationController.js';
+import { consumeBoost, getUserPerks, notifyBoostApplied } from '../membership/membershipService.js';
+import { BOOST_DURATION_MS, CATEGORY_CREATE_LIMIT, FORUM_BORDER_COLORS } from '../membership/membershipCatalog.js';
 import {
   AUTHOR_SELECT,
   escapeRegex,
@@ -49,6 +51,9 @@ const blockSuspended = (req, res, next) =>
     ? res.status(403).json({ error: 'Your account is suspended.' })
     : next();
 
+// upgradeRequired lets the client show a membership prompt instead of a plain error.
+const perkDenied = (res, error) => res.status(403).json({ error, upgradeRequired: true });
+
 const parsePaging = (query, defaultLimit, maxLimit) => {
   const page = Math.max(1, Number.parseInt(query.page, 10) || 1);
   const limit = Math.min(maxLimit, Math.max(1, Number.parseInt(query.limit, 10) || defaultLimit));
@@ -78,11 +83,11 @@ const populateThread = (query) =>
   query.populate('authorId', AUTHOR_SELECT).populate('categoryId', 'name slug');
 
 const SORTS = {
-  latest: { pinned: -1, lastActivityAt: -1 },
-  active: { pinned: -1, lastActivityAt: -1 },
-  newest: { pinned: -1, createdAt: -1 },
-  popular: { pinned: -1, upvoteCount: -1, replyCount: -1, viewCount: -1 },
-  most_replied: { pinned: -1, replyCount: -1, lastActivityAt: -1 },
+  latest: { pinned: -1, boostedUntil: -1, lastActivityAt: -1 },
+  active: { pinned: -1, boostedUntil: -1, lastActivityAt: -1 },
+  newest: { pinned: -1, boostedUntil: -1, createdAt: -1 },
+  popular: { pinned: -1, boostedUntil: -1, upvoteCount: -1, replyCount: -1, viewCount: -1 },
+  most_replied: { pinned: -1, boostedUntil: -1, replyCount: -1, lastActivityAt: -1 },
 };
 
 // ── Categories ───────────────────────────────────────────────────────────────
@@ -104,20 +109,34 @@ router.get('/categories', async (_req, res) => {
   }
 });
 
-// Members suggest categories; admins' categories go live immediately.
+// Members with the category perk publish immediately; everyone else cannot create categories.
 router.post('/categories', authMiddleware, blockSuspended, async (req, res) => {
   try {
     const name = String(req.body.name || '').trim().slice(0, 60);
     const slug = slugify(name);
     if (name.length < 3 || !slug) return res.status(400).json({ error: 'Category name must be at least 3 characters.' });
-    if (await ForumCategory.exists({ slug })) return res.status(409).json({ error: 'A category with this name already exists.' });
 
     const admin = isAdmin(req.user);
+    if (!admin) {
+      const { perks } = await getUserPerks(req.user);
+      if (!perks.createForumCategories) return perkDenied(res, 'Creating forum categories is an Elite membership perk.');
+
+      const recent = await ForumCategory.countDocuments({
+        createdBy: req.user._id,
+        createdAt: { $gt: new Date(Date.now() - CATEGORY_CREATE_LIMIT.windowMs) },
+      });
+      if (recent >= CATEGORY_CREATE_LIMIT.count) {
+        return res.status(429).json({ error: `You can create up to ${CATEGORY_CREATE_LIMIT.count} categories every 30 days.` });
+      }
+    }
+
+    if (await ForumCategory.exists({ slug })) return res.status(409).json({ error: 'A category with this name already exists.' });
+
     const category = await ForumCategory.create({
       name,
       slug,
       description: String(req.body.description || '').trim().slice(0, 300),
-      status: admin ? 'approved' : 'pending',
+      status: 'approved',
       source: admin ? 'admin' : 'user',
       createdBy: req.user._id,
     });
@@ -172,6 +191,9 @@ router.get('/threads', async (req, res) => {
       const rx = new RegExp(escapeRegex(q), 'i');
       filter.$or = [{ title: rx }, { content: rx }, { tags: rx }];
     }
+
+    // Expired boosts must read as null so they sort below live ones.
+    await ForumThread.updateMany({ boostedUntil: { $ne: null, $lte: new Date() } }, { $set: { boostedUntil: null } });
 
     const [total, threads] = await Promise.all([
       ForumThread.countDocuments(filter),
@@ -231,11 +253,26 @@ router.post('/threads', authMiddleware, blockSuspended, enforceRestriction('post
       : await ForumCategory.findOne({ slug: ref.toLowerCase() });
     if (!category || category.status !== 'approved') return res.status(400).json({ error: 'Choose a valid category.' });
 
+    if (req.files?.length && !isAdmin(req.user)) {
+      const { perks } = await getUserPerks(req.user);
+      if (!perks.forumUploads) return perkDenied(res, 'Image and GIF uploads in the forum are an Elite membership perk.');
+    }
+
     let attachments = [];
     try {
       attachments = await saveAttachments(req.files, { userId: req.user._id, folder: 'forum' });
     } catch (uploadErr) {
       return res.status(400).json({ error: uploadErr.message });
+    }
+
+    // An omitted field keeps the default; '' clears the member's saved colour.
+    const borderRequested = req.body.borderColor !== undefined;
+    const borderColor = borderRequested ? String(req.body.borderColor).trim().toLowerCase() : '';
+    if (borderColor) {
+      if (!FORUM_BORDER_COLORS.includes(borderColor)) return res.status(400).json({ error: 'Choose a valid border colour.' });
+      if (!isAdmin(req.user) && !(await getUserPerks(req.user)).perks.forumBorderColor) {
+        return perkDenied(res, 'Forum card border customization is an Elite membership perk.');
+      }
     }
 
     const thread = await ForumThread.create({
@@ -245,7 +282,12 @@ router.post('/threads', authMiddleware, blockSuspended, enforceRestriction('post
       authorId: req.user._id,
       tags: cleanTags(req.body.tags),
       attachments,
+      borderColor,
     });
+
+    if (borderRequested) {
+      await User.updateOne({ _id: req.user._id }, { $set: { forumBorderColor: borderColor } });
+    }
 
     awardCredits({ userId: req.user._id, eventKey: 'thread_post', refId: String(thread._id) });
 
@@ -266,6 +308,32 @@ router.patch('/threads/:id', authMiddleware, blockSuspended, async (req, res) =>
     const admin = isAdmin(req.user);
     if (!admin && !isOwner(thread, req.user)) return res.status(403).json({ error: 'You cannot edit this thread.' });
 
+    const wantsEdit = ['title', 'content', 'tags'].some((key) => req.body[key] != null);
+    const wantsPin = req.body.pinned != null;
+    const perks = !admin && (wantsEdit || wantsPin) ? (await getUserPerks(req.user)).perks : null;
+
+    if (wantsEdit && perks && !perks.editForumPosts) {
+      return perkDenied(res, 'Editing forum posts is a membership perk.');
+    }
+
+    // Members pin their own threads within their plan's limit; admin pins are theirs to remove.
+    if (!admin && wantsPin) {
+      if (req.body.pinned) {
+        if (perks.maxPinnedThreads <= 0) return perkDenied(res, 'Pinning threads is a Premium and Elite membership perk.');
+        if (!thread.pinned) {
+          const pinnedCount = await ForumThread.countDocuments({ authorId: req.user._id, pinnedByMember: true });
+          if (pinnedCount >= perks.maxPinnedThreads) {
+            return res.status(409).json({ error: `Your plan allows ${perks.maxPinnedThreads} pinned thread${perks.maxPinnedThreads === 1 ? '' : 's'}. Unpin one first.` });
+          }
+          thread.pinned = true;
+          thread.pinnedByMember = true;
+        }
+      } else if (thread.pinnedByMember) {
+        thread.pinned = false;
+        thread.pinnedByMember = false;
+      }
+    }
+
     if (req.body.title != null) {
       const title = String(req.body.title).trim();
       if (title.length < 3 || title.length > 160) return res.status(400).json({ error: 'Title must be 3-160 characters.' });
@@ -282,6 +350,7 @@ router.patch('/threads/:id', authMiddleware, blockSuspended, async (req, res) =>
       for (const flag of ['pinned', 'locked', 'archived']) {
         if (req.body[flag] != null) thread[flag] = Boolean(req.body[flag]);
       }
+      if (req.body.pinned != null) thread.pinnedByMember = false;
     }
 
     await thread.save();
@@ -290,6 +359,30 @@ router.patch('/threads/:id', authMiddleware, blockSuspended, async (req, res) =>
   } catch (err) {
     console.error('❌ PATCH /forum/threads/:id:', err);
     res.status(500).json({ error: 'Failed to update thread' });
+  }
+});
+
+// Boosts the author's thread to the top of listings for a day; limited by the membership plan.
+router.post('/threads/:id/boost', authMiddleware, blockSuspended, async (req, res) => {
+  try {
+    if (!isId(req.params.id)) return res.status(404).json({ error: 'Thread not found' });
+    const thread = await ForumThread.findOne({ _id: req.params.id, archived: false });
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    if (!isAdmin(req.user) && !isOwner(thread, req.user)) return res.status(403).json({ error: 'You can only boost your own threads.' });
+
+    const used = await consumeBoost(req.user);
+    if (!used.ok) return res.status(used.status).json({ error: used.error, upgradeRequired: used.status === 403 });
+
+    thread.boostedUntil = new Date(Date.now() + BOOST_DURATION_MS);
+    thread.lastActivityAt = new Date();
+    await thread.save();
+    notifyBoostApplied(thread.authorId, 'Forum thread', thread.title, thread.boostedUntil, { threadId: String(thread._id) });
+
+    const populated = await populateThread(ForumThread.findById(thread._id)).lean();
+    res.json({ thread: serializeThread(populated), boostsRemaining: used.data.boostsRemaining });
+  } catch (err) {
+    console.error('❌ POST /forum/threads/:id/boost:', err);
+    res.status(500).json({ error: 'Failed to boost thread' });
   }
 });
 
@@ -413,6 +506,10 @@ router.post('/threads/:id/replies', authMiddleware, blockSuspended, enforceRestr
     }
 
     let attachments = [];
+    if (req.files?.length && !isAdmin(req.user)) {
+      const { perks } = await getUserPerks(req.user);
+      if (!perks.forumUploads) return perkDenied(res, 'Image and GIF uploads in the forum are an Elite membership perk.');
+    }
     try {
       attachments = await saveAttachments(req.files, { userId: req.user._id, folder: 'forum' });
     } catch (uploadErr) {
@@ -456,6 +553,9 @@ router.patch('/replies/:id', authMiddleware, blockSuspended, async (req, res) =>
     const reply = await ForumReply.findById(req.params.id);
     if (!reply || reply.isDeleted) return res.status(404).json({ error: 'Reply not found' });
     if (!isAdmin(req.user) && !isOwner(reply, req.user)) return res.status(403).json({ error: 'You cannot edit this reply.' });
+    if (!isAdmin(req.user) && !(await getUserPerks(req.user)).perks.editForumPosts) {
+      return perkDenied(res, 'Editing forum posts is a membership perk.');
+    }
 
     const content = String(req.body.content || '').trim();
     if (content.length > 5000 || (content.length < 1 && !reply.attachments?.length)) return res.status(400).json({ error: 'Reply must be 1-5,000 characters.' });
@@ -571,6 +671,104 @@ router.get('/bookmarks', authMiddleware, async (req, res) => {
   } catch (err) {
     console.error('❌ GET /forum/bookmarks:', err);
     res.status(500).json({ error: 'Failed to load bookmarks' });
+  }
+});
+
+const ANALYTICS_DAYS = 14;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Engagement the member's own threads and replies received from other people.
+router.get('/me/analytics', authMiddleware, async (req, res) => {
+  try {
+    const me = req.user._id;
+    const [threads, replies] = await Promise.all([
+      ForumThread.find({ authorId: me, archived: false }).select('title viewCount').lean(),
+      ForumReply.find({ authorId: me, isDeleted: false }).select('_id').lean(),
+    ]);
+
+    const threadIds = threads.map((t) => t._id);
+    const replyIds = replies.map((r) => r._id);
+    const targetIds = [...threadIds, ...replyIds];
+
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
+    const since = new Date(startOfToday.getTime() - (ANALYTICS_DAYS - 1) * DAY_MS);
+
+    const receivedReplies = {
+      authorId: { $ne: me },
+      isDeleted: false,
+      $or: [{ threadId: { $in: threadIds } }, { parentReplyId: { $in: replyIds } }],
+    };
+    const receivedVotes = { targetId: { $in: targetIds }, userId: { $ne: me }, value: 1 };
+    const byDay = [{ $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } }, count: { $sum: 1 } } }];
+
+    const [repliesReceived, votesReceived, savesReceived, solutions, perThreadReplies, perThreadVotes, perThreadSaves, dailyReplies, dailyVotes] =
+      await Promise.all([
+        ForumReply.countDocuments(receivedReplies),
+        ForumVote.countDocuments(receivedVotes),
+        ForumBookmark.countDocuments({ targetId: { $in: targetIds }, userId: { $ne: me } }),
+        ForumThread.countDocuments({ solutionReplyId: { $in: replyIds }, authorId: { $ne: me } }),
+        ForumReply.aggregate([
+          { $match: { threadId: { $in: threadIds }, authorId: { $ne: me }, isDeleted: false } },
+          { $group: { _id: '$threadId', count: { $sum: 1 } } },
+        ]),
+        ForumVote.aggregate([
+          { $match: { ...receivedVotes, targetType: 'thread' } },
+          { $group: { _id: '$targetId', count: { $sum: 1 } } },
+        ]),
+        ForumBookmark.aggregate([
+          { $match: { targetType: 'thread', targetId: { $in: threadIds }, userId: { $ne: me } } },
+          { $group: { _id: '$targetId', count: { $sum: 1 } } },
+        ]),
+        ForumReply.aggregate([{ $match: { ...receivedReplies, createdAt: { $gte: since } } }, ...byDay]),
+        ForumVote.aggregate([{ $match: { ...receivedVotes, createdAt: { $gte: since } } }, ...byDay]),
+      ]);
+
+    const toMap = (rows) => new Map(rows.map((row) => [String(row._id), row.count]));
+    const replyMap = toMap(perThreadReplies);
+    const voteMap = toMap(perThreadVotes);
+    const saveMap = toMap(perThreadSaves);
+    const dailyReplyMap = toMap(dailyReplies);
+    const dailyVoteMap = toMap(dailyVotes);
+
+    const topThreads = threads
+      .map((t) => {
+        const id = String(t._id);
+        const stats = {
+          id,
+          title: t.title,
+          replies: replyMap.get(id) || 0,
+          votes: voteMap.get(id) || 0,
+          saves: saveMap.get(id) || 0,
+          views: t.viewCount || 0,
+        };
+        return { ...stats, score: stats.replies * 3 + stats.votes * 2 + stats.saves * 2 + stats.views * 0.1 };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map(({ score, ...rest }) => rest);
+
+    const daily = Array.from({ length: ANALYTICS_DAYS }, (_, i) => {
+      const date = new Date(since.getTime() + i * DAY_MS).toISOString().slice(0, 10);
+      return { date, replies: dailyReplyMap.get(date) || 0, votes: dailyVoteMap.get(date) || 0 };
+    });
+
+    res.json({
+      totals: {
+        threads: threads.length,
+        replies: replies.length,
+        repliesReceived,
+        votesReceived,
+        savesReceived,
+        solutions,
+        views: threads.reduce((sum, t) => sum + (t.viewCount || 0), 0),
+      },
+      daily,
+      topThreads,
+    });
+  } catch (err) {
+    console.error('❌ GET /forum/me/analytics:', err);
+    res.status(500).json({ error: 'Failed to load forum analytics' });
   }
 });
 

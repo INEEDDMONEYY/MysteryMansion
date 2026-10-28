@@ -70,11 +70,15 @@ export default function Footer() {
             <Link to="/become-a-provider" className={linkClass}>
               Become a Provider
             </Link>
-              {/** 
-            <Link to="*" className={linkClass}>
+
+            <Link to="/membership" className={linkClass}>
               Membership
             </Link>
-            */} 
+            
+            <Link to="/promote" className={linkClass}>
+              Promote Account
+            </Link>
+            
           </FooterSection>
 
           <FooterSection title="Credits & Rewards">

@@ -11,16 +11,34 @@ const PLACEHOLDER_PROFILE = {
   bio: "This is how promoted profiles are displayed to users.",
 };
 
+const addMonths = (date, n) => {
+  const d = new Date(date);
+  const day = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() + n);
+  d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()));
+  return d;
+};
+
 function useCountdown(expiryDate) {
   const calcRemaining = () => {
-    const diff = new Date(expiryDate).getTime() - Date.now();
-    if (diff <= 0) return null;
-    const totalSeconds = Math.floor(diff / 1000);
+    const now = new Date();
+    const end = new Date(expiryDate);
+    if (end.getTime() - now.getTime() <= 0) return null;
+
+    // Calendar months, so a stacked promotion reads as years/months instead of hundreds of days.
+    let totalMonths = (end.getFullYear() - now.getFullYear()) * 12 + (end.getMonth() - now.getMonth());
+    if (addMonths(now, totalMonths) > end) totalMonths -= 1;
+    totalMonths = Math.max(0, totalMonths);
+
+    const totalSeconds = Math.floor((end.getTime() - addMonths(now, totalMonths).getTime()) / 1000);
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
     const days = Math.floor(totalSeconds / 86400);
     const hours = Math.floor((totalSeconds % 86400) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    return { days, hours, minutes, seconds };
+    return { years, months, days, hours, minutes, seconds };
   };
 
   const [remaining, setRemaining] = useState(calcRemaining);
@@ -51,7 +69,9 @@ function CountdownBadge({ expiryDate, isVerified = false }) {
   }
 
   const parts = [];
-  if (remaining.days > 0) parts.push(`${remaining.days}d`);
+  if (remaining.years > 0) parts.push(`${remaining.years}y`);
+  if (remaining.years > 0 || remaining.months > 0) parts.push(`${remaining.months}mo`);
+  if (remaining.years > 0 || remaining.months > 0 || remaining.days > 0) parts.push(`${remaining.days}d`);
   parts.push(
     `${String(remaining.hours).padStart(2, "0")}h`,
     `${String(remaining.minutes).padStart(2, "0")}m`,

@@ -9,7 +9,7 @@ import { UserContext } from "@/context/UserContext";
 import api from "@/shared/utils/api";
 import { setSEO } from "@/shared/utils/seo";
 
-const CREDITS_PER_MESSAGE = 20;
+const CREDITS_PER_MESSAGE = 75;
 
 export default function UserMessages() {
   const { user, loading: userLoading } = useContext(UserContext);

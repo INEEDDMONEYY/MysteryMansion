@@ -14,6 +14,7 @@ import api from "@/shared/utils/api";
 import { hasPermanentProviderBadge } from "@/features/users/services/providerBadgeEligibility.js";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import useAccountRank from "@/features/account-ranking/hooks/useAccountRank";
+import useMembership from "@/features/membership/hooks/useMembership";
 import FlagButton from "@/features/flagging/components/FlagButton";
 import { FLAG_TARGET_TYPES } from "@/features/flagging/utils/flagTargets";
 
@@ -27,6 +28,7 @@ export default function UserProfileHeader({
 }) {
   const { user: ctxUser, updateProfile } =
     useContext(UserContext);
+  const { membership } = useMembership();
 
   const displayUserId =
     propUser?._id ||
@@ -49,6 +51,7 @@ export default function UserProfileHeader({
     bannerPic: null,
     activePromoExpiry: null,
     badgeType: "",
+    membershipTier: "",
   });
 
   const [banner, setBanner] = useState(null);
@@ -156,6 +159,8 @@ export default function UserProfileHeader({
           null,
         badgeType:
           profileData.badgeType || "",
+        membershipTier:
+          profileData.membershipTier || "",
       });
 
       setBioInput(
@@ -420,6 +425,14 @@ export default function UserProfileHeader({
   const isAdmin =
     user?.role === "admin";
 
+  const isClient =
+    !isAdmin && user?.accountType === "client";
+
+  // The owner's own plan comes from the membership context; visitors get it with the public profile.
+  const badgeTier = isOwner
+    ? (membership.active && membership.perks?.profileBadge ? membership.tier : "")
+    : user?.membershipTier || "";
+
   const displayPhoneNumber =
     user?.phoneNumber || "";
 
@@ -437,10 +450,10 @@ export default function UserProfileHeader({
       : "text-xl sm:text-2xl lg:text-3xl";
 
   const hasPhoneNumber =
-    Boolean(displayPhoneNumber);
+    !isAdmin && !isClient && Boolean(displayPhoneNumber);
 
   const hasEmail =
-    Boolean(displayEmail);
+    !isAdmin && !isClient && Boolean(displayEmail);
 
   // ─────────────────────────────────────────────────────────────
   // LOADING
@@ -623,7 +636,7 @@ export default function UserProfileHeader({
                       </span>
                     </span>
                   </>
-                ) : (
+                ) : !isClient ? (
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold leading-none sm:text-xs ${
                       user.badgeType ===
@@ -661,6 +674,23 @@ export default function UserProfileHeader({
                       user.badgeType !==
                         "pink" &&
                       "Unverified"}
+                  </span>
+                ) : null}
+
+                {/* MEMBERSHIP */}
+
+                {badgeTier && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-fuchsia-600 to-pink-600 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
+                    aria-label={`${badgeTier} member`}
+                    title={`${badgeTier} member`}
+                  >
+                    <Star
+                      size={12}
+                      className="fill-current text-yellow-300"
+                    />
+
+                    {badgeTier} Member
                   </span>
                 )}
 
@@ -917,6 +947,7 @@ export default function UserProfileHeader({
 
               {/* CONTACT INFORMATION */}
 
+              {(hasPhoneNumber || hasEmail) && (
               <div className="mt-5 flex flex-wrap gap-3">
 
                 {hasPhoneNumber && (
@@ -955,6 +986,7 @@ export default function UserProfileHeader({
                 )}
 
               </div>
+              )}
 
             </div>
           </div>

@@ -103,6 +103,13 @@ const hasActivePromotion = (post) => {
 };
 
 const getPostPriority = (post) => {
+  if (
+    post?.boostedUntil &&
+    new Date(post.boostedUntil).getTime() > Date.now()
+  ) {
+    return -1;
+  }
+
   if (hasActivePromotion(post)) {
     return 0;
   }

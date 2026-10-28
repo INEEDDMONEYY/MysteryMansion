@@ -16,6 +16,7 @@ export default function ForumReplyForm({
   signedIn = true,
   lockedMessage = "",
   allowAttachments = true,
+  showUploadHint = false,
 }) {
   const [value, setValue] = useState(initialValue);
   const [files, setFiles] = useState([]);
@@ -81,6 +82,15 @@ export default function ForumReplyForm({
 
       {allowAttachments && (
         <AttachmentPicker files={files} onChange={setFiles} disabled={submitting} />
+      )}
+
+      {!allowAttachments && showUploadHint && (
+        <p className="text-xs text-gray-500">
+          Image and GIF uploads are an Elite membership perk.{" "}
+          <Link to="/membership" className="font-semibold text-pink-600 underline underline-offset-4">
+            See membership
+          </Link>
+        </p>
       )}
 
       {error && (

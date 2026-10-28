@@ -9,7 +9,13 @@ const ForumThreadSchema = new mongoose.Schema(
     authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     tags: { type: [{ type: String, trim: true, lowercase: true, maxlength: 24 }], default: [] },
     attachments: { type: [AttachmentSchema], default: [] },
+    // Gradient border chosen with the Elite perk ('' = default).
+    borderColor: { type: String, default: '' },
     pinned: { type: Boolean, default: false },
+    // True when a member pinned their own thread with a membership perk (admin pins stay put).
+    pinnedByMember: { type: Boolean, default: false },
+    // Membership boost: ranks above unboosted threads until this time.
+    boostedUntil: { type: Date, default: null, index: true },
     locked: { type: Boolean, default: false },
     archived: { type: Boolean, default: false, index: true },
     viewCount: { type: Number, default: 0 },

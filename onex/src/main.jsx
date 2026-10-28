@@ -27,6 +27,7 @@ window.addEventListener("unhandledrejection", (e) => {
 sessionStorage.removeItem("chunk_reload");
 
 import { UserProvider } from "@/context/UserContext";
+import { MembershipProvider } from "@/features/membership/context/MembershipContext";
 import { DevMessageProvider } from "@/context/DevMessageContext";
 import { ServerReadyProvider, useServerReady } from "@/context/ServerReadyContext";
 import { startAnalyticsTracking } from "@/shared/utils/analyticsTracker";
@@ -68,6 +69,8 @@ const CommunityGuidelinesPage = lazy(() => import("@/features/company/pages/Comm
 const ReviewIncentivesPage = lazy(() => import("@/features/company/pages/ReviewIncentivesPage"));
 const ReferralsPage = lazy(() => import("@/features/company/pages/ReferralsPage"));
 const ReferralLandingPage = lazy(() => import("@/features/company/components/referrals/pages/ReferralLandingPage"));
+const MembershipPage = lazy(() => import("@/features/company/pages/MembershipPage"));
+const MyMembershipPage = lazy(() => import("@/features/membership/pages/MyMembershipPage"));
 
 
 // ── Auth pages ────────────────────────────────────────────────────────────────
@@ -158,8 +161,8 @@ const router = createBrowserRouter([
       { path: "/terms-of-use", element: <TermsOfUsePage /> },
       { path: "/review-incentives", element: <ReviewIncentivesPage /> },
       { path: "/referrals", element: <ReferralsPage /> },
-      { path: "/referral/:referralCode", element: <ReferralLandingPage /> }
-      
+      { path: "/referral/:referralCode", element: <ReferralLandingPage /> },
+      { path: "/membership", element: <MembershipPage /> },
     ],
   },
 
@@ -193,6 +196,7 @@ const router = createBrowserRouter([
           { path: "/user/liked-posts", element: <LikedPostsPage /> },
           { path: "/user/milestones", element: <UserMilestonesPage /> },
           { path: "/user/credits", element: <ClientCreditsPage /> },
+          { path: "/user/membership", element: <MyMembershipPage /> },
           { path: "/user/referrals", element: <UserReferralsPage /> },
           { path: "/user/reports", element: <MyReportsPage /> },
         ],
@@ -213,6 +217,7 @@ const router = createBrowserRouter([
           { path: "/client/profile", element: <ClientProfilePage /> },
           { path: "/client/notifications", element: <ClientNotifications /> },
           { path: "/client/credits", element: <ClientCreditsPage /> },
+          { path: "/client/membership", element: <MyMembershipPage /> },
           { path: "/client/milestones", element: <UserMilestonesPage /> },
           { path: "/client/reports", element: <MyReportsPage /> },
         ],
@@ -400,11 +405,13 @@ export function AppGate() {
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <UserProvider>
-      <DevMessageProvider>
-        <ServerReadyProvider>
-          <AppGate />
-        </ServerReadyProvider>
-      </DevMessageProvider>
+      <MembershipProvider>
+        <DevMessageProvider>
+          <ServerReadyProvider>
+            <AppGate />
+          </ServerReadyProvider>
+        </DevMessageProvider>
+      </MembershipProvider>
     </UserProvider>
   </StrictMode>
 );

@@ -41,6 +41,8 @@ import discountRoutes from './modules/discounts/routes.js';
 import savedPostRoutes from './modules/savedPosts/routes.js';
 import creditsRoutes from './modules/credits/routes.js';
 import forumRoutes from './modules/forum/routes.js';
+import membershipRoutes from './modules/membership/routes.js';
+import { startMembershipRenewalJob } from './common/utils/membershipRenewalJob.js';
 import { seedDefaultForumCategories } from './modules/forum/forumHelpers.js';
 import faqRoutes from './modules/faqs/routes.js';
 import categoryRoutes from './modules/categories/routes.js';
@@ -120,6 +122,7 @@ const connectDB = async () => {
     startMilestoneAchievementJob();
     startAccountInactivityEmailJob();
     startBadgeRenewalJob();
+    startMembershipRenewalJob();
     await seedDefaultFAQs();
     await seedDefaultCategories();
     await seedDefaultEarnRules();
@@ -188,6 +191,8 @@ app.use('/api/saved-posts', savedPostRoutes);
 app.use('/api/credits', creditsRoutes);
 // Forum Routes
 app.use('/api/forum', forumRoutes);
+// Membership Routes
+app.use('/api/membership', membershipRoutes);
 // FAQ Routes
 app.use('/api/faqs', faqRoutes);
 // Category Routes

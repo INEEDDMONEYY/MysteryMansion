@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle2, Eye, LockKeyhole, Pencil, Pin, Trash2 } from "lucide-react";
+import { CheckCircle2, Eye, LockKeyhole, Pencil, Pin, Rocket, Trash2 } from "lucide-react";
 
 import ForumVoteButton from "./interactions/ForumVoteButton";
 import ForumBookmarkButton from "./interactions/ForumBookmarkButton";
+import ForumBorderFrame from "./ForumBorderFrame";
 import AttachmentGallery from "@/shared/components/attachments/AttachmentGallery";
 
 import { formatForumCount, formatForumDate } from "../utils/forumUtils";
@@ -12,12 +13,32 @@ import { canEditThreadContent, isOwnContent } from "../utils/replyUtils";
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 disabled:opacity-60";
 
+const actionClass =
+  "inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-semibold text-gray-600 transition hover:border-pink-300 hover:text-pink-600 disabled:cursor-not-allowed disabled:opacity-50";
+
+// Shown instead of a feature button when the member's plan does not include it.
+function PerkLocked({ icon: Icon, label }) {
+  return (
+    <Link
+      to="/membership"
+      title="Included with a membership"
+      className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 text-sm font-semibold text-gray-400 transition hover:border-pink-300 hover:text-pink-600"
+    >
+      <Icon className="h-4 w-4" /> {label}
+      <LockKeyhole className="h-3.5 w-3.5" />
+    </Link>
+  );
+}
+
 export default function ForumPostCard({
   thread,
   user,
+  perks = {},
+  boostsRemaining = 0,
   onSave,
   onDelete,
   onModerate,
+  onBoost,
   onRequireAuth,
 }) {
   const [editing, setEditing] = useState(false);
@@ -29,6 +50,10 @@ export default function ForumPostCard({
   const signedIn = Boolean(user?._id);
   const isAdmin = user?.role === "admin";
   const canEdit = canEditThreadContent({ thread, user });
+  const isOwner = isOwnContent(thread, user);
+  const canUseEdit = isAdmin || Boolean(perks.editForumPosts);
+  const canUsePin = isAdmin || perks.maxPinnedThreads > 0;
+  const canUseBoost = isAdmin || perks.boostsPerMonth > 0;
 
   const startEdit = () => {
     setTitle(thread.title);
@@ -59,7 +84,8 @@ export default function ForumPostCard({
   };
 
   return (
-    <article className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
+    <ForumBorderFrame color={thread.borderColor}>
+    <article className={`rounded-2xl border bg-white p-5 shadow-sm sm:p-8 ${thread.borderColor ? "border-transparent" : "border-gray-200"}`}>
       <div className="flex gap-4 sm:gap-6">
         <ForumVoteButton
           targetType="thread"
@@ -91,6 +117,12 @@ export default function ForumPostCard({
             {thread.isSolved && (
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                 <CheckCircle2 className="h-3 w-3" /> Solved
+              </span>
+            )}
+
+            {thread.isBoosted && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-fuchsia-50 px-2.5 py-1 text-xs font-semibold text-fuchsia-700">
+                <Rocket className="h-3 w-3" /> Boosted
               </span>
             )}
 
@@ -193,15 +225,17 @@ export default function ForumPostCard({
                 onRequireAuth={onRequireAuth}
               />
 
-              {canEdit && (
+              {canEdit && canUseEdit && (
                 <button
                   type="button"
                   onClick={startEdit}
-                  className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-semibold text-gray-600 transition hover:border-pink-300 hover:text-pink-600"
+                  className={actionClass}
                 >
                   <Pencil className="h-4 w-4" /> Edit
                 </button>
               )}
+
+              {canEdit && !canUseEdit && <PerkLocked icon={Pencil} label="Edit" />}
 
               {canEdit && (
                 <button
@@ -212,6 +246,40 @@ export default function ForumPostCard({
                   <Trash2 className="h-4 w-4" /> Delete
                 </button>
               )}
+
+              {(isOwner || isAdmin) && (canUseBoost ? (
+                <button
+                  type="button"
+                  onClick={onBoost}
+                  disabled={thread.isBoosted || (!isAdmin && boostsRemaining <= 0)}
+                  title={thread.isBoosted ? "Already boosted" : undefined}
+                  className={actionClass}
+                >
+                  <Rocket className="h-4 w-4" />
+                  {thread.isBoosted
+                    ? "Boosted"
+                    : isAdmin
+                      ? "Boost"
+                      : `Boost (${boostsRemaining} left)`}
+                </button>
+              ) : (
+                <PerkLocked icon={Rocket} label="Boost" />
+              ))}
+
+              {isOwner && !isAdmin && (canUsePin ? (
+                (!thread.pinned || thread.pinnedByMember) && (
+                  <button
+                    type="button"
+                    onClick={() => onModerate?.({ pinned: !thread.pinned })}
+                    className={actionClass}
+                  >
+                    <Pin className="h-4 w-4" />
+                    {thread.pinned ? "Unpin" : "Pin"}
+                  </button>
+                )
+              ) : (
+                <PerkLocked icon={Pin} label="Pin" />
+              ))}
 
               {isAdmin && (
                 <>
@@ -237,5 +305,6 @@ export default function ForumPostCard({
         </div>
       </div>
     </article>
+    </ForumBorderFrame>
   );
 }

@@ -222,7 +222,7 @@ export const reviewIncentivesPageData = {
       "Where a milestone has a monetary reward enabled, eligible providers can follow the program's payout process and choose from the supported payout methods listed below.",
     eligibilityDescription:
       "Monetary rewards are separate from credit rewards. Eligibility, availability, verification, minimum payout requirements, and processing conditions should follow the program's published rules.",
-    payoutOptions: [],
+    payoutOptions: ['cashapp', 'Paypal', 'Venmo'],
   },
 
   standards: {

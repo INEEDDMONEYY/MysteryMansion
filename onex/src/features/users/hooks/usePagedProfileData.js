@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * Pages through an admin profile-data endpoint. Resets to page 1 whenever
  * `params` changes (pass a memoised/primitive-derived object or a stable key).
  */
-export default function useAdminProfileData(fetcher, params = {}, { limit = 20 } = {}) {
+export default function usePagedProfileData(fetcher, params = {}, { limit = 20 } = {}) {
   const [state, setState] = useState({
     items: [],
     extra: {},

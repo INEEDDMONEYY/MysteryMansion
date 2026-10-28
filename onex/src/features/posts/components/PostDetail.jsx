@@ -15,6 +15,8 @@ import api from "@/shared/utils/api";
 import { UserContext } from "@/context/UserContext";
 import { hasPermanentProviderBadge } from "@/features/users/services/providerBadgeEligibility";
 import { getPostCategories } from "../services/postCategories";
+import useMembership from "@/features/membership/hooks/useMembership";
+import { MEMBERSHIP_UPDATED_EVENT } from "@/features/membership/context/MembershipContext";
 
 // 🌀 Loaders
 import PostDetailLoader from "@/shared/components/Loaders/PostDetailLoader";
@@ -63,8 +65,6 @@ export default function PostDetail() {
     useState(false);
   const [commentText, setCommentText] =
     useState("");
-  const [commentFiles, setCommentFiles] =
-    useState([]);
   const [
     editingCommentId,
     setEditingCommentId,
@@ -83,6 +83,13 @@ export default function PostDetail() {
     useState(0);
   const [likeBusy, setLikeBusy] =
     useState(false);
+
+  // ── Boost ────────────────────────────────────────────────────────────────
+  const { membership } = useMembership();
+  const [boostBusy, setBoostBusy] =
+    useState(false);
+  const [boostError, setBoostError] =
+    useState("");
 
   // ── Derived post data ────────────────────────────────────────────────────
   const photoItems = Array.isArray(post?.pictures)
@@ -441,6 +448,36 @@ export default function PostDetail() {
     }
   };
 
+  // ── Boost post ───────────────────────────────────────────────────────────
+  const handleBoost = async () => {
+    if (boostBusy) return;
+
+    setBoostBusy(true);
+    setBoostError("");
+
+    try {
+      const { data } = await api.post(
+        `/posts/${postId}/boost`
+      );
+
+      setPost((prev) =>
+        prev
+          ? { ...prev, boostedUntil: data.boostedUntil }
+          : prev
+      );
+      window.dispatchEvent(
+        new Event(MEMBERSHIP_UPDATED_EVENT)
+      );
+    } catch (err) {
+      setBoostError(
+        err?.response?.data?.error ||
+          "Failed to boost post."
+      );
+    } finally {
+      setBoostBusy(false);
+    }
+  };
+
   // ── Create comment ───────────────────────────────────────────────────────
   const handleCreateComment = async (
     e
@@ -451,21 +488,15 @@ export default function PostDetail() {
       commentText || ""
     ).trim();
 
-    if (!text && commentFiles.length === 0) return;
+    if (!text) return;
 
     try {
       setCommentBusyId("new");
       setCommentError("");
 
-      const payload = new FormData();
-      payload.append("text", text);
-      commentFiles.forEach((file) =>
-        payload.append("images", file)
-      );
-
       const { data } = await api.post(
         `/posts/${postId}/comments`,
-        payload
+        { text }
       );
 
       setComments((prev) => [
@@ -474,7 +505,6 @@ export default function PostDetail() {
       ]);
 
       setCommentText("");
-      setCommentFiles([]);
     } catch (err) {
       console.error(
         "Failed to create comment:",
@@ -758,6 +788,25 @@ export default function PostDetail() {
         onToggleLike={
           handleToggleLike
         }
+        canManageBoost={Boolean(
+          currentUserId &&
+            (currentUser?.role === "admin" ||
+              postOwnerId === currentUserId)
+        )}
+        boosted={Boolean(
+          post.boostedUntil &&
+            new Date(post.boostedUntil) > new Date()
+        )}
+        boostedUntil={post.boostedUntil}
+        boostAllowed={Boolean(
+          membership.isAdmin ||
+            membership.perks?.boostsPerMonth > 0
+        )}
+        boostsRemaining={membership.boostsRemaining}
+        boostUnlimited={Boolean(membership.isAdmin)}
+        boostBusy={boostBusy}
+        boostError={boostError}
+        onBoost={handleBoost}
       />
 
       {FEATURE_FLAGS.ENABLE_COMMENTS && (
@@ -769,10 +818,6 @@ export default function PostDetail() {
           commentText={commentText}
           setCommentText={
             setCommentText
-          }
-          commentFiles={commentFiles}
-          setCommentFiles={
-            setCommentFiles
           }
           editingCommentId={
             editingCommentId

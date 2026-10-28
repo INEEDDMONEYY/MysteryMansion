@@ -11,15 +11,20 @@ import ForumReplyList from "../components/replies/ForumReplyList";
 
 import useForumThread from "../hooks/useForumThread";
 import useForumReplies from "../hooks/useForumReplies";
+import useMembership from "@/features/membership/hooks/useMembership";
+import { MEMBERSHIP_UPDATED_EVENT } from "@/features/membership/context/MembershipContext";
 import {
   deleteForumThread,
   updateForumThread,
+  boostForumThread,
 } from "../services/forumThreadService";
 
 export default function ForumThreadPage() {
   const { threadId } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(UserContext) || {};
+  const { membership } = useMembership();
+  const perks = membership.perks;
 
   const { thread, loading, error, patchThread } = useForumThread({ threadId });
 
@@ -91,6 +96,16 @@ export default function ForumThreadPage() {
     }
   };
 
+  const boostThread = async () => {
+    try {
+      const result = await boostForumThread({ thread });
+      patchThread(result.thread);
+      window.dispatchEvent(new Event(MEMBERSHIP_UPDATED_EVENT));
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Unable to boost the discussion.");
+    }
+  };
+
   const removeThread = async () => {
     try {
       await deleteForumThread({ thread });
@@ -154,6 +169,9 @@ export default function ForumThreadPage() {
           onSave={saveThread}
           onDelete={removeThread}
           onModerate={moderateThread}
+          perks={perks}
+          boostsRemaining={membership.boostsRemaining}
+          onBoost={boostThread}
           onRequireAuth={requireAuth}
         />
 
@@ -165,6 +183,8 @@ export default function ForumThreadPage() {
           <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
             <ForumReplyForm
               signedIn={Boolean(user?._id)}
+              allowAttachments={perks.forumUploads}
+              showUploadHint
               lockedMessage={locked ? "This discussion is locked. New replies are disabled." : ""}
               submitting={submitting}
               placeholder="Share your thoughts..."
@@ -180,6 +200,8 @@ export default function ForumThreadPage() {
               thread={thread}
               user={user}
               canReply={!locked}
+              canEditPosts={perks.editForumPosts}
+              allowAttachments={perks.forumUploads}
               hasMore={pagination.hasNextPage}
               loadingMore={loadingMore}
               onLoadMore={loadMore}

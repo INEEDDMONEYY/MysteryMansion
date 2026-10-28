@@ -179,6 +179,11 @@ const UserSchema = new mongoose.Schema(
       default: 200,
       min: 0,
     },
+    // Elite perk: gradient border colour remembered for new forum threads ('' = default).
+    forumBorderColor: {
+      type: String,
+      default: "",
+    },
     // Referral tracking — the provider whose referral link this account signed up through
     referredBy: {
       type: mongoose.Schema.Types.ObjectId,

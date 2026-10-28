@@ -6,7 +6,10 @@ import {
   MessageCircle,
   Pin,
   LockKeyhole,
+  Rocket,
 } from "lucide-react";
+
+import ForumBorderFrame from "./ForumBorderFrame";
 
 const formatDate = (value) => {
   if (!value) return "Recently";
@@ -102,7 +105,12 @@ export default function ForumThreadCard({ thread }) {
     : "/forum";
 
   return (
-    <article className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:border-pink-200 hover:shadow-lg hover:shadow-pink-100/50 sm:p-6">
+    <ForumBorderFrame color={thread.borderColor}>
+    <article className={`group rounded-2xl border bg-white p-5 shadow-sm transition-all duration-200 sm:p-6 ${
+      thread.borderColor
+        ? "border-transparent"
+        : "border-gray-200 hover:border-pink-200 hover:shadow-lg hover:shadow-pink-100/50"
+    }`}>
       <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
         <div className="flex shrink-0 gap-3 sm:flex-col sm:items-center">
           <div className="flex h-11 min-w-11 items-center justify-center gap-1 rounded-xl bg-gray-50 px-2 text-gray-700">
@@ -130,6 +138,13 @@ export default function ForumThreadCard({ thread }) {
               <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
                 <Pin className="h-3 w-3" />
                 Pinned
+              </span>
+            )}
+
+            {thread.isBoosted && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-fuchsia-50 px-2.5 py-1 text-xs font-semibold text-fuchsia-700">
+                <Rocket className="h-3 w-3" />
+                Boosted
               </span>
             )}
 
@@ -195,5 +210,6 @@ export default function ForumThreadCard({ thread }) {
         </div>
       </div>
     </article>
+    </ForumBorderFrame>
   );
 }

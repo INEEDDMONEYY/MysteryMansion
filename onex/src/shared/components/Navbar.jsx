@@ -9,13 +9,17 @@ import {
   Home,
   User,
   FileUser,
-  Contact,
+  Flame,
   CircleUser,
   Bell,
   MessageCircle,
   CirclePlus,
   CreditCard,
-  BarChart3
+  BarChart3,
+  HandCoins,
+  ScrollText,
+  Headset,
+  Rocket,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -127,12 +131,12 @@ export default function Navbar() {
   } else {
     mobileNavItems = [
       { key: "home", label: "Home", icon: Home, to: "/", match: (p) => p === "/" },
-      { key: "credits", label: "Credits", icon: User, to: "/credits/how-it-works" },
-      { key: "Forum", label: "Forum", icon: FileUser, to: "/forum" },
+      { key: "credits", label: "Credits", icon: HandCoins, to: "/credits/how-it-works" },
+      { key: "Forum", label: "Forum", icon: ScrollText, to: "/forum" },
       FEATURE_FLAGS.ENABLE_PROMOTE_ACCOUNT_NAV && {
         key: "support",
         label: "Support",
-        icon: Contact,
+        icon: Headset,
         to: "/contact",
       },
       {
@@ -157,26 +161,26 @@ export default function Navbar() {
 
       {/* Navigation Links (desktop) */}
       <nav className="nav-items hidden md:flex gap-5 items-center">
-        <Link to="/signin" className="flex items-center gap-1 hover:text-pink-400">
-          <User size={18} /> Sign In
-        </Link>
-
         <Link to="/signup" className="flex items-center gap-1 hover:text-pink-400">
           <FileUser size={18} /> Sign Up
         </Link>
 
+        <Link to="/membership" className="flex items-center gap-1 hover:text-pink-400">
+          <Flame size={18} /> Membership
+        </Link>
+
         <Link to="/forum" className="flex items-center gap-1 hover:text-pink-400">
-          <FileUser size={18} /> Forums
+          <ScrollText size={18} /> Forums
         </Link>
 
         <Link to="/credit-packages" className="flex items-center gap-1 hover:text-pink-400">
-          <FileUser size={18} /> Credits
+          <HandCoins size={18} /> Credits
         </Link>
 
         {/* ✔ FEATURE FLAG APPLIED HERE */}
         {FEATURE_FLAGS.ENABLE_PROMOTE_ACCOUNT_NAV && (
           <Link to="/promote" className="flex items-center gap-1 hover:text-pink-400">
-            <Contact size={18} /> Promote Account
+            <Rocket size={18} /> Promote Account
           </Link>
         )}
 

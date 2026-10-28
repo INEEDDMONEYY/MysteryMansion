@@ -25,6 +25,8 @@ export default function ForumReply({
   thread,
   user,
   canReply = true,
+  canEditPosts = true,
+  allowAttachments = true,
   isChild = false,
   onReply,
   onEdit,
@@ -151,7 +153,7 @@ export default function ForumReply({
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
               <ForumReplyActions
                 canReply={canReply && signedIn}
-                canEdit={canEditReply({ reply, user })}
+                canEdit={canEditPosts && canEditReply({ reply, user })}
                 canDelete={canDeleteReply({ reply, user })}
                 onReply={() => setMode("reply")}
                 onEdit={() => setMode("edit")}
@@ -173,6 +175,7 @@ export default function ForumReply({
               <ForumReplyForm
                 placeholder={`Reply to ${reply.author?.username || "this member"}...`}
                 submitting={saving}
+                allowAttachments={allowAttachments}
                 autoFocus
                 onSubmit={submitReply}
                 onCancel={() => setMode("view")}

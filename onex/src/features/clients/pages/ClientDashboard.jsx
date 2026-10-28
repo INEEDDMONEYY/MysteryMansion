@@ -2,12 +2,12 @@ import { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CountUp from 'react-countup';
 import {
-  Heart, MessageSquareText, CalendarDays, Search,
-  Sparkles, BadgeCheck, ArrowRight, Coins,
+  Heart, MessageSquareText, CalendarDays, Search, Coins,
 } from 'lucide-react';
 import { UserContext } from '@/context/UserContext';
 import api from '@/shared/utils/api';
 import { setSEO } from '@/shared/utils/seo';
+import ForumAnalyticsPanel from '../components/ForumAnalyticsPanel';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function formatJoinDate(iso) {
@@ -44,44 +44,6 @@ function StatCard({ label, value, icon: Icon, gradient, suffix = '' }) {
         </p>
       </div>
     </div>
-  );
-}
-
-// ── Recent liked post row ─────────────────────────────────────────────────────
-function LikedRow({ post }) {
-  const thumb = post.pictures?.[0] ?? null;
-  const badge = post.badgeType || post.userId?.badgeType || '';
-  return (
-    <Link
-      to={`/posts/${post._id}`}
-      className="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50/60 transition-colors group"
-    >
-      <div className="h-12 w-12 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-        {thumb
-          ? <img src={thumb} alt={post.title} className="h-full w-full object-cover" />
-          : <div className="h-full w-full flex items-center justify-center text-gray-300 text-xl">📷</div>
-        }
-      </div>
-      <div className="flex-1 min-w-0">
-        <p
-          className="text-sm font-semibold text-gray-900 truncate group-hover:text-blue-700 transition-colors"
-        >
-          {post.title || 'Untitled'}
-        </p>
-        <p className="text-xs text-gray-400 truncate">
-          {post.userId?.username || 'Unknown provider'}
-          {[post.city, post.state].filter(Boolean).length > 0 && (
-            <> · {[post.city, post.state].filter(Boolean).join(', ')}</>
-          )}
-        </p>
-      </div>
-      {badge === 'blue' && (
-        <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-blue-100 text-blue-600 px-2 py-0.5 text-[10px] font-semibold">
-          <BadgeCheck size={10} /> Verified
-        </span>
-      )}
-      <ArrowRight size={14} className="shrink-0 text-gray-300 group-hover:text-blue-600 transition-colors" />
-    </Link>
   );
 }
 
@@ -178,41 +140,8 @@ export default function ClientDashboard() {
         </div>
       )}
 
-      {/* Liked posts preview */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Heart size={16} className="text-rose-500 fill-rose-400" />
-            <h2 className="text-sm font-semibold text-gray-900">Recently Liked</h2>
-          </div>
-          <Link
-            to="/client/liked-posts"
-            className="text-xs text-blue-700 font-medium hover:underline"
-          >
-            View all →
-          </Link>
-        </div>
-
-        {loading ? (
-          <div key="liked-loading" className="space-y-2">
-            {[1, 2, 3].map((i) => <div key={i} className="h-14 rounded-xl bg-gray-100 animate-pulse" />)}
-          </div>
-        ) : likedPosts.length === 0 ? (
-          <div key="liked-empty" className="py-8 text-center">
-            <Heart size={32} className="mx-auto mb-2 text-slate-200" />
-            <p className="text-sm text-gray-400">You haven't liked any posts yet.</p>
-            <Link to="/" className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:underline">
-              <Search size={13} /> Start browsing
-            </Link>
-          </div>
-        ) : (
-          <div key="liked-list" className="space-y-1">
-            {likedPosts.slice(0, 5).map((post) => (
-              <LikedRow key={post._id} post={post} />
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Forum analytics */}
+      <ForumAnalyticsPanel />
 
       {/* Buy Credits CTA */}
       {credits != null && credits < 100 && (
@@ -233,23 +162,6 @@ export default function ClientDashboard() {
           </Link>
         </div>
       )}
-
-      {/* What's new for clients */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles size={16} className="text-blue-600" />
-          <h2 className="text-sm font-semibold text-gray-900">What's New for Clients</h2>
-          <span className="ml-auto rounded-full bg-blue-700 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow">
-            New
-          </span>
-        </div>
-        <ul className="space-y-2 text-sm text-gray-600">
-          <li>❤️ <strong className="text-gray-900">Liked Posts:</strong> heart any provider listing to save it here.</li>
-          <li>💬 <strong className="text-gray-900">Messages:</strong> contact providers or site support directly.</li>
-          <li>🔔 <strong className="text-gray-900">Notifications:</strong> stay up to date with platform activity.</li>
-          <li>🔍 <strong className="text-gray-900">Browse:</strong> search listings by location and category.</li>
-        </ul>
-      </div>
     </div>
   );
 }

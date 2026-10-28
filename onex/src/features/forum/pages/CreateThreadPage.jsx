@@ -5,8 +5,12 @@ import { UserContext } from "@/context/UserContext";
 import { setSEO } from "@/shared/utils/seo";
 
 import useForum from "../hooks/useForum";
+import useMembership from "@/features/membership/hooks/useMembership";
+import { MEMBERSHIP_UPDATED_EVENT } from "@/features/membership/context/MembershipContext";
 import { createForumThread } from "../services/forumThreadService";
+import { createForumCategory } from "../services/forumService";
 import AttachmentPicker from "@/shared/components/attachments/AttachmentPicker";
+import ForumBorderPicker from "../components/ForumBorderPicker";
 
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 disabled:opacity-60";
@@ -15,13 +19,22 @@ export default function CreateThreadPage() {
   const { user } = useContext(UserContext) || {};
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { categories, loading: categoriesLoading } = useForum();
+  const { categories, loading: categoriesLoading, refresh: refreshCategories } = useForum();
+  const { membership } = useMembership();
+  const perks = membership.perks;
+
+  const [newCategory, setNewCategory] = useState(null);
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [categoryError, setCategoryError] = useState("");
 
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tagText, setTagText] = useState("");
   const [files, setFiles] = useState([]);
+  // undefined until the member picks one; the saved choice is used meanwhile and stays for the next thread.
+  const [pickedBorder, setPickedBorder] = useState(undefined);
+  const borderColor = pickedBorder ?? membership.forumBorderColor ?? "";
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -54,6 +67,22 @@ export default function CreateThreadPage() {
     );
   }
 
+  const handleCreateCategory = async () => {
+    setCreatingCategory(true);
+    setCategoryError("");
+
+    try {
+      const created = await createForumCategory(newCategory);
+      await refreshCategories();
+      setCategoryId(created.id);
+      setNewCategory(null);
+    } catch (err) {
+      setCategoryError(err instanceof Error ? err.message : "Unable to create the category.");
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
@@ -72,7 +101,10 @@ export default function CreateThreadPage() {
         categoryId,
         tags: tagText.split(",").map((t) => t.trim()).filter(Boolean),
         attachments: files,
+        borderColor: perks.forumBorderColor ? borderColor : undefined,
       });
+
+      if (perks.forumBorderColor) window.dispatchEvent(new Event(MEMBERSHIP_UPDATED_EVENT));
 
       navigate(`/forum/thread/${thread.id}`);
     } catch (err) {
@@ -122,6 +154,76 @@ export default function CreateThreadPage() {
                 </option>
               ))}
             </select>
+
+            {perks.createForumCategories && !newCategory && (
+              <button
+                type="button"
+                onClick={() => setNewCategory({ name: "", description: "" })}
+                className="mt-2 text-xs font-semibold text-pink-600 underline underline-offset-4"
+              >
+                + Create a new category
+              </button>
+            )}
+
+            {newCategory && (
+              <div className="mt-3 space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <input
+                  value={newCategory.name}
+                  onChange={(event) => setNewCategory({ ...newCategory, name: event.target.value })}
+                  maxLength={60}
+                  placeholder="Category name"
+                  aria-label="New category name"
+                  disabled={creatingCategory}
+                  className={inputClass}
+                />
+                <input
+                  value={newCategory.description}
+                  onChange={(event) => setNewCategory({ ...newCategory, description: event.target.value })}
+                  maxLength={300}
+                  placeholder="Short description (optional)"
+                  aria-label="New category description"
+                  disabled={creatingCategory}
+                  className={inputClass}
+                />
+
+                {categoryError && (
+                  <p role="alert" className="text-sm text-red-600">
+                    {categoryError}
+                  </p>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCreateCategory}
+                    disabled={creatingCategory || newCategory.name.trim().length < 3}
+                    className="min-h-10 rounded-lg bg-black px-4 text-sm font-semibold text-white transition hover:bg-pink-600 disabled:opacity-50"
+                  >
+                    {creatingCategory ? "Creating..." : "Create category"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewCategory(null);
+                      setCategoryError("");
+                    }}
+                    disabled={creatingCategory}
+                    className="min-h-10 rounded-lg border border-gray-200 px-4 text-sm font-semibold text-gray-600 hover:bg-white"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!perks.createForumCategories && (
+              <p className="mt-2 text-xs text-gray-500">
+                Creating categories is an Elite membership perk.{" "}
+                <Link to="/membership" className="font-semibold text-pink-600 underline underline-offset-4">
+                  See membership
+                </Link>
+              </p>
+            )}
           </div>
 
           <div>
@@ -176,7 +278,32 @@ export default function CreateThreadPage() {
             <p className="mb-2 text-sm font-semibold text-gray-800">
               Images <span className="font-normal text-gray-400">(optional, JPG/PNG/WebP/GIF up to 5 MB)</span>
             </p>
-            <AttachmentPicker files={files} onChange={setFiles} disabled={submitting} />
+            {perks.forumUploads ? (
+              <AttachmentPicker files={files} onChange={setFiles} disabled={submitting} />
+            ) : (
+              <p className="text-xs text-gray-500">
+                Image and GIF uploads are an Elite membership perk.{" "}
+                <Link to="/membership" className="font-semibold text-pink-600 underline underline-offset-4">
+                  See membership
+                </Link>
+              </p>
+            )}
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-semibold text-gray-800">
+              Border colour <span className="font-normal text-gray-400">(optional, remembered for your next discussions)</span>
+            </p>
+            {perks.forumBorderColor ? (
+              <ForumBorderPicker value={borderColor} onChange={setPickedBorder} disabled={submitting} />
+            ) : (
+              <p className="text-xs text-gray-500">
+                Forum card border customization is an Elite membership perk.{" "}
+                <Link to="/membership" className="font-semibold text-pink-600 underline underline-offset-4">
+                  See membership
+                </Link>
+              </p>
+            )}
           </div>
 
           {error && (

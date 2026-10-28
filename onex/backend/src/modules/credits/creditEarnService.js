@@ -40,10 +40,39 @@ export const HOOKED_KEYS = new Set([
   'promote_account',
 ]);
 
-export const dayKey = (date = new Date()) => date.toISOString().slice(0, 10);
+// Daily earn limits reset at midnight Mountain time (MDT in summer), wherever the member is.
+const EARN_TIME_ZONE = 'America/Denver';
 
-const startOfUtcDay = (date = new Date()) =>
-  new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+const mountainDateParts = (date) =>
+  Object.fromEntries(
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: EARN_TIME_ZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    })
+      .formatToParts(date)
+      .map((p) => [p.type, Number(p.value)])
+  );
+
+/** The Mountain-time calendar date, e.g. "2026-10-28". */
+export const dayKey = (date = new Date()) => {
+  const { year, month, day } = mountainDateParts(date);
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+};
+
+/** The UTC instant at which the current Mountain-time day began. */
+const startOfEarnDay = (date = new Date()) => {
+  const { year, month, day } = mountainDateParts(date);
+  const guess = new Date(Date.UTC(year, month - 1, day));
+  const shown = mountainDateParts(guess);
+  const shownAsUtc = Date.UTC(shown.year, shown.month - 1, shown.day, shown.hour, shown.minute, shown.second);
+  return new Date(guess.getTime() - (shownAsUtc - guess.getTime()));
+};
 
 export const effectiveRole = (user) =>
   user?.role === 'admin' ? 'admin' : user?.accountType || 'provider';
@@ -113,7 +142,7 @@ export async function awardCredits({
         const today = await CreditTransaction.countDocuments({
           userId,
           ruleKey: eventKey,
-          createdAt: { $gte: startOfUtcDay() },
+          createdAt: { $gte: startOfEarnDay() },
         });
         if (today >= rule.limitPerDay) return skipped('daily_limit');
       }
@@ -219,7 +248,7 @@ export async function getEarnOverview(user) {
         $group: {
           _id: '$ruleKey',
           total: { $sum: 1 },
-          today: { $sum: { $cond: [{ $gte: ['$createdAt', startOfUtcDay()] }, 1, 0] } },
+          today: { $sum: { $cond: [{ $gte: ['$createdAt', startOfEarnDay()] }, 1, 0] } },
         },
       },
     ]),

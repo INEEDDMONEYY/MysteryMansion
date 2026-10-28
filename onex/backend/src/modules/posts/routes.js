@@ -1,7 +1,6 @@
 // backend/routes/postRoutes.js
 import express from 'express';
 import multer from 'multer';
-import { attachmentUpload } from '../../common/utils/attachmentUpload.js';
 import * as postController from './controllers/postController.js';
 import { toggleLike, getLikeStatus } from './controllers/postLikeController.js';
 import { authMiddleware, optionalAuthMiddleware, adminOnlyMiddleware } from '../../common/middleware/authMiddleware.js';
@@ -99,12 +98,15 @@ router.get('/', postController.getPosts);
 
 // Comments for a post
 router.get('/:id/comments', postController.getPostComments);
-router.post('/:id/comments', authMiddleware, enforceRestriction('comment:create'), attachmentUpload, postController.createPostComment);
+router.post('/:id/comments', authMiddleware, enforceRestriction('comment:create'), postController.createPostComment);
 router.put('/:id/comments/:commentId', authMiddleware, enforceRestriction('comment:update'), postController.updatePostComment);
 router.delete('/:id/comments/:commentId', authMiddleware, enforceRestriction('comment:delete'), postController.deletePostComment);
 
 // Get single post
 router.get('/:id', postController.getPostById);
+
+// Boost a listing using the member's monthly boost allowance
+router.post('/:id/boost', authMiddleware, postController.boostPost);
 
 // Like / unlike a post (auth required) + get like status (optional auth)
 router.post('/:id/like', authMiddleware, toggleLike);

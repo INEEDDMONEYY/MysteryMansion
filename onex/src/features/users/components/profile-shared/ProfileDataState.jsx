@@ -1,5 +1,5 @@
 /** Shared loading / error / empty / load-more wrapper for the admin profile panels. */
-export default function AdminDataState({
+export default function ProfileDataState({
   loading,
   error,
   empty,

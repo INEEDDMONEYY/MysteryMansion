@@ -51,6 +51,7 @@ export const createForumThread = async ({
   categoryId,
   tags = [],
   attachments = [],
+  borderColor,
 } = {}) => {
   if (!title?.trim()) throw new Error("A thread title is required.");
   if (!content?.trim()) throw new Error("Thread content is required.");
@@ -60,7 +61,7 @@ export const createForumThread = async ({
     method: "post",
     url: "/forum/threads",
     data: toRequestData(
-      { title: title.trim(), content: content.trim(), categoryId, tags },
+      { title: title.trim(), content: content.trim(), categoryId, tags, borderColor },
       attachments
     ),
   });
@@ -85,5 +86,15 @@ export const deleteForumThread = async ({ thread } = {}) => {
   return forumRequest({
     method: "delete",
     url: `/forum/threads/${encodeURIComponent(thread.id)}`,
+  });
+};
+
+/** Spends one membership boost; resolves { thread, boostsRemaining }. */
+export const boostForumThread = async ({ thread } = {}) => {
+  if (!thread?.id) throw new Error("A thread is required.");
+
+  return forumRequest({
+    method: "post",
+    url: `/forum/threads/${encodeURIComponent(thread.id)}/boost`,
   });
 };

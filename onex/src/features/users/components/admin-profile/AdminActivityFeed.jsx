@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import useAdminProfileData from "../../hooks/useAdminProfileData";
+import usePagedProfileData from "../../hooks/usePagedProfileData";
 import { fetchAdminActivity } from "../../services/adminProfileService";
 import AttachmentGallery from "@/shared/components/attachments/AttachmentGallery";
-import AdminDataState, { chipClass } from "./AdminDataState";
+import ProfileDataState, { chipClass } from "../profile-shared/ProfileDataState";
 
 const TYPE_FILTERS = [
   { id: "all", label: "All" },
@@ -35,7 +35,7 @@ export default function AdminActivityFeed() {
   const [type, setType] = useState("all");
 
   const { items, extra, pagination, loading, loadingMore, error, loadMore } =
-    useAdminProfileData(fetchAdminActivity, { type });
+    usePagedProfileData(fetchAdminActivity, { type });
 
   const counts = extra.counts || {};
 
@@ -59,7 +59,7 @@ export default function AdminActivityFeed() {
       </div>
 
       <div className="mt-5">
-        <AdminDataState
+        <ProfileDataState
           loading={loading}
           error={error}
           empty={items.length === 0}
@@ -127,7 +127,7 @@ export default function AdminActivityFeed() {
               );
             })}
           </ul>
-        </AdminDataState>
+        </ProfileDataState>
       </div>
     </div>
   );

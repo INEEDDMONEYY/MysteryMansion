@@ -12,15 +12,17 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   User, MessageSquareText, BarChart3, LogOut, Home,
-  Rocket, LayoutDashboard, BookMarked, Heart, SquareM, Share2, Flag, Coins,
+  Rocket, LayoutDashboard, BookMarked, Heart, SquareM, Share2, Flag, Coins, Cog, Crown,
 } from 'lucide-react';
 import { useContext } from 'react';
 import { UserContext } from '@/context/UserContext';
 import DashboardSidebar from '@/layouts/shared/DashboardSidebar';
+import useMembership from '@/features/membership/hooks/useMembership';
 
 export default function UserSidebar({ isOpen, onClose, unreadMessages = 0 }) {
   const navigate = useNavigate();
   const { user, logout } = useContext(UserContext);
+  const { membership } = useMembership();
 
   const avatarSrc = user?.profilePic || '';
 
@@ -34,10 +36,13 @@ export default function UserSidebar({ isOpen, onClose, unreadMessages = 0 }) {
     { to: '/user/messages',    label: 'Messages',      icon: MessageSquareText, badge: unreadMessages },
     { to: '/user/milestones', label: 'Milestones', icon: SquareM },
     { to: '/user/credits',     label: 'Credits',      icon: Coins },
+    // Active members land on their own membership page; everyone else sees the plans.
+    { to: membership.active ? '/user/membership' : '/membership', label: 'Membership', icon: Crown },
     { to: '/user/referrals', label: 'Referrals', icon: Share2 },
     { to: '/user/reports', label: 'My Reports', icon: Flag },
     { to: '/promote',          label: 'Promote',        icon: Rocket },
-  ];
+    //{ to: '*',                 label: 'Settings',       icon: Cog },
+  ].sort((a, b) => a.label.localeCompare(b.label));
 
   // ── Feature-flagged extra nav items ───────────────────────────────────────
   // Rendered via the extraNav slot so flags are evaluated at runtime

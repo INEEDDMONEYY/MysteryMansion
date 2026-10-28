@@ -184,26 +184,20 @@ router.post("/", authMiddleware, enforceRestriction("message:send"), async (req,
       }).catch(() => {}); // fire-and-forget, don't block the response
     }
 
-    // ── Email admin<->user recipients of the new message ─────────────────────────
-    // Only admin-involved conversations get emailed (admin messaging a user, or a
-    // user messaging admin) — regular user-to-user (e.g. client<->provider) chats
-    // don't trigger email. Also rate-limited per recipient to avoid inbox floods
-    // during a fast back-and-forth conversation.
-    const isAdminInvolved = req.user.role === 'admin' || recipients.some((p) => p.role === 'admin');
-    if (isAdminInvolved) {
-      for (const recipient of recipients) {
-        if (!recipient.email) continue;
-        if (req.user.role !== 'admin' && recipient.role !== 'admin') continue; // skip user<->user leg
-        if (!allowEmail(`message:${recipient._id}`, { limit: 1, windowMs: MESSAGE_EMAIL_COOLDOWN_MS })) continue;
+    // ── Email every recipient of the new message ─────────────────────────────────
+    // Rate-limited per recipient and conversation so a fast back-and-forth does not
+    // flood an inbox; the admin email kill-switch is enforced inside sendEmail.
+    for (const recipient of recipients) {
+      if (!recipient.email) continue;
+      if (!allowEmail(`message:${recipient._id}:${conversationId}`, { limit: 1, windowMs: MESSAGE_EMAIL_COOLDOWN_MS })) continue;
 
-        sendNewMessageEmail({
-          to: recipient.email,
-          recipientUsername: recipient.username,
-          senderUsername,
-          messageText: text.trim(),
-          ctaUrl: `${env.CLIENT_URL}${messagesPathFor(recipient)}?conv=${conversationId}`,
-        }).catch((err) => console.error('❌ Failed to send new-message email:', err.message));
-      }
+      sendNewMessageEmail({
+        to: recipient.email,
+        recipientUsername: recipient.username,
+        senderUsername,
+        messageText: text.trim(),
+        ctaUrl: `${env.CLIENT_URL}${messagesPathFor(recipient)}?conv=${conversationId}`,
+      }).catch((err) => console.error('❌ Failed to send new-message email:', err.message));
     }
 
     res.status(201).json(populated);

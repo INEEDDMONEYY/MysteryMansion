@@ -25,6 +25,6 @@ export const FEATURE_FLAGS = {
   ENABLE_ONBOARDING: false,
   // Provider Referrals page: click/signup stats + referred-clients list
   ENABLE_REFERRAL_ANALYTICS: true,
-  // Account Score badge on the profile header — local calc only until backend is wired
-  ENABLE_ACCOUNT_SCORE: true,
+  // Account Score badge on every profile header — local calc only until backend is wired
+  ENABLE_ACCOUNT_SCORE: false,
 };

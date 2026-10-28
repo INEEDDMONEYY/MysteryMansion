@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import useAdminProfileData from "../../hooks/useAdminProfileData";
+import usePagedProfileData from "../../hooks/usePagedProfileData";
 import { fetchAdminMedia } from "../../services/adminProfileService";
 import { ImageLightbox } from "@/shared/components/attachments/AttachmentGallery";
-import AdminDataState, { chipClass } from "./AdminDataState";
+import ProfileDataState, { chipClass } from "../profile-shared/ProfileDataState";
 
 const SOURCE_FILTERS = [
   { id: "all", label: "All sources" },
   { id: "threads", label: "Thread posts", countKey: "threads" },
   { id: "replies", label: "Thread replies", countKey: "replies" },
-  { id: "comments", label: "Post comments", countKey: "comments" },
 ];
 
 const KIND_FILTERS = [
@@ -19,7 +18,7 @@ const KIND_FILTERS = [
   { id: "gif", label: "GIFs" },
 ];
 
-const SOURCE_LABELS = { thread: "Thread post", reply: "Thread reply", comment: "Post comment" };
+const SOURCE_LABELS = { thread: "Thread post", reply: "Thread reply" };
 
 const formatDate = (value) =>
   value
@@ -33,7 +32,7 @@ export default function AdminMediaLibrary() {
   const [active, setActive] = useState(null);
 
   const { items, extra, pagination, loading, loadingMore, error, loadMore } =
-    useAdminProfileData(fetchAdminMedia, { source, kind }, { limit: 24 });
+    usePagedProfileData(fetchAdminMedia, { source, kind }, { limit: 24 });
 
   const counts = extra.counts || {};
 
@@ -73,7 +72,7 @@ export default function AdminMediaLibrary() {
       </div>
 
       <div className="mt-5">
-        <AdminDataState
+        <ProfileDataState
           loading={loading}
           error={error}
           empty={items.length === 0}
@@ -118,7 +117,7 @@ export default function AdminMediaLibrary() {
               </li>
             ))}
           </ul>
-        </AdminDataState>
+        </ProfileDataState>
       </div>
 
       <ImageLightbox image={active} onClose={() => setActive(null)} />

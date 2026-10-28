@@ -95,7 +95,7 @@ router.get('/activity', async (req, res) => {
         author: author(c.userId),
         context: c.postId?._id ? { label: c.postId.title, link: `/posts/${c.postId._id}` } : null,
         link: c.postId?._id ? `/posts/${c.postId._id}` : null,
-        attachments: serializeAttachments(c.attachments),
+        attachments: [],
         createdAt: c.createdAt,
       })),
     ]
@@ -115,11 +115,11 @@ router.get('/activity', async (req, res) => {
 });
 
 // ── GET /api/admin/profile-data/media ────────────────────────────────────────
-// Every image/GIF uploaded through post comments, forum threads and forum replies.
+// Every image/GIF uploaded through forum threads and forum replies.
 router.get('/media', async (req, res) => {
   try {
     const { page, limit } = parsePaging(req.query, 24, 60);
-    const source = ['comments', 'threads', 'replies'].includes(req.query.source) ? req.query.source : 'all';
+    const source = ['threads', 'replies'].includes(req.query.source) ? req.query.source : 'all';
     const kind = ['image', 'gif'].includes(req.query.kind) ? req.query.kind : null;
     const want = (name) => source === 'all' || source === name;
 
@@ -127,11 +127,7 @@ router.get('/media', async (req, res) => {
     if (kind) match['attachments.kind'] = kind;
     const take = page * limit;
 
-    const [comments, threads, replies, commentN, threadN, replyN] = await Promise.all([
-      want('comments')
-        ? Comment.find(match).sort({ createdAt: -1 }).limit(take)
-            .populate('userId', AUTHOR_FIELDS).populate('postId', 'title').lean()
-        : [],
+    const [threads, replies, threadN, replyN] = await Promise.all([
       want('threads')
         ? ForumThread.find(match).sort({ createdAt: -1 }).limit(take).populate('authorId', AUTHOR_FIELDS).lean()
         : [],
@@ -139,7 +135,6 @@ router.get('/media', async (req, res) => {
         ? ForumReply.find({ ...match, isDeleted: false }).sort({ createdAt: -1 }).limit(take)
             .populate('authorId', AUTHOR_FIELDS).populate('threadId', 'title').lean()
         : [],
-      want('comments') ? countAttachments(Comment) : 0,
       want('threads') ? countAttachments(ForumThread) : 0,
       want('replies') ? countAttachments(ForumReply, { isDeleted: false }) : 0,
     ]);
@@ -162,8 +157,6 @@ router.get('/media', async (req, res) => {
       );
 
     const merged = [
-      ...entries(comments, 'comment', 'userId', (c) =>
-        c.postId?._id ? { label: c.postId.title, link: `/posts/${c.postId._id}` } : null),
       ...entries(threads, 'thread', 'authorId', (t) => ({ label: t.title, link: `/forum/thread/${t._id}` })),
       ...entries(replies, 'reply', 'authorId', (r) =>
         r.threadId?._id ? { label: r.threadId.title, link: `/forum/thread/${r.threadId._id}` } : null),
@@ -172,8 +165,8 @@ router.get('/media', async (req, res) => {
     // Counts ignore the kind filter on purpose so the source chips stay stable.
     res.json({
       items: merged.slice((page - 1) * limit, page * limit),
-      counts: { comments: commentN, threads: threadN, replies: replyN },
-      pagination: { page, limit, total: commentN + threadN + replyN, hasNextPage: merged.length > page * limit },
+      counts: { threads: threadN, replies: replyN },
+      pagination: { page, limit, total: threadN + replyN, hasNextPage: merged.length > page * limit },
     });
   } catch (err) {
     console.error('❌ GET /admin/profile-data/media:', err);

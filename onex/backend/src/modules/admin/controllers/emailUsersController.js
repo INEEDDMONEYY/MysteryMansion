@@ -70,13 +70,20 @@ export const emailUsers = async (req, res) => {
       ),
     );
 
-    const sent = results.filter((r) => r.status === 'fulfilled').length;
-    const failed = results.filter((r) => r.status === 'rejected').length;
+    const sent = results.filter((r) => r.status === 'fulfilled' && !r.value?.skipped).length;
+    const skipped = results.filter((r) => r.status === 'fulfilled' && r.value?.skipped).length;
+    const failures = results.filter((r) => r.status === 'rejected');
+    const failed = failures.length;
+
+    failures.forEach((r) => console.error('[emailUsers] send failed:', r.reason?.message || r.reason));
+    const errors = [...new Set(failures.map((r) => String(r.reason?.message || r.reason).slice(0, 300)))].slice(0, 3);
 
     res.status(200).json({
       success: true,
       sent,
+      skipped,
       failed,
+      errors,
       total: recipients.length,
     });
   } catch (err) {

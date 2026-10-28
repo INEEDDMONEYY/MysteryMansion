@@ -11,6 +11,8 @@ export default function ForumReplyList({
   thread,
   user,
   canReply = true,
+  canEditPosts = true,
+  allowAttachments = true,
   hasMore = false,
   loadingMore = false,
   onLoadMore,
@@ -58,6 +60,8 @@ export default function ForumReplyList({
   const shared = {
     thread,
     user,
+    canEditPosts,
+    allowAttachments,
     onReply,
     onEdit,
     onDelete,

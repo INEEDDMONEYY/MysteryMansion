@@ -7,7 +7,7 @@ import {
 } from "recharts";
 import {
   FileText, Star, MessageCircle, Eye, Clock,
-  TrendingUp, Sparkles, CalendarDays, Coins,
+  TrendingUp, CalendarDays, Coins,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { UserContext } from "@/context/UserContext";
@@ -136,7 +136,6 @@ export default function UserDashboard() {
       .catch(() => setCredits(0));
   }, []);
 
-  const SHOW_WHATS_NEW_BADGE = true;
   const restriction = user?.roleRestriction || "";
   const restrictionLabelMap = {
     "no-posting": "Posting disabled",
@@ -283,28 +282,6 @@ export default function UserDashboard() {
 
       {/* ── Member Since ── */}
       <MemberSinceCard joinedAt={data?.joinedAt} loading={loading} />
-
-      {/* ── What's New card ── */}
-      <div className="bg-white/40 backdrop-blur-md border border-white/60 p-6 rounded-2xl shadow-md">
-        <div className="flex items-center justify-between gap-3 mb-3">
-          <h2 className="text-sm font-semibold inline-flex items-center gap-2 text-gray-900">
-            <Sparkles size={16} className="text-pink-500" />
-            What's New for Users
-          </h2>
-          {SHOW_WHATS_NEW_BADGE && (
-            <span className="rounded-full bg-pink-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow">
-              New
-            </span>
-          )}
-        </div>
-        <ul className="space-y-2 text-sm text-gray-600">
-          <li>📞 <strong className="text-gray-900">Contact privacy:</strong> phone &amp; email display on your profile when set.</li>
-          <li>💬 <strong className="text-gray-900">Messages (Beta):</strong> contact site admin for bugs or questions.</li>
-          <li>🔗 <strong className="text-gray-900">Verified Links:</strong> add references in Edit Profile.</li>
-          <li>📸 <strong className="text-gray-900">Post templates:</strong> save and reuse posts from the Posts tab.</li>
-          <li>🗑️ <strong className="text-gray-900">Danger Zone:</strong> delete your account any time with confirmation.</li>
-        </ul>
-      </div>
     </div>
   );
 }

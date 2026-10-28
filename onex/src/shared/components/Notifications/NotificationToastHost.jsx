@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Coins,
+  Crown,
   Flag,
   MessageCircle,
   MessageSquare,
@@ -18,6 +19,7 @@ import {
 import { UserContext } from "@/context/UserContext";
 import api from "@/shared/utils/api";
 import { APP_TOAST_EVENT } from "@/shared/utils/appToast";
+import { MEMBERSHIP_UPDATED_EVENT } from "@/features/membership/context/MembershipContext";
 
 const POLL_MS = 20_000;
 const MAX_VISIBLE = 3;
@@ -26,6 +28,24 @@ const seenKey = (userId) => `credit-toast-seen:${userId}`;
 
 // Add a row here to give another notification type a toast.
 const TOAST_TYPES = {
+  membership_update: {
+    icon: Crown,
+    label: "Membership",
+    accent: "text-fuchsia-400",
+    ring: "bg-fuchsia-500/15",
+    cta: "View membership",
+    target: "membership",
+    ms: 9000,
+  },
+  boost_applied: {
+    icon: Rocket,
+    label: "Boost active",
+    accent: "text-amber-400",
+    ring: "bg-amber-500/15",
+    cta: "View boosted",
+    target: "boost",
+    ms: 8000,
+  },
   forum_reply: {
     icon: MessageSquare,
     label: "Forum reply",
@@ -208,12 +228,12 @@ export default function NotificationToastHost() {
       const target = TOAST_TYPES[toast.type]?.target;
       dismiss(toast._id);
 
-      if (target === "thread" && toast.meta?.threadId) {
+      if ((target === "thread" || target === "boost") && toast.meta?.threadId) {
         navigate(`/forum/thread/${toast.meta.threadId}`);
         return;
       }
 
-      if (target === "post" && toast.meta?.postId) {
+      if ((target === "post" || target === "boost") && toast.meta?.postId) {
         navigate(`/posts/${toast.meta.postId}`);
         return;
       }
@@ -223,8 +243,8 @@ export default function NotificationToastHost() {
         return;
       }
 
-      // Credits and milestones pages do not exist for admins.
-      if (isAdmin || (target !== "credits" && target !== "milestones")) return;
+      // Credits, milestones and membership pages do not exist for admins.
+      if (isAdmin || (target !== "credits" && target !== "milestones" && target !== "membership")) return;
 
       navigate(`${isClient ? "/client" : "/user"}/${target}`);
     },
@@ -281,6 +301,13 @@ export default function NotificationToastHost() {
 
     poll();
     const id = setInterval(poll, POLL_MS);
+    // Purchases and boosts fire this event; the notification is written just after the response.
+    let eventTimer;
+    const onMembershipEvent = () => {
+      clearTimeout(eventTimer);
+      eventTimer = setTimeout(poll, 800);
+    };
+    window.addEventListener(MEMBERSHIP_UPDATED_EVENT, onMembershipEvent);
     const onVisible = () => {
       if (document.visibilityState === "visible") poll();
     };
@@ -289,6 +316,8 @@ export default function NotificationToastHost() {
     return () => {
       cancelled = true;
       clearInterval(id);
+      clearTimeout(eventTimer);
+      window.removeEventListener(MEMBERSHIP_UPDATED_EVENT, onMembershipEvent);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [loggedIn, userId]);

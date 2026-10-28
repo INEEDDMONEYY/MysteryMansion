@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { CheckCircle2, Timer } from "lucide-react";
 
-import useAdminProfileData from "../../hooks/useAdminProfileData";
+import usePagedProfileData from "../../hooks/usePagedProfileData";
 import { fetchAdminResolvedFlags } from "../../services/adminProfileService";
 import FlagTimeline from "@/features/flagging/components/FlagTimeline";
 import { getFlagReasonLabel } from "@/features/flagging/data/flagReasons";
-import AdminDataState from "./AdminDataState";
+import ProfileDataState from "../profile-shared/ProfileDataState";
 
 const formatDateTime = (value) =>
   value
@@ -36,7 +36,7 @@ const toTimelineEntries = (timeline = []) =>
 /** Reports this admin moved to "Resolved", with the full investigation timeline of each. */
 export default function AdminResolvedFlags({ adminId }) {
   const { items, extra, pagination, loading, loadingMore, error, loadMore } =
-    useAdminProfileData(fetchAdminResolvedFlags, { adminId });
+    usePagedProfileData(fetchAdminResolvedFlags, { adminId });
 
   const summary = extra.summary || { total: 0, averageHours: 0 };
 
@@ -65,7 +65,7 @@ export default function AdminResolvedFlags({ adminId }) {
       </div>
 
       <div className="mt-6">
-        <AdminDataState
+        <ProfileDataState
           loading={loading}
           error={error}
           empty={items.length === 0}
@@ -128,7 +128,7 @@ export default function AdminResolvedFlags({ adminId }) {
               </li>
             ))}
           </ul>
-        </AdminDataState>
+        </ProfileDataState>
       </div>
     </div>
   );

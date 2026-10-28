@@ -362,15 +362,31 @@ export default function AdminEmailUsersPage() {
 
         {/* Success result */}
         {result && (
-          <div className="flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-4">
-            <CheckCircle2 size={18} className="text-emerald-400 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-emerald-400">Emails sent!</p>
-              <p className="text-sm text-emerald-300/70 mt-0.5">
+          <div
+            className={`flex items-start gap-3 rounded-xl px-4 py-4 border ${
+              result.sent === 0
+                ? 'bg-red-500/10 border-red-500/30'
+                : 'bg-emerald-500/10 border-emerald-500/30'
+            }`}
+          >
+            {result.sent === 0 ? (
+              <XCircle size={18} className="text-red-400 shrink-0 mt-0.5" />
+            ) : (
+              <CheckCircle2 size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+            )}
+            <div className="min-w-0">
+              <p className={`text-sm font-semibold ${result.sent === 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                {result.sent === 0 ? 'No emails were sent' : 'Emails sent!'}
+              </p>
+              <p className="text-sm text-neutral-300/70 mt-0.5">
                 {result.sent} sent successfully
+                {result.skipped > 0 && `, ${result.skipped} skipped (email sending is turned off in settings)`}
                 {result.failed > 0 && `, ${result.failed} failed`}
                 {' '}out of {result.total} recipient{result.total !== 1 ? 's' : ''}.
               </p>
+              {result.errors?.map((reason) => (
+                <p key={reason} className="mt-1 break-words text-xs text-red-300/80">{reason}</p>
+              ))}
             </div>
           </div>
         )}

@@ -2,6 +2,15 @@ import express from 'express';
 import mongoose from 'mongoose';
 import User from '../../models/User.js';
 import PromoCode from '../../models/PromoCode.js';
+import profileActivityRoutes from './profileActivityRoutes.js';
+import { getLiveMembership } from '../membership/membershipService.js';
+import { MEMBERSHIP_TIERS } from '../membership/membershipCatalog.js';
+
+// Tier name for profiles whose plan includes the profile badge perk, else ''.
+const badgeTierFor = async (userId) => {
+  const membership = await getLiveMembership(userId);
+  return membership && MEMBERSHIP_TIERS[membership.tier]?.perks.profileBadge ? membership.tier : '';
+};
 
 const router = express.Router();
 
@@ -144,6 +153,9 @@ router.get('/popular', async (req, res) => {
   }
 });
 
+// Public activity tabs for a profile (forum activity, library, reviews, comments)
+router.use('/id/:userId', profileActivityRoutes);
+
 // GET user by id (public, no auth)
 router.get('/id/:userId', async (req, res) => {
   try {
@@ -155,7 +167,7 @@ router.get('/id/:userId', async (req, res) => {
       '-password -resetPasswordToken -resetPasswordExpires -email'
     );
     if (!user) return res.status(404).json({ error: 'User not found' });
-    return res.status(200).json(user);
+    return res.status(200).json({ ...user.toObject(), membershipTier: await badgeTierFor(user._id) });
   } catch (err) {
     console.error('❌ Failed to fetch user by id', err);
     return res.status(500).json({ error: 'Failed to fetch user' });

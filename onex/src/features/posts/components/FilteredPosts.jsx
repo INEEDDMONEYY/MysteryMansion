@@ -23,7 +23,7 @@ export default function FilteredPosts({
     setVisiblePosts(posts);
   }, [posts]);
 
-  // ------------------ Sort: promoted first, founding provider second ------------------
+  // ------------------ Sort: boosted first, promoted second, founding provider third ------------------
   const sortPostsByPriority = (arr) =>
     [...arr].sort((a, b) => {
       const now = Date.now();
@@ -49,6 +49,7 @@ export default function FilteredPosts({
       };
 
       const getPriority = (post) => {
+        if (post?.boostedUntil && new Date(post.boostedUntil).getTime() > now) return -1;
         if (hasActivePromotion(post)) return 0;
         if (isFoundingProvider(post)) return 1;
         return 2;
