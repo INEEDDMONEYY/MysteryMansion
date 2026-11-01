@@ -12,7 +12,7 @@ import NewThreadButton from "../components/NewThreadButton";
 import useForum from "../hooks/useForum";
 import useForumThreads from "../hooks/useForumThreads";
 
-import { setSEO } from "@/shared/utils/seo";
+import { setPublicPageSEO } from "@/shared/utils/seo";
 
 const LATEST_COUNT = 6;
 
@@ -34,11 +34,7 @@ export default function ForumPage() {
   } = useForumThreads({ sort: "latest", limit: LATEST_COUNT });
 
   useEffect(() => {
-    setSEO(
-      "Community Forums | Mystery Mansion",
-      "Join Mystery Mansion discussions, ask questions, share knowledge, and connect with the community.",
-      { robots: "index, follow", canonicalPath: "/forum" }
-    );
+    setPublicPageSEO("/forum");
   }, []);
 
   const search = (value) => {

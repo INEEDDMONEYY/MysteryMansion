@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useState, useEffect } from "react";
 import {
     ChevronDown,
@@ -11,7 +12,7 @@ import {
     HelpCircle,
     Search,
 } from "lucide-react";
-import { setSEO } from "@/shared/utils/seo";
+import { setPublicPageSEO } from "@/shared/utils/seo";
 import api from "@/shared/utils/api";
 
 // ── Static fallback items (shown if API returns empty or fails) ───────────────
@@ -149,11 +150,7 @@ export default function FAQPage() {
     const [search, setSearch]       = useState('');
 
     useEffect(() => {
-        setSEO(
-            "FAQ | Mystery Mansion Escort Platform Help Center",
-            "Read frequently asked questions about Mystery Mansion, an escort and sex work advertising platform, including safety, content, and account support.",
-            { robots: "index, follow", canonicalPath: "/faq" }
-        );
+        setPublicPageSEO("/faq");
         api.get('/faqs')
             .then((res) => {
                 const data = Array.isArray(res.data) && res.data.length > 0 ? res.data : FALLBACK_FAQS;
@@ -205,9 +202,7 @@ export default function FAQPage() {
                         {/* FAQ accordion */}
                         <div className="lg:col-span-2 space-y-3">
                             {loading ? (
-                                Array.from({ length: 5 }).map((_, i) => (
-                                    <div key={i} className="h-14 rounded-2xl bg-gray-200 animate-pulse" />
-                                ))
+                                <BrandLoader size="sm" />
                             ) : filtered.length === 0 ? (
                                 <div className="flex flex-col items-center gap-3 py-16 text-gray-400">
                                     <HelpCircle size={36} className="opacity-30" />

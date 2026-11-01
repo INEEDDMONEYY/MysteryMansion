@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
 import api from "@/shared/utils/api";
@@ -74,14 +75,7 @@ export default function CategoryList({ selectedCategories = [], onSelect }) {
 
   if (loading) {
     return (
-      <div className="flex gap-3 overflow-hidden">
-        {[1, 2, 3, 4, 5].map((item) => (
-          <div
-            key={item}
-            className="h-[58px] min-w-[170px] animate-pulse rounded-xl bg-gray-100"
-          />
-        ))}
-      </div>
+      <BrandLoader size="sm" />
     );
   }
 

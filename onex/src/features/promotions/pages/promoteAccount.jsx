@@ -3,7 +3,7 @@ import PromotionFAQ from "../components/PromotionFAQ";
 import PromotionPayment from "../components/PromotionPayment";
 
 import { useEffect, useState } from "react";
-import { setSEO } from "@/shared/utils/seo";
+import { setPublicPageSEO } from "@/shared/utils/seo";
 
 function formatVisitorCount(num) {
   if (!num || num < 1000) return `${num ?? 13}k+`;
@@ -18,11 +18,7 @@ export default function PromoteAccount() {
   const [visitorCount, setVisitorCount] = useState(null);
 
   useEffect(() => {
-    setSEO(
-      "Promote Your Escort Profile | Mystery Mansion",
-      "Promote your profile on Mystery Mansion, an escort and sex work advertising platform, to increase visibility and reach more potential clients.",
-      { robots: "index, follow", canonicalPath: "/promote" }
-    );
+    setPublicPageSEO("/promote");
     fetch('/api/public/settings/flags')
       .then((r) => r.json())
       .then((d) => setVisitorCount(d?.visitorCount ?? 13000))

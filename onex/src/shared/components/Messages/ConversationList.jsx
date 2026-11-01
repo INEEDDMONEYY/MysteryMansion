@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { MessageSquarePlus } from "lucide-react";
 
 function timeAgo(dateStr) {
@@ -46,9 +47,7 @@ export default function ConversationList({
       {/* List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="space-y-1 p-2">
-            {[1,2,3].map(i => <div key={i} className="h-16 rounded-xl bg-gray-100 animate-pulse" />)}
-          </div>
+          <BrandLoader size="sm" />
         ) : conversations.length === 0 ? (
           <p className="text-center text-sm text-gray-400 mt-12 px-4">No conversations yet.</p>
         ) : (

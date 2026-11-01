@@ -12,6 +12,7 @@ import { Phone, Clock3, Image as ImageIcon, Video as VideoIcon, DollarSign } fro
 
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import api from "@/shared/utils/api";
+import { buildLocationPath, setPostSEO, setSEO } from "@/shared/utils/seo";
 import { UserContext } from "@/context/UserContext";
 import { hasPermanentProviderBadge } from "@/features/users/services/providerBadgeEligibility";
 import { getPostCategories } from "../services/postCategories";
@@ -35,8 +36,6 @@ import CommentSection from "../components/PostDetail/Comments/CommentSection";
 
 // 🛠️ Utilities
 import {
-  formatPhoneNumber,
-  getPhoneHref,
   getPostedAgoLabel,
 } from "../utils/PostFormatter";
 
@@ -109,7 +108,8 @@ export default function PostDetail() {
     : [];
 
   // The hero shows the first uploaded photo; the Photos tab lists every photo, including that one.
-  const heroImage = photoItems[0]?.url || post?.picture || "";
+  // Profile posts (and video-only listings) have no photos; show the avatar.
+  const heroImage = photoItems[0]?.url || post?.picture || post?.userId?.profilePic || "";
   const heroImageBackup = photoItems[0]?.backupUrl || "";
 
   const postOwnerId =
@@ -141,31 +141,28 @@ export default function PostDetail() {
   const displayLocation =
     locationParts.length > 0
       ? locationParts.join(", ")
+      : effectiveUser?.location || "";
+
+  const locationHref = post?.city
+    ? buildLocationPath(post.city, post.state)
+    : post?.state
+      ? buildLocationPath(post.state)
       : "";
 
   const displayCategories =
     getPostCategories(post);
 
-  const displayPhoneNumber =
-    effectiveUser?.phoneNumber
-      ? formatPhoneNumber(
-          effectiveUser.phoneNumber
-        )
-      : "";
+  // Contact details arrive masked; the owner sees their own in full.
+  const isOwnPost =
+    Boolean(postOwnerId) &&
+    postOwnerId === currentUserId;
 
-  const phoneHref = getPhoneHref(
-    effectiveUser?.phoneNumber || ""
-  );
-
-  const displayEmail =
-    typeof effectiveUser?.email ===
-    "string"
-      ? effectiveUser.email.trim()
-      : "";
-
-  const emailHref = displayEmail
-    ? `mailto:${displayEmail}`
-    : "";
+  const ownContact = isOwnPost
+    ? {
+        phoneNumber: currentUser?.phoneNumber || "",
+        email: currentUser?.email || "",
+      }
+    : null;
 
   const badgeType =
     post?.badgeType ||
@@ -387,6 +384,20 @@ export default function PostDetail() {
       cancelled = true;
     };
   }, [postId]);
+
+  // ── SEO ──────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (loading) return;
+
+    if (!post) {
+      setSEO("Listing Unavailable | Mystery Mansion", "", {
+        robots: "noindex, follow",
+      });
+      return;
+    }
+
+    setPostSEO(post, { image: heroImage || undefined });
+  }, [loading, post, heroImage]);
 
   // ── Fetch comments ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -673,12 +684,16 @@ export default function PostDetail() {
         gender={effectiveUser?.gender}
         age={effectiveUser?.age}
         location={displayLocation}
+        locationHref={locationHref}
         categories={displayCategories}
+        details={effectiveUser}
       />
 
-      <PostDescription
-        description={post.description}
-      />
+      {(post.postType !== "profile" || post.description) && (
+        <PostDescription
+          description={post.description}
+        />
+      )}
 
       {/* ── Detail tabs ──────────────────────────────────────────────── */}
       <section className="border-b border-gray-200 bg-white">
@@ -719,12 +734,10 @@ export default function PostDetail() {
 
       {currentTab === "contact" && (
         <PostContact
-          phoneNumber={
-            displayPhoneNumber
-          }
-          phoneHref={phoneHref}
-          email={displayEmail}
-          emailHref={emailHref}
+          userId={postOwnerId}
+          phoneMasked={post?.userId?.phoneMasked || ""}
+          emailMasked={post?.userId?.emailMasked || ""}
+          ownContact={ownContact}
         />
       )}
 

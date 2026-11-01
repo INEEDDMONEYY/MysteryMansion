@@ -1,8 +1,8 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '@/shared/utils/api';
 import UserProfileView from './UserProfileViewPage';
-import { setSEO } from '@/shared/utils/seo';
 import { useUser } from '@/context/useUser';
 
 export default function ProfilePage({ userId = null, disableActionButtons = false }) {
@@ -10,14 +10,6 @@ export default function ProfilePage({ userId = null, disableActionButtons = fals
   const { user: loggedInUser } = useUser();
   const ownUserId = loggedInUser?._id || loggedInUser?.id || null;
 
-  useEffect(() => {
-    if (username) {
-      setSEO(
-        `${username}'s Escort Profile | Mystery Mansion`,
-        `View ${username}'s escort profile on Mystery Mansion. Browse listings, read client reviews, and get contact details for ${username}.`
-      );
-    }
-  }, [username]);
   const [resolvedUserId, setResolvedUserId] = useState('');
   const [loading, setLoading] = useState(Boolean(!userId && (username || ownUserId)));
   const [error, setError] = useState('');
@@ -89,7 +81,7 @@ export default function ProfilePage({ userId = null, disableActionButtons = fals
   if (loading) {
     return (
       <section className="flex min-h-screen w-full items-center justify-center bg-gray-100 px-4">
-        <div className="rounded-lg bg-white p-6 text-gray-500 shadow-md">Loading profile...</div>
+        <BrandLoader size="md" label="Loading profile..." />
       </section>
     );
   }

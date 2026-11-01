@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useState, useEffect, useContext } from "react";
 import { MessageSquareText, Shield, RefreshCw, Plus } from "lucide-react";
 import MessageInput from "@/shared/components/Messages/MessageInput";
@@ -93,9 +94,7 @@ export default function AdminMessages() {
 
   if (userLoading) {
     return (
-      <div className="flex items-center justify-center h-full text-neutral-400 text-sm">
-        Loading messages...
-      </div>
+      <BrandLoader size="md" tone="dark" label="Loading messages..." className="h-full" />
     );
   }
 

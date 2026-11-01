@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Info, ShieldCheck } from "lucide-react";
 
-import { setSEO } from "@/shared/utils/seo";
+import { setPublicPageSEO } from "@/shared/utils/seo";
 
 import {
   CreditPackagesHero,
@@ -16,10 +16,7 @@ export default function CreditPackagesPage() {
   const { hero, packages, information, cta } = creditPackagesPageData;
 
   useEffect(() => {
-    setSEO(
-      "Credit Packages & Pricing | Mystery Mansion",
-      "Explore Mystery Mansion credit packages, compare available prices and credit quantities, and learn how credits can be used on eligible platform features."
-    );
+    setPublicPageSEO("/credit-packages");
   }, []);
 
   return (

@@ -2,7 +2,9 @@ import express from 'express';
 import mongoose from 'mongoose';
 import Flag, { FLAG_STATUSES } from '../../models/Flag.js';
 import Post from '../../models/Post.js';
+import User from '../../models/User.js';
 import { createNotification } from '../notifications/notificationController.js';
+import { sendFlagStatusUpdateEmail } from '../../common/utils/sendAccountFlagEmail.js';
 
 const router = express.Router();
 
@@ -78,6 +80,21 @@ router.patch('/:id', async (req, res) => {
       message: `Your report is now: ${STATUS_LABELS[status]}.${message ? ` ${message}` : ''}`,
       meta: { flagId: flag._id },
     }).catch((err) => console.error('❌ flag reporter notification:', err.message));
+
+    // Email the reporter about the status change (fire-and-forget).
+    User.findById(flag.reporterId)
+      .select('email username')
+      .lean()
+      .then((reporter) => {
+        if (!reporter?.email) return;
+        return sendFlagStatusUpdateEmail({
+          to: reporter.email,
+          username: reporter.username,
+          statusLabel: STATUS_LABELS[status],
+          message,
+        });
+      })
+      .catch((err) => console.error('❌ flag status email:', err.message));
 
     const updated = await Flag.findById(flag._id)
       .populate('reporterId', 'username email accountType')

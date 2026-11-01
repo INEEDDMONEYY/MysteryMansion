@@ -1,7 +1,8 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useState, useEffect } from "react";
 import api from "@/shared/utils/api";
 import { useUser } from "@/context/useUser";
-import { setSEO } from "@/shared/utils/seo";
+import { setPublicPageSEO } from "@/shared/utils/seo";
 import {
   Newspaper, Sparkles, Pencil, Trash2,
   ChevronDown, ChevronUp, RefreshCw, Zap,
@@ -177,25 +178,6 @@ function BlogCard({
   );
 }
 
-// ── Skeleton card ─────────────────────────────────────────────────────────────
-function SkeletonCard() {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-pulse">
-      <div className="h-1 bg-gray-100" />
-      <div className="p-6 space-y-3">
-        <div className="h-4 w-24 bg-gray-100 rounded-full" />
-        <div className="h-5 w-3/4 bg-gray-100 rounded-lg" />
-        <div className="space-y-2">
-          <div className="h-3 bg-gray-100 rounded-lg" />
-          <div className="h-3 w-5/6 bg-gray-100 rounded-lg" />
-          <div className="h-3 w-4/6 bg-gray-100 rounded-lg" />
-        </div>
-        <div className="h-3 w-20 bg-gray-100 rounded-full mt-4" />
-      </div>
-    </div>
-  );
-}
-
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function PlatformUpdatesPage() {
   const [updates, setUpdates]       = useState([]);
@@ -222,11 +204,7 @@ export default function PlatformUpdatesPage() {
   };
 
   useEffect(() => {
-    setSEO(
-      "Platform Updates | Mystery Mansion",
-      "Stay up to date with the latest features, improvements, and announcements from Mystery Mansion.",
-      { robots: "index, follow", canonicalPath: "/platform-updates" }
-    );
+    setPublicPageSEO("/platform-updates");
     fetchUpdates();
   }, []);
 
@@ -361,9 +339,7 @@ export default function PlatformUpdatesPage() {
 
         {/* Post grid */}
         {loading ? (
-          <div className="grid sm:grid-cols-2 gap-5">
-            {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
+          <BrandLoader size="sm" />
         ) : error ? (
           <div className="text-center py-16">
             <p className="text-red-500 text-sm">{error}</p>

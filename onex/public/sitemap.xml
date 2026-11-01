@@ -1,43 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Homepage -->
   <url>
     <loc>https://mysterymansion.app/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
   </url>
+
+  <!-- Locations -->
   <url>
-    <loc>https://mysterymansion.app/home</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <loc>https://mysterymansion.app/locations</loc>
   </url>
+
+  <!-- Get Started -->
   <url>
-    <loc>https://mysterymansion.app/contact</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://mysterymansion.app/become-a-client</loc>
   </url>
+
   <url>
-    <loc>https://mysterymansion.app/faq</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://mysterymansion.app/become-a-provider</loc>
   </url>
+
   <url>
-    <loc>https://mysterymansion.app/terms-policy</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://mysterymansion.app/membership</loc>
   </url>
-  <url>
-    <loc>https://mysterymansion.app/privacy-policy</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
+
   <url>
     <loc>https://mysterymansion.app/promote</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
+
+  <!-- Credits and Rewards -->
   <url>
-    <loc>https://mysterymansion.app/platform-updates</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://mysterymansion.app/credits</loc>
   </url>
+
+  <url>
+    <loc>https://mysterymansion.app/credit-packages</loc>
+  </url>
+
+  <url>
+    <loc>https://mysterymansion.app/review-incentives</loc>
+  </url>
+
+  <url>
+    <loc>https://mysterymansion.app/referrals</loc>
+  </url>
+
+  <!-- Community -->
+  <url>
+    <loc>https://mysterymansion.app/community-guidelines</loc>
+  </url>
+
+
+  <url>
+    <loc>https://mysterymansion.app/faq</loc>
+  </url>
+
+  <url>
+    <loc>https://mysterymansion.app/milestones</loc>
+  </url>
+
+  <!-- Legal -->
+  <url>
+    <loc>https://mysterymansion.app/privacy-policy</loc>
+  </url>
+
+  <url>
+    <loc>https://mysterymansion.app/terms-policy</loc>
+  </url>
+
+  <!-- Updates and Support -->
+
+  <url>
+    <loc>https://mysterymansion.app/contact</loc>
+  </url>
+
 </urlset>

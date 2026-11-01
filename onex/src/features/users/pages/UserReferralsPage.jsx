@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useContext, useEffect, useState } from "react";
 import {
   Link2, Copy, Check, Users, TrendingUp, Gift, Lock, Share2,
@@ -95,13 +96,7 @@ export default function UserReferralsPage() {
           </p>
         </div>
       ) : loading ? (
-        <div className="space-y-4">
-          <div className="h-28 bg-white/30 rounded-2xl animate-pulse" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="h-24 bg-white/30 rounded-2xl animate-pulse" />
-            <div className="h-24 bg-white/30 rounded-2xl animate-pulse" />
-          </div>
-        </div>
+        <BrandLoader size="sm" />
       ) : error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm">{error}</div>
       ) : (

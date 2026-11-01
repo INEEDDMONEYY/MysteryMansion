@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from 'react';
 import {
   Plus, Pencil, Trash2, Save, X, AlertCircle,
@@ -368,9 +369,7 @@ export default function AdminMilestonesPage() {
         </div>
 
         {loading ? (
-          <div className="space-y-3">
-            {[1, 2].map((i) => <div key={i} className="h-20 rounded-2xl bg-neutral-800 animate-pulse" />)}
-          </div>
+          <BrandLoader size="sm" tone="dark" />
         ) : drafts.length === 0 ? (
           <p className="text-sm text-neutral-500">No draft milestones for {accountType}s.</p>
         ) : (

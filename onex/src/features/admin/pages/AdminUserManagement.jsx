@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useRef, useState } from "react";
 import api from "@/shared/utils/api";
 import PromocodeSettings from "@/shared/components/admin/settings/PromocodeSettings";
@@ -149,7 +150,7 @@ export default function AdminUserManagement() {
         {postsError && <p className="mb-3 text-sm text-red-400">{postsError}</p>}
 
         {postsLoading ? (
-          <p className="text-neutral-500 text-sm">Loading posts...</p>
+          <BrandLoader size="sm" tone="dark" label="Loading posts..." />
         ) : posts.length > 0 ? (
           <div
             ref={postsRailRef}
@@ -228,7 +229,7 @@ export default function AdminUserManagement() {
         </div>
 
         {usersLoading ? (
-          <p className="text-neutral-500 text-sm">Loading user profiles...</p>
+          <BrandLoader size="sm" tone="dark" label="Loading user profiles..." />
         ) : sortedUsersForProfiles.length > 0 ? (
           <div
             ref={usersRailRef}
@@ -269,7 +270,7 @@ export default function AdminUserManagement() {
         )}
       </div>
 
-      {usersLoading && <p className="text-neutral-500 text-sm">Loading users for settings...</p>}
+      {usersLoading && <BrandLoader size="sm" tone="dark" label="Loading users for settings..." />}
 
       {/* Admin management tools */}
       <div className="space-y-5">

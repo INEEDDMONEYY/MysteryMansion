@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 
@@ -52,7 +53,7 @@ export default function ReferralLandingPage() {
   if (loading) {
     return (
       <main className="flex min-h-screen w-full items-center justify-center bg-black text-white">
-        <p className="text-gray-400">Loading invitation...</p>
+        <BrandLoader size="md" tone="dark" label="Loading invitation..." />
       </main>
     );
   }

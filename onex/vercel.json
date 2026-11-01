@@ -49,6 +49,10 @@
   ],
   "rewrites": [
     {
+      "source": "/sitemap-locations.xml",
+      "destination": "https://uninterested.onrender.com/api/posts/locations/sitemap.xml"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://uninterested.onrender.com/api/:path*"
     },

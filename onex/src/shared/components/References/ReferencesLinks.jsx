@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useMemo, useState } from "react";
 import { Globe, Instagram, Twitter, Link as LinkIcon, Youtube, Pencil, Save, X } from "lucide-react";
 import api from "@/shared/utils/api";
@@ -217,7 +218,7 @@ export default function ReferencesLinks({ userId = null, user = null, editable =
           </div>
         </div>
       ) : loading ? (
-        <p className="mt-4 text-sm text-gray-500">Loading links...</p>
+        <BrandLoader size="sm" label="Loading links..." />
       ) : visibleLinks.length > 0 ? (
         <ul className="mt-4 space-y-2">
           {visibleLinks.map(({ key, label, value }) => (

@@ -1,4 +1,5 @@
 import { sendEmail, FROM_ADDRESS } from './unosend.js';
+import { EMAIL_CATEGORIES } from './notificationPreferences.js';
 import { buildEmail, ctaButton, darkCard, heading } from './emailTemplate.js';
 
 function escapeHtml(value = '') {
@@ -30,6 +31,8 @@ export async function sendNewMessageEmail({ to, recipientUsername, senderUsernam
   `;
 
   await sendEmail({
+
+    category: EMAIL_CATEGORIES.MESSAGES,
     from: FROM_ADDRESS,
     to,
     subject: `${senderUsername} sent you a message`,

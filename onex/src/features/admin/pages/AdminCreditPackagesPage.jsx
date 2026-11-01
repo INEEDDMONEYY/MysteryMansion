@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from 'react';
 import { Coins, Plus, Pencil, Trash2, Star, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import api from '@/shared/utils/api';
@@ -179,9 +180,7 @@ export default function AdminCreditPackagesPage() {
 
       {/* Package cards */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3].map(i => <div key={i} className="h-48 rounded-2xl bg-neutral-800 animate-pulse" />)}
-        </div>
+        <BrandLoader size="sm" tone="dark" />
       ) : packages.length === 0 ? (
         <div className="text-center py-16 text-neutral-500">
           <Coins size={40} className="mx-auto mb-3 opacity-30" />

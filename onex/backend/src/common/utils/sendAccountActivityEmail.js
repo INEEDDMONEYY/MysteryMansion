@@ -1,4 +1,5 @@
 import { sendEmail, FROM_ADDRESS } from './unosend.js';
+import { EMAIL_CATEGORIES } from './notificationPreferences.js';
 import env from '../../config/env.js';
 import { buildEmail, ctaButton, darkCard, heading } from './emailTemplate.js';
 import { allowEmail } from './emailRateLimiter.js';
@@ -45,6 +46,8 @@ export async function sendAccountActivityEmail({ to, username, type, message, ct
   `;
 
   await sendEmail({
+
+    category: EMAIL_CATEGORIES.ENGAGEMENT,
     from: FROM_ADDRESS,
     to,
     subject: copy.subject,
@@ -71,6 +74,8 @@ export async function sendAccountInactivityEmail({ to, username, days }) {
   `;
 
   await sendEmail({
+
+    category: EMAIL_CATEGORIES.ENGAGEMENT,
     from: FROM_ADDRESS,
     to,
     subject: `It's been ${days} days since your last post`,

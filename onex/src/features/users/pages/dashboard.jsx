@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useContext, useEffect, useState } from "react";
 import CountUp from "react-countup";
 import {
@@ -202,11 +203,7 @@ export default function UserDashboard() {
 
       {/* ── Stat Cards ── */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="bg-white/30 backdrop-blur-md rounded-2xl h-24 animate-pulse" />
-          ))}
-        </div>
+        <BrandLoader size="sm" />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
           {stats.map((s) => (
@@ -225,7 +222,7 @@ export default function UserDashboard() {
             <h2 className="text-sm font-semibold text-gray-900">Post Activity — Last 7 Days</h2>
           </div>
           {loading ? (
-            <div className="h-48 bg-white/30 rounded-xl animate-pulse" />
+            <BrandLoader size="sm" className="h-48" />
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={data?.postActivity ?? []} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
@@ -261,7 +258,7 @@ export default function UserDashboard() {
             <h2 className="text-sm font-semibold text-gray-900">Reviews — Last 30 Days</h2>
           </div>
           {loading ? (
-            <div className="h-48 bg-white/30 rounded-xl animate-pulse" />
+            <BrandLoader size="sm" className="h-48" />
           ) : !data?.reviewsTrend?.length ? (
             <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
               No reviews yet

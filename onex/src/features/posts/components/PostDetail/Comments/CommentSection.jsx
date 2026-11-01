@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 // 💬 Comment Section
 
 import CommentForm from "./CommentForm";
@@ -75,9 +76,7 @@ export default function CommentSection({
         )}
 
         {commentsLoading ? (
-          <p className="text-sm text-gray-500">
-            Loading comments...
-          </p>
+          <BrandLoader size="sm" label="Loading comments..." />
         ) : (
           <CommentList
             comments={comments}

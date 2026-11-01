@@ -6,6 +6,7 @@ import ForumReply from '../../models/ForumReply.js';
 import ForumThread from '../../models/ForumThread.js';
 import Review from '../../models/Review.js';
 import User from '../../models/User.js';
+import UserMedia from '../../models/UserMedia.js';
 import { serializeAttachments } from '../../models/AttachmentSchema.js';
 // Registered for populate().
 import '../../models/ForumCategory.js';
@@ -198,6 +199,37 @@ router.get('/comments', async (req, res) => {
   } catch (err) {
     console.error('❌ GET profile comments:', err);
     res.status(500).json({ error: 'Failed to load comments' });
+  }
+});
+
+// Media the member chose to show in their profile gallery, newest first.
+router.get('/media', async (req, res) => {
+  try {
+    const { page, limit } = parsePaging(req.query, 24, 60);
+    const filter = { userId: req.profileUserId, showOnProfile: true };
+    if (['image', 'video'].includes(req.query.type)) filter.mediaType = req.query.type;
+
+    const [items, total] = await Promise.all([
+      UserMedia.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      UserMedia.countDocuments(filter),
+    ]);
+
+    res.json({
+      items: items.map((m) => ({
+        id: String(m._id),
+        url: m.url,
+        mediaType: m.mediaType,
+        thumbnailUrl: m.thumbnailUrl,
+        width: m.width,
+        height: m.height,
+        duration: m.duration,
+        createdAt: m.createdAt,
+      })),
+      pagination: { page, limit, total, hasNextPage: page * limit < total },
+    });
+  } catch (err) {
+    console.error('❌ GET profile media:', err);
+    res.status(500).json({ error: 'Failed to load media' });
   }
 });
 

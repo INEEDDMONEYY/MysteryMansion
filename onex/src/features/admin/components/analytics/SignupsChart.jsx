@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { Bar } from 'react-chartjs-2';
 import { format } from 'date-fns';
 import { chartOptions } from './chartOptions';
@@ -27,7 +28,7 @@ export default function SignupsChart({ data = [], loading }) {
       </h2>
       <div className="h-[240px]">
         {loading ? (
-          <div className="h-full bg-neutral-800 animate-pulse rounded-xl" />
+          <BrandLoader size="sm" tone="dark" className="h-full min-h-[260px]" />
         ) : data.length ? (
           <Bar data={barData} options={chartOptions} />
         ) : (

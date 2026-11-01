@@ -1,4 +1,5 @@
 import { sendEmail, FROM_ADDRESS } from './unosend.js';
+import { EMAIL_CATEGORIES } from './notificationPreferences.js';
 import env from '../../config/env.js';
 import { buildEmail, ctaButton, darkCard, heading } from './emailTemplate.js';
 
@@ -30,6 +31,8 @@ export async function sendMilestoneAchievedEmail({ to, username, milestoneTitle,
   `;
 
   await sendEmail({
+
+    category: EMAIL_CATEGORIES.MILESTONES,
     from: FROM_ADDRESS,
     to,
     subject: `Mystery Mansion — You reached "${milestoneTitle}"`,
@@ -70,6 +73,8 @@ export async function sendMilestonesAddedEmail({ to, username, milestones }) {
   `;
 
   await sendEmail({
+
+    category: EMAIL_CATEGORIES.MILESTONES,
     from: FROM_ADDRESS,
     to,
     subject: isBatch

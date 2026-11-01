@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { setSEO } from "@/shared/utils/seo";
+import { setPublicPageSEO } from "@/shared/utils/seo";
 
 import {
   ReviewIncentivesHero,
@@ -14,10 +14,7 @@ import {
 
 export default function ReviewIncentivesPage() {
   useEffect(() => {
-    setSEO(
-      "Review Incentives & Provider Rewards | Mystery Mansion",
-      "Discover the Mystery Mansion provider incentive program. Learn how signup referrals, credit milestones, and eligible monetary rewards work."
-    );
+    setPublicPageSEO("/review-incentives");
   }, []);
 
   return (

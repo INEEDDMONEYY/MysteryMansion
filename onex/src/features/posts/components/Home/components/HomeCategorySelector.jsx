@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -77,24 +78,7 @@ export default function HomeCategorySelector() {
     return (
       <section className="w-full border-y border-black/10 bg-white">
         <div className="mx-auto w-full max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-10">
-          <div className="mb-5">
-            <div className="h-3 w-20 animate-pulse rounded bg-pink-200" />
-
-            <div className="mt-3 h-8 w-56 animate-pulse rounded bg-gray-200" />
-
-            <div className="mt-2 h-4 w-72 max-w-full animate-pulse rounded bg-gray-100" />
-          </div>
-
-          <div className="flex gap-3 overflow-hidden">
-            {[1, 2, 3, 4, 5].map(
-              (item) => (
-                <div
-                  key={item}
-                  className="h-[58px] min-w-[170px] animate-pulse rounded-xl bg-gray-100"
-                />
-              )
-            )}
-          </div>
+          <BrandLoader size="sm" />
         </div>
       </section>
     );

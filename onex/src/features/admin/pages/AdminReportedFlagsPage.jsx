@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Flag, RefreshCw } from "lucide-react";
@@ -120,9 +121,7 @@ export default function AdminReportedFlagsPage() {
 
       <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="h-7 w-7 animate-spin rounded-full border-2 border-pink-500 border-t-transparent" />
-          </div>
+          <BrandLoader size="sm" tone="dark" />
         ) : visibleFlags.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-neutral-500">
             <Flag size={36} className="opacity-20" />

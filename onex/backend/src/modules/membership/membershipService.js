@@ -5,6 +5,7 @@ import ForumThread from '../../models/ForumThread.js';
 import { createNotification } from '../notifications/notificationController.js';
 import { notifyIfLowCredits } from '../credits/creditAlerts.js';
 import { addMonth } from '../promotions/promotionService.js';
+import { sendMembershipEmail } from '../../common/utils/sendMembershipEmail.js';
 import {
   ADMIN_PERKS,
   MEMBERSHIP_GRACE_MS,
@@ -31,6 +32,17 @@ const notify = (userId, title, message, meta = {}) =>
   createNotification({ audience: 'user', type: 'membership_update', title, message, userId, meta }).catch((err) =>
     console.error('❌ membership notification failed:', err.message)
   );
+
+// Fire-and-forget membership lifecycle email; never blocks the membership flow.
+const emailMember = async (userId, event, tierName, detail) => {
+  try {
+    const user = await User.findById(userId).select('email username').lean();
+    if (!user?.email) return;
+    await sendMembershipEmail({ to: user.email, username: user.username, event, tierName, detail });
+  } catch (err) {
+    console.error(`❌ membership email (${event}) failed:`, err.message);
+  }
+};
 
 const formatDate = (date) => new Date(date).toLocaleDateString('en-US');
 
@@ -173,6 +185,12 @@ export async function subscribe(user, tierId) {
     `${tier.monthlyCoinCost} coins were charged. Your next renewal is ${formatDate(renewsAt)}.`,
     { tier: tier.id }
   );
+  emailMember(
+    user._id,
+    'activated',
+    tier.name,
+    `${tier.monthlyCoinCost} coins were charged. Your next renewal is ${formatDate(renewsAt)}.`
+  );
   notifyIfLowCredits(user._id, finalBalance);
 
   return succeed({ tier: tier.id, renewsAt, balance: finalBalance });
@@ -218,6 +236,7 @@ export async function upgrade(user, tierId) {
   notify(user._id, `Upgraded to ${target.name}`, `${cost} coins were charged for the upgrade. New perks are active now.`, {
     tier: target.id,
   });
+  emailMember(user._id, 'upgraded', target.name, `${cost} coins were charged for the upgrade. New perks are active now.`);
   notifyIfLowCredits(user._id, finalBalance);
 
   return succeed({ tier: target.id, balance: finalBalance });
@@ -241,6 +260,12 @@ export async function setAutoRenew(user, autoRenew) {
       'Membership will not renew',
       `Your ${membership.tier} perks stay active until ${formatDate(membership.renewsAt)}.`,
       { tier: membership.tier }
+    );
+    emailMember(
+      user._id,
+      'autorenew_off',
+      MEMBERSHIP_TIERS[membership.tier].name,
+      `Your perks stay active until ${formatDate(membership.renewsAt)}.`
     );
   }
 
@@ -278,6 +303,12 @@ async function attemptRenewal(membership) {
     `${tier.monthlyCoinCost} coins were charged. Next renewal ${formatDate(renewsAt)}.`,
     { tier: tier.id }
   );
+  emailMember(
+    membership.userId,
+    'renewed',
+    tier.name,
+    `${tier.monthlyCoinCost} coins were charged. Next renewal ${formatDate(renewsAt)}.`
+  );
   notifyIfLowCredits(membership.userId, finalBalance);
   return true;
 }
@@ -301,6 +332,7 @@ async function expire(membership, reason) {
     `Your ${membership.tier} membership has ended and its perks were removed. Subscribe again any time.`,
     { tier: membership.tier }
   );
+  emailMember(membership.userId, 'expired', MEMBERSHIP_TIERS[membership.tier].name);
 }
 
 // Spends one boost from the member's monthly allowance. Admins are unlimited.
@@ -360,6 +392,12 @@ export async function processMembershipRenewals(now = new Date()) {
       `Your ${membership.tier} membership ends on ${formatDate(membership.renewsAt)} (${daysLeft} day${daysLeft === 1 ? '' : 's'} left) and will not renew. Turn auto-renew back on to keep your perks.`,
       { tier: membership.tier, renewsAt: membership.renewsAt }
     );
+    emailMember(
+      membership.userId,
+      'expiring_soon',
+      MEMBERSHIP_TIERS[membership.tier].name,
+      `Your membership ends on ${formatDate(membership.renewsAt)} (${daysLeft} day${daysLeft === 1 ? '' : 's'} left) and will not renew. Turn auto-renew back on to keep your perks.`
+    );
   }
 
   // Billing period ended.
@@ -385,6 +423,12 @@ export async function processMembershipRenewals(now = new Date()) {
       'Membership renewal failed',
       `You need ${MEMBERSHIP_TIERS[membership.tier].monthlyCoinCost} coins. Add coins before ${graceEndsAt.toLocaleString('en-US')} or your membership will expire.`,
       { tier: membership.tier, graceEndsAt }
+    );
+    emailMember(
+      membership.userId,
+      'renewal_failed',
+      MEMBERSHIP_TIERS[membership.tier].name,
+      `You need ${MEMBERSHIP_TIERS[membership.tier].monthlyCoinCost} coins. Add coins before ${graceEndsAt.toLocaleString('en-US')} or your membership will expire.`
     );
   }
 

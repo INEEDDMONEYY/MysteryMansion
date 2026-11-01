@@ -3,8 +3,23 @@ import mongoose from "mongoose";
 const PostSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    title: { type: String, required: true },
-    description: { type: String, required: true },
+    // 'profile' posts showcase the author's profile (avatar, location, prices)
+    // in the chosen categories instead of a custom title/description/media.
+    postType: {
+      type: String,
+      enum: ["listing", "profile"],
+      default: "listing",
+    },
+    title: {
+      type: String,
+      required: function requireTitle() { return this.postType !== "profile"; },
+      default: "",
+    },
+    description: {
+      type: String,
+      required: function requireDescription() { return this.postType !== "profile"; },
+      default: "",
+    },
     pictures: [{ type: String }], // <-- Changed to an array for multiple images
     videos: [{ type: String }],
     // Index-aligned with pictures/videos above; used by the frontend as a
@@ -13,9 +28,11 @@ const PostSchema = new mongoose.Schema(
     // (no Cloudinary), so their backup entry is normally empty.
     pictureBackups: [{ type: String, default: "" }],
     videoBackups: [{ type: String, default: "" }],
-    city: { type: String },
-    state: { type: String },
-    country: { type: String },
+    // Normalized via common/utils/locationNormalizer (Title Case city, full
+    // state/province name, canonical country) so location filters match.
+    city: { type: String, default: "" },
+    state: { type: String, default: "" },
+    country: { type: String, default: "" },
     gender: {
       type: String,
       enum: ["", "female", "male", "ts"],
@@ -62,5 +79,9 @@ const PostSchema = new mongoose.Schema(
   },
   { timestamps: true } // ✅ Automatically adds createdAt and updatedAt
 );
+
+PostSchema.index({ state: 1, city: 1, createdAt: -1 });
+PostSchema.index({ country: 1, createdAt: -1 });
+PostSchema.index({ userId: 1, postType: 1 });
 
 export default mongoose.model("Post", PostSchema);

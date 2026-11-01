@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -44,19 +45,7 @@ export default function ForumCategoryList({
   if (loading) {
     return (
       <section className="bg-white px-6 py-10 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-6 h-3 w-24 animate-pulse rounded bg-pink-200" />
-          <div className="mb-3 h-8 w-64 animate-pulse rounded bg-gray-200" />
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[1, 2, 3, 4].map((item) => (
-              <div
-                key={item}
-                className="h-36 animate-pulse rounded-2xl bg-gray-100"
-              />
-            ))}
-          </div>
-        </div>
+        <BrandLoader size="sm" className="mx-auto max-w-7xl" />
       </section>
     );
   }

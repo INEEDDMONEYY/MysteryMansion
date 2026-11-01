@@ -88,6 +88,33 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Updated (throttled) by authMiddleware on authenticated requests.
+    lastActiveAt: {
+      type: Date,
+      default: null,
+    },
+    /* -------------------- Provider profile details -------------------- */
+    catersTo: { type: String, trim: true, maxlength: 120, default: "" },
+    bodyType: { type: String, trim: true, maxlength: 60, default: "" },
+    height: { type: String, trim: true, maxlength: 40, default: "" },
+    weight: { type: String, trim: true, maxlength: 40, default: "" },
+    ethnicity: { type: String, trim: true, maxlength: 60, default: "" },
+    cupSize: { type: String, trim: true, maxlength: 20, default: "" },
+    hairColor: { type: String, trim: true, maxlength: 40, default: "" },
+    eyeColor: { type: String, trim: true, maxlength: 40, default: "" },
+    tourSchedule: { type: String, trim: true, maxlength: 1000, default: "" },
+    activities: { type: [String], default: [] },
+    showLastActive: { type: Boolean, default: false },
+    // Email opt-outs; see common/utils/notificationPreferences.js. Unset keys
+    // are treated as enabled.
+    notificationPreferences: {
+      promotionalEmails: { type: Boolean, default: true },
+      messageEmails: { type: Boolean, default: true },
+      accountEngagementEmails: { type: Boolean, default: true },
+      milestoneNotifications: { type: Boolean, default: true },
+      membershipEmails: { type: Boolean, default: true },
+      accountFlaggingEmails: { type: Boolean, default: true },
+    },
     incallPrice: {
       type: Number,
       default: 0,

@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState, useContext, useRef } from "react";
 import { UserContext } from "@/context/UserContext";
 import {
@@ -9,6 +10,10 @@ import {
   Phone,
   Mail,
   UserRound,
+  Share2,
+  Copy,
+  Check,
+  MessageCircle,
 } from "lucide-react";
 import api from "@/shared/utils/api";
 import { hasPermanentProviderBadge } from "@/features/users/services/providerBadgeEligibility.js";
@@ -16,6 +21,11 @@ import { FEATURE_FLAGS } from "@/config/featureFlags";
 import useAccountRank from "@/features/account-ranking/hooks/useAccountRank";
 import useMembership from "@/features/membership/hooks/useMembership";
 import FlagButton from "@/features/flagging/components/FlagButton";
+import {
+  ContactRevealNotice,
+  ContactValue,
+  useContactReveal,
+} from "@/shared/components/Contact/ContactReveal";
 import { FLAG_TARGET_TYPES } from "@/features/flagging/utils/flagTargets";
 
 // Stable reference — not connected to real criterion data yet, so the score
@@ -45,8 +55,8 @@ export default function UserProfileHeader({
     createdAt: null,
     location: "",
     gender: "",
-    phoneNumber: "",
-    email: "",
+    phoneMasked: "",
+    emailMasked: "",
     profilePic: null,
     bannerPic: null,
     activePromoExpiry: null,
@@ -78,7 +88,17 @@ export default function UserProfileHeader({
   const [savingLocation, setSavingLocation] =
     useState(false);
 
+  const [shareMenuOpen, setShareMenuOpen] =
+    useState(false);
+
+  const [shareCopied, setShareCopied] =
+    useState(false);
+
+  const [shareError, setShareError] =
+    useState("");
+
   const fileInputRef = useRef(null);
+  const shareRef = useRef(null);
 
   const isOwner = Boolean(
     ctxUser?._id &&
@@ -91,6 +111,106 @@ export default function UserProfileHeader({
     role: user.accountType === "client" ? "client" : "provider",
     criterionScores: EMPTY_CRITERION_SCORES,
   });
+
+  const profileShareUrl =
+    typeof window !== "undefined"
+      ? user.username
+        ? `${window.location.origin}/profile/${encodeURIComponent(user.username)}`
+        : window.location.href
+      : "";
+
+  const profileShareText = user.username
+    ? `Check out ${user.username}'s profile on Mystery Mansion.`
+    : "Check out this profile on Mystery Mansion.";
+
+  const encodedShareUrl = encodeURIComponent(profileShareUrl);
+  const encodedShareText = encodeURIComponent(
+    `${profileShareText} ${profileShareUrl}`
+  );
+
+  // ─────────────────────────────────────────────────────────────
+  // PROFILE SHARING
+  // ─────────────────────────────────────────────────────────────
+
+  const handleNativeShare = async () => {
+    if (!navigator.share) return;
+
+    try {
+      await navigator.share({
+        title: `${user.username || "User"} | Mystery Mansion`,
+        text: profileShareText,
+        url: profileShareUrl,
+      });
+
+      setShareMenuOpen(false);
+      setShareError("");
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        setShareError("Unable to open your device's share menu.");
+      }
+    }
+  };
+
+  const handleCopyProfileLink = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(profileShareUrl);
+      } else {
+        const textArea = document.createElement("textarea");
+
+        textArea.value = profileShareUrl;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        const copied = document.execCommand("copy");
+
+        document.body.removeChild(textArea);
+
+        if (!copied) {
+          throw new Error("Copy failed.");
+        }
+      }
+
+      setShareCopied(true);
+      setShareError("");
+
+      window.setTimeout(() => {
+        setShareCopied(false);
+      }, 2000);
+    } catch {
+      setShareError(
+        "Unable to copy the link. You can select and copy it manually."
+      );
+    }
+  };
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        shareRef.current &&
+        !shareRef.current.contains(event.target)
+      ) {
+        setShareMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setShareMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   // ─────────────────────────────────────────────────────────────
   // STORAGE
@@ -146,10 +266,11 @@ export default function UserProfileHeader({
           profileData.location || "",
         gender:
           profileData.gender || "",
-        phoneNumber:
-          profileData.phoneNumber || "",
-        email:
-          profileData.email || "",
+        // Public profiles only carry masked contact details.
+        phoneMasked:
+          profileData.phoneMasked || "",
+        emailMasked:
+          profileData.emailMasked || "",
         profilePic:
           profileData.profilePic || null,
         bannerPic:
@@ -433,11 +554,30 @@ export default function UserProfileHeader({
     ? (membership.active && membership.perks?.profileBadge ? membership.tier : "")
     : user?.membershipTier || "";
 
-  const displayPhoneNumber =
-    user?.phoneNumber || "";
+  // Viewing your own profile (or the signed-in dashboard view) shows your
+  // details in full; everyone else sees masked values until they reveal them.
+  const isSelfView =
+    isOwner || (!displayUserId && Boolean(ctxUser));
 
-  const displayEmail =
-    user?.email || "";
+  const ownContact = isSelfView
+    ? {
+        phoneNumber: ctxUser?.phoneNumber || "",
+        email: ctxUser?.email || "",
+      }
+    : null;
+
+  const contactState = useContactReveal(
+    displayUserId,
+    ownContact
+  );
+
+  const hasPhoneValue = Boolean(
+    user?.phoneMasked || ownContact?.phoneNumber
+  );
+
+  const hasEmailValue = Boolean(
+    user?.emailMasked || ownContact?.email
+  );
 
   const usernameLength =
     (user?.username || "")
@@ -450,10 +590,10 @@ export default function UserProfileHeader({
       : "text-xl sm:text-2xl lg:text-3xl";
 
   const hasPhoneNumber =
-    !isAdmin && !isClient && Boolean(displayPhoneNumber);
+    !isAdmin && !isClient && hasPhoneValue;
 
   const hasEmail =
-    !isAdmin && !isClient && Boolean(displayEmail);
+    !isAdmin && !isClient && hasEmailValue;
 
   // ─────────────────────────────────────────────────────────────
   // LOADING
@@ -464,18 +604,7 @@ export default function UserProfileHeader({
     !user.username
   ) {
     return (
-      <div className="w-full animate-pulse">
-
-        <div className="h-52 bg-gray-200 sm:h-64 lg:h-80" />
-
-        <div className="bg-black">
-          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <div className="h-8 w-48 rounded bg-gray-700" />
-            <div className="mt-3 h-4 w-72 rounded bg-gray-800" />
-          </div>
-        </div>
-
-      </div>
+      <BrandLoader size="md" className="min-h-[380px]" />
     );
   }
 
@@ -486,9 +615,7 @@ export default function UserProfileHeader({
   return (
     <div className="w-full">
 
-      {/* ═══════════════════════════════════════════════════════
-          FULL-WIDTH COVER
-      ═══════════════════════════════════════════════════════ */}
+      {/* FULL-WIDTH COVER */}
 
       <div
         className="relative h-56 w-full overflow-hidden bg-gradient-to-r from-pink-500 via-red-500 to-yellow-400 sm:h-64 lg:h-80"
@@ -496,20 +623,14 @@ export default function UserProfileHeader({
           banner
             ? {
                 backgroundImage: `url(${banner})`,
-                backgroundSize:
-                  "cover",
-                backgroundPosition:
-                  "center",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
               }
             : {}
         }
       >
 
-        {/* Overlay */}
-
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-
-        {/* Banner edit */}
 
         {isOwner && (
           <button
@@ -547,9 +668,7 @@ export default function UserProfileHeader({
         />
       </div>
 
-      {/* ═══════════════════════════════════════════════════════
-          PROFILE IDENTITY
-      ═══════════════════════════════════════════════════════ */}
+      {/* PROFILE IDENTITY */}
 
       <div className="relative w-full bg-black">
 
@@ -578,8 +697,6 @@ export default function UserProfileHeader({
                   </div>
                 )}
 
-                {/* Online/profile indicator */}
-
                 <div className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-black bg-pink-500 sm:h-7 sm:w-7">
                   <UserRound
                     size={13}
@@ -594,139 +711,258 @@ export default function UserProfileHeader({
 
             <div className="pt-20 sm:pl-44 sm:pt-6 lg:pl-56 lg:pt-8">
 
-              {/* NAME + BADGES */}
+              {/* NAME + BADGES + SHARE */}
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-start justify-between gap-3">
 
-                <h1
-                  className={`${usernameSizeClass} font-bold leading-tight text-white`}
-                >
-                  {user.username ||
-                    "Unnamed User"}
-                </h1>
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
 
-                {/* ADMIN BADGES */}
+                  <h1
+                    className={`${usernameSizeClass} font-bold leading-tight text-white`}
+                  >
+                    {user.username ||
+                      "Unnamed User"}
+                  </h1>
 
-                {isAdmin ? (
-                  <>
-                    <span
-                      className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
-                      aria-label="Verified"
-                      title="Verified Admin"
-                    >
-                      <CheckCircle2
-                        size={13}
-                      />
+                  {/* ADMIN BADGES */}
 
-                      Verified
-                    </span>
-
-                    <span
-                      className="relative inline-flex overflow-hidden rounded-full p-[1px]"
-                      aria-label="Developer"
-                      title="Developer"
-                    >
+                  {isAdmin ? (
+                    <>
                       <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-0 animate-[spin_8s_linear_infinite] rounded-full bg-[conic-gradient(from_180deg_at_50%_50%,#fbbf24_0deg,#f59e0b_90deg,#d97706_180deg,#fef3c7_270deg,#fbbf24_360deg)]"
-                      />
-
-                      <span className="relative inline-flex rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 px-2 py-1 text-[9px] font-bold text-white sm:text-[10px]">
-                        DEV
+                        className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
+                        aria-label="Verified"
+                        title="Verified Admin"
+                      >
+                        <CheckCircle2 size={13} />
+                        Verified
                       </span>
+
+                      <span
+                        className="relative inline-flex overflow-hidden rounded-full p-[1px]"
+                        aria-label="Developer"
+                        title="Developer"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="pointer-events-none absolute inset-0 animate-[spin_8s_linear_infinite] rounded-full bg-[conic-gradient(from_180deg_at_50%_50%,#fbbf24_0deg,#f59e0b_90deg,#d97706_180deg,#fef3c7_270deg,#fbbf24_360deg)]"
+                        />
+
+                        <span className="relative inline-flex rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 px-2 py-1 text-[9px] font-bold text-white sm:text-[10px]">
+                          DEV
+                        </span>
+                      </span>
+                    </>
+                  ) : !isClient ? (
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold leading-none sm:text-xs ${
+                        user.badgeType === "blue"
+                          ? "bg-blue-600 text-white"
+                          : user.badgeType === "pink"
+                            ? "bg-pink-500 text-white"
+                            : "bg-gray-700 text-gray-400"
+                      }`}
+                      aria-label={
+                        user.badgeType === "blue"
+                          ? "Verified"
+                          : user.badgeType === "pink"
+                            ? "Promo Badge"
+                            : "Unverified"
+                      }
+                    >
+                      <CheckCircle2 size={13} />
+
+                      {user.badgeType === "blue" && "Verified"}
+                      {user.badgeType === "pink" && "Promo"}
+
+                      {user.badgeType !== "blue" &&
+                        user.badgeType !== "pink" &&
+                        "Unverified"}
                     </span>
-                  </>
-                ) : !isClient ? (
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold leading-none sm:text-xs ${
-                      user.badgeType ===
-                      "blue"
-                        ? "bg-blue-600 text-white"
-                        : user.badgeType ===
-                          "pink"
-                        ? "bg-pink-500 text-white"
-                        : "bg-gray-700 text-gray-400"
-                    }`}
-                    aria-label={
-                      user.badgeType ===
-                      "blue"
-                        ? "Verified"
-                        : user.badgeType ===
-                          "pink"
-                        ? "Promo Badge"
-                        : "Unverified"
-                    }
+                  ) : null}
+
+                  {/* MEMBERSHIP */}
+
+                  {badgeTier && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-fuchsia-600 to-pink-600 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
+                      aria-label={`${badgeTier} member`}
+                      title={`${badgeTier} member`}
+                    >
+                      <Star
+                        size={12}
+                        className="fill-current text-yellow-300"
+                      />
+                      {badgeTier} Member
+                    </span>
+                  )}
+
+                  {/* FOUNDING PROVIDER */}
+
+                  {isPermanentProvider && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
+                      aria-label="Founding Provider"
+                      title="Founding Provider"
+                    >
+                      <Star size={12} className="fill-current" />
+                      Founding Provider
+                    </span>
+                  )}
+
+                  {/* ACCOUNT SCORE */}
+
+                  {FEATURE_FLAGS.ENABLE_ACCOUNT_SCORE && accountRank && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-neutral-800 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
+                      aria-label="Account Score"
+                      title={`Account Score: ${Math.round(accountRank.score)} — ${accountRank.rank?.name || "Unranked"}`}
+                    >
+                      <Star
+                        size={12}
+                        className="fill-current text-yellow-400"
+                      />
+                      {accountRank.rank?.name || "Unranked"} · {Math.round(accountRank.score)}
+                    </span>
+                  )}
+
+                </div>
+
+                {/* SHARE PROFILE */}
+
+                <div className="relative shrink-0" ref={shareRef}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShareMenuOpen((open) => !open);
+                      setShareError("");
+                    }}
+                    aria-expanded={shareMenuOpen}
+                    aria-haspopup="true"
+                    className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-white transition hover:border-pink-500/50 hover:bg-pink-500/10 sm:text-sm"
                   >
-                    <CheckCircle2
-                      size={13}
-                    />
+                    <Share2 size={16} className="text-pink-400" />
+                    Share Profile
+                  </button>
 
-                    {user.badgeType ===
-                      "blue" &&
-                      "Verified"}
+                  {shareMenuOpen && (
+                    <div className="absolute right-0 top-full z-40 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-white/10 bg-gray-950 p-4 shadow-2xl">
+                      <div className="mb-3">
+                        <h3 className="text-sm font-semibold text-white">
+                          Share Profile
+                        </h3>
+                        <p className="mt-1 text-xs text-gray-400">
+                          Share this profile with others.
+                        </p>
+                      </div>
 
-                    {user.badgeType ===
-                      "pink" &&
-                      "Promo"}
+                      {typeof navigator !== "undefined" &&
+                        typeof navigator.share === "function" && (
+                          <button
+                            type="button"
+                            onClick={handleNativeShare}
+                            className="mb-3 flex w-full items-center justify-center gap-2 rounded-lg bg-pink-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-pink-500"
+                          >
+                            <Share2 size={16} />
+                            Share with apps on your device
+                          </button>
+                        )}
 
-                    {user.badgeType !==
-                      "blue" &&
-                      user.badgeType !==
-                        "pink" &&
-                      "Unverified"}
-                  </span>
-                ) : null}
+                      <div className="grid grid-cols-2 gap-2">
+                        <a
+                          href={`https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setShareMenuOpen(false)}
+                          className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-center text-xs font-medium text-gray-200 transition hover:bg-white/10 hover:text-white"
+                        >
+                          Facebook
+                        </a>
 
-                {/* MEMBERSHIP */}
+                        <a
+                          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(profileShareText)}&url=${encodedShareUrl}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setShareMenuOpen(false)}
+                          className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-center text-xs font-medium text-gray-200 transition hover:bg-white/10 hover:text-white"
+                        >
+                          X
+                        </a>
 
-                {badgeTier && (
-                  <span
-                    className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-fuchsia-600 to-pink-600 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
-                    aria-label={`${badgeTier} member`}
-                    title={`${badgeTier} member`}
-                  >
-                    <Star
-                      size={12}
-                      className="fill-current text-yellow-300"
-                    />
+                        <a
+                          href={`https://wa.me/?text=${encodedShareText}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setShareMenuOpen(false)}
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-medium text-gray-200 transition hover:bg-white/10 hover:text-white"
+                        >
+                          <MessageCircle size={14} />
+                          WhatsApp
+                        </a>
 
-                    {badgeTier} Member
-                  </span>
-                )}
+                        <a
+                          href={`https://t.me/share/url?url=${encodedShareUrl}&text=${encodeURIComponent(profileShareText)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setShareMenuOpen(false)}
+                          className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-center text-xs font-medium text-gray-200 transition hover:bg-white/10 hover:text-white"
+                        >
+                          Telegram
+                        </a>
 
-                {/* FOUNDING PROVIDER */}
+                        <a
+                          href={`sms:?body=${encodedShareText}`}
+                          onClick={() => setShareMenuOpen(false)}
+                          className="rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-center text-xs font-medium text-gray-200 transition hover:bg-white/10 hover:text-white"
+                        >
+                          SMS Message
+                        </a>
 
-                {isPermanentProvider && (
-                  <span
-                    className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
-                    aria-label="Founding Provider"
-                    title="Founding Provider"
-                  >
-                    <Star
-                      size={12}
-                      className="fill-current"
-                    />
+                        <a
+                          href={`mailto:?subject=${encodeURIComponent(`Check out ${user.username || "this profile"} on Mystery Mansion`)}&body=${encodedShareText}`}
+                          onClick={() => setShareMenuOpen(false)}
+                          className="flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-medium text-gray-200 transition hover:bg-white/10 hover:text-white"
+                        >
+                          <Mail size={14} />
+                          Email
+                        </a>
+                      </div>
 
-                    Founding Provider
-                  </span>
-                )}
+                      <div className="mt-3 border-t border-white/10 pt-3">
+                        <button
+                          type="button"
+                          onClick={handleCopyProfileLink}
+                          className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10"
+                        >
+                          {shareCopied ? (
+                            <Check size={15} className="text-green-400" />
+                          ) : (
+                            <Copy size={15} className="text-gray-300" />
+                          )}
 
-                {/* ACCOUNT SCORE (frontend preview — not wired to real data yet) */}
+                          {shareCopied ? "Link Copied" : "Copy Profile Link"}
+                        </button>
 
-                {FEATURE_FLAGS.ENABLE_ACCOUNT_SCORE && accountRank && (
-                  <span
-                    className="inline-flex items-center gap-1 rounded-full bg-neutral-800 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
-                    aria-label="Account Score"
-                    title={`Account Score: ${Math.round(accountRank.score)} — ${accountRank.rank?.name || "Unranked"}`}
-                  >
-                    <Star
-                      size={12}
-                      className="fill-current text-yellow-400"
-                    />
+                        {shareError && (
+                          <p
+                            role="alert"
+                            className="mt-2 text-center text-xs text-red-400"
+                          >
+                            {shareError}
+                          </p>
+                        )}
 
-                    {accountRank.rank?.name || "Unranked"} · {Math.round(accountRank.score)}
-                  </span>
-                )}
+                        {shareCopied && (
+                          <p
+                            aria-live="polite"
+                            className="mt-2 text-center text-xs text-gray-400"
+                          >
+                            Your profile link is ready to share.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
               </div>
 
@@ -825,8 +1061,6 @@ export default function UserProfileHeader({
 
               <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-gray-400">
 
-                {/* Age */}
-
                 {Number.isFinite(
                   Number(user.age)
                 ) &&
@@ -844,8 +1078,6 @@ export default function UserProfileHeader({
                     </div>
                   )}
 
-                {/* Gender */}
-
                 {user.gender && (
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" />
@@ -855,8 +1087,6 @@ export default function UserProfileHeader({
                     </span>
                   </div>
                 )}
-
-                {/* Location */}
 
                 {!editingLocation ? (
                   <div className="flex items-center gap-2">
@@ -948,44 +1178,48 @@ export default function UserProfileHeader({
               {/* CONTACT INFORMATION */}
 
               {(hasPhoneNumber || hasEmail) && (
-              <div className="mt-5 flex flex-wrap gap-3">
+                <div className="mt-5 flex flex-wrap gap-3">
 
-                {hasPhoneNumber && (
-                  <a
-                    href={`tel:${String(
-                      displayPhoneNumber
-                    ).replace(
-                      /\D/g,
-                      ""
-                    )}`}
-                    className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition hover:border-pink-500/50 hover:bg-pink-500/10 hover:text-white"
-                  >
-                    <Phone
-                      size={14}
-                      className="text-pink-400"
+                  {hasPhoneNumber && (
+                    <div className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs transition hover:border-pink-500/50 hover:bg-pink-500/10">
+                      <Phone
+                        size={14}
+                        className="shrink-0 text-pink-400"
+                      />
+
+                      <ContactValue
+                        field="phone"
+                        masked={user?.phoneMasked}
+                        state={contactState}
+                        variant="dark"
+                      />
+                    </div>
+                  )}
+
+                  {hasEmail && (
+                    <div className="inline-flex max-w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs transition hover:border-pink-500/50 hover:bg-pink-500/10">
+                      <Mail
+                        size={14}
+                        className="shrink-0 text-pink-400"
+                      />
+
+                      <ContactValue
+                        field="email"
+                        masked={user?.emailMasked}
+                        state={contactState}
+                        variant="dark"
+                      />
+                    </div>
+                  )}
+
+                  <div className="w-full">
+                    <ContactRevealNotice
+                      state={contactState}
+                      variant="dark"
                     />
+                  </div>
 
-                    {displayPhoneNumber}
-                  </a>
-                )}
-
-                {hasEmail && (
-                  <a
-                    href={`mailto:${displayEmail}`}
-                    className="inline-flex max-w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition hover:border-pink-500/50 hover:bg-pink-500/10 hover:text-white"
-                  >
-                    <Mail
-                      size={14}
-                      className="shrink-0 text-pink-400"
-                    />
-
-                    <span className="break-all">
-                      {displayEmail}
-                    </span>
-                  </a>
-                )}
-
-              </div>
+                </div>
               )}
 
             </div>

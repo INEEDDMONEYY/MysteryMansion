@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { Bell, MessageSquare, TrendingUp, CheckCheck, RefreshCw, Star, PartyPopper, UserPlus, Eye, Coins, Heart, Flag, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
@@ -60,9 +61,7 @@ export default function UserNotificationsPage() {
       {/* List */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl divide-y divide-neutral-800 overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="h-7 w-7 rounded-full border-2 border-pink-500 border-t-transparent animate-spin" />
-          </div>
+          <BrandLoader size="sm" />
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-neutral-500">
             <Bell size={36} className="opacity-20" />

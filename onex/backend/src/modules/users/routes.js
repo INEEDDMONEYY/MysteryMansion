@@ -1,6 +1,8 @@
 //User routes file
 import express from "express";
+import mongoose from "mongoose";
 import multer from "multer";
+import bcrypt from "bcrypt";
 import streamifier from "streamifier";
 import cloudinary from "../../common/utils/cloudinary.js";
 import User from "../../models/User.js";
@@ -12,9 +14,15 @@ import Profile from "../../models/Profiles.js";
 import PromoCode from "../../models/PromoCode.js";
 import Comment from "../../models/Comment.js";
 import AnalyticsEvent from "../../models/AnalyticsEvent.js";
+import UserMedia from "../../models/UserMedia.js";
 import { getLikedPosts } from "../posts/controllers/postLikeController.js";
 import { enforceRestriction } from "../../common/middleware/restrictionMiddleware.js";
 import { authMiddleware } from "../../common/middleware/authMiddleware.js";
+import { allowEmail } from "../../common/utils/emailRateLimiter.js";
+import {
+  NOTIFICATION_PREFERENCE_KEYS,
+  resolveNotificationPreferences,
+} from "../../common/utils/notificationPreferences.js";
 
 const router = express.Router();
 
@@ -35,24 +43,132 @@ const uploadBufferToCloudinary = (buffer, folder) =>
     streamifier.createReadStream(buffer).pipe(stream);
   });
 
+// Only these member-editable fields are accepted by /update-profile. Anything
+// else (role, credits, badges, status, restrictions, promo/referral data…)
+// is dropped so a crafted request can't escalate privileges.
+const PROFILE_TEXT_LIMITS = { bio: 500, phoneNumber: 30, location: 120 };
+const SOCIAL_LINK_KEYS = ["website", "instagram", "x", "onlyfans", "youtube"];
+const PRICE_FIELDS = ["incallPrice", "outcallPrice", "overnightPrice", "flyOutPrice"];
+const COMPLETED_DATE_STATUSES = new Set(["incall", "outcall", "overnight", "flyOut", ""]);
+const MAX_COMPLETED_DATES = 500;
+const MIN_PASSWORD_LENGTH = 6; // matches the reset-password page rule
+
+class ProfileInputError extends Error {}
+
+// multipart/form-data sends JSON-ish values as strings.
+const parseMaybeJson = (value) => {
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+};
+
+const pickProfileUpdates = (body = {}) => {
+  const update = {};
+
+  for (const [field, max] of Object.entries(PROFILE_TEXT_LIMITS)) {
+    if (body[field] === undefined) continue;
+    if (body[field] !== null && typeof body[field] !== "string") {
+      throw new ProfileInputError(`${field} must be text.`);
+    }
+    update[field] = String(body[field] ?? "").trim().slice(0, max);
+  }
+
+  if (body.gender !== undefined) update.gender = String(body.gender ?? "").trim();
+
+  if (body.age !== undefined) {
+    const age = body.age === null || body.age === "" ? null : Number(body.age);
+    if (age !== null && !Number.isFinite(age)) throw new ProfileInputError("Age must be a number.");
+    update.age = age;
+  }
+
+  for (const field of PRICE_FIELDS) {
+    if (body[field] === undefined) continue;
+    const price = Number(body[field]);
+    if (!Number.isFinite(price) || price < 0) {
+      throw new ProfileInputError(`${field} must be a positive number.`);
+    }
+    update[field] = price;
+  }
+
+  const availability = parseMaybeJson(body.availability);
+  if (availability !== undefined) {
+    update["availability.status"] = String(availability?.status ?? "").trim();
+  }
+
+  const socialLinks = parseMaybeJson(body.socialLinks);
+  if (socialLinks !== undefined) {
+    if (!socialLinks || typeof socialLinks !== "object") {
+      throw new ProfileInputError("socialLinks must be an object.");
+    }
+    for (const key of SOCIAL_LINK_KEYS) {
+      if (socialLinks[key] === undefined) continue;
+      update[`socialLinks.${key}`] = String(socialLinks[key] ?? "").trim().slice(0, 300);
+    }
+  }
+
+  const completedDates = parseMaybeJson(body.completedDates);
+  if (completedDates !== undefined) {
+    if (!Array.isArray(completedDates)) {
+      throw new ProfileInputError("completedDates must be a list.");
+    }
+    update.completedDates = completedDates.slice(0, MAX_COMPLETED_DATES).map((entry) => {
+      const status = String(entry?.status ?? "");
+      if (!COMPLETED_DATE_STATUSES.has(status)) {
+        throw new ProfileInputError("Invalid completed date status.");
+      }
+      return {
+        id: String(entry?.id ?? "").slice(0, 100),
+        date: String(entry?.date ?? "").slice(0, 40),
+        status,
+      };
+    });
+  }
+
+  return update;
+};
+
 // ✅ Update-profile route with Cloudinary integration
 router.post("/update-profile", enforceRestriction("profile:update"), upload.fields([
   { name: "profilePic", maxCount: 1 },
   { name: "bannerPic", maxCount: 1 },
 ]), async (req, res) => {
   try {
-    console.log("🔹 [UserRoutes] Incoming request to /update-profile");
-    console.log("🔹 [UserRoutes] req.user:", req.user ? req.user._id : "No user attached");
-    console.log("🔹 [UserRoutes] req.body:", req.body);
-
     if (!req.user) {
-      console.error("❌ [UserRoutes] Unauthorized — no user attached to request");
       return res.status(401).json({ error: "Unauthorized - no user" });
     }
 
-    let updateData = { ...req.body };
+    const body = req.body || {};
+    let updateData;
+    try {
+      updateData = pickProfileUpdates(body);
+    } catch (err) {
+      if (err instanceof ProfileInputError) return res.status(400).json({ error: err.message });
+      throw err;
+    }
+    if (body.username !== undefined) updateData.username = body.username;
+    if (body.email !== undefined) updateData.email = body.email;
+
+    if (body.password !== undefined) {
+      if (typeof body.password !== "string" || body.password.length < MIN_PASSWORD_LENGTH) {
+        return res.status(400).json({
+          error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+        });
+      }
+      updateData.password = await bcrypt.hash(body.password, 10);
+    }
+
     const profilePicFile = req.files?.profilePic?.[0] || null;
     const bannerPicFile = req.files?.bannerPic?.[0] || null;
+
+    if (updateData.username !== undefined && typeof updateData.username !== "string") {
+      return res.status(400).json({ error: "Username must be text" });
+    }
+    if (updateData.email !== undefined && typeof updateData.email !== "string") {
+      return res.status(400).json({ error: "Email must be text" });
+    }
 
     if (typeof updateData.username === "string") {
       const normalizedUsername = updateData.username.trim();
@@ -111,23 +227,328 @@ router.post("/update-profile", enforceRestriction("profile:update"), upload.fiel
     }
 
     // ✅ Perform update
-    const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
-      new: true,
-    }).select("-password");
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: "No editable profile fields were provided" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    ).select("-password -resetPasswordToken -resetPasswordExpires");
 
     if (!updatedUser) {
       console.error("❌ [UserRoutes] User not found in DB for id:", req.user._id);
       return res.status(404).json({ error: "User not found" });
     }
 
-    console.log("✅ [UserRoutes] Updated user:", updatedUser._id);
     res.json({ message: "Profile updated successfully", user: updatedUser });
   } catch (err) {
+    if (err?.name === "ValidationError" || err?.name === "CastError") {
+      return res.status(400).json({ error: err.message });
+    }
     console.error("🚨 [UserRoutes] Error updating profile:", err);
-    res.status(500).json({
-      error: "Failed to update profile",
-      details: err.message || err,
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
+// ── Email notification preferences ──────────────────────────────────────────
+router.get("/me/notification-preferences", async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("notificationPreferences").lean();
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json({ preferences: resolveNotificationPreferences(user.notificationPreferences) });
+  } catch (err) {
+    console.error("❌ GET /users/me/notification-preferences:", err);
+    res.status(500).json({ error: "Failed to load notification preferences" });
+  }
+});
+
+router.patch("/me/notification-preferences", async (req, res) => {
+  try {
+    const body = req.body || {};
+    const update = {};
+
+    for (const key of NOTIFICATION_PREFERENCE_KEYS) {
+      if (body[key] === undefined) continue;
+      if (typeof body[key] !== "boolean") {
+        return res.status(400).json({ error: `${key} must be true or false.` });
+      }
+      update[`notificationPreferences.${key}`] = body[key];
+    }
+
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({ error: "No notification preferences were provided." });
+    }
+
+    const user = await User.findByIdAndUpdate(req.user._id, { $set: update }, { new: true })
+      .select("notificationPreferences")
+      .lean();
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.json({
+      message: "Notification preferences saved",
+      preferences: resolveNotificationPreferences(user.notificationPreferences),
     });
+  } catch (err) {
+    console.error("❌ PATCH /users/me/notification-preferences:", err);
+    res.status(500).json({ error: "Failed to save notification preferences" });
+  }
+});
+
+// ── Reveal a provider's contact details (signed-in members only) ────────────
+// Public APIs only send masked previews; this is the sole way to read the real
+// phone/email. Rate-limited per viewer to make bulk scraping impractical.
+const CONTACT_REVEAL_LIMIT = 60;
+const CONTACT_REVEAL_WINDOW_MS = 60 * 60 * 1000;
+
+router.get("/contact/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid user id" });
+    }
+
+    const viewerId = String(req.user._id);
+    const isSelf = viewerId === String(userId);
+    if (
+      !isSelf &&
+      !allowEmail(`contact-reveal:${viewerId}`, {
+        limit: CONTACT_REVEAL_LIMIT,
+        windowMs: CONTACT_REVEAL_WINDOW_MS,
+      })
+    ) {
+      return res.status(429).json({ error: "Too many contact requests. Please try again later." });
+    }
+
+    const target = await User.findById(userId)
+      .select("phoneNumber email role accountType status")
+      .lean();
+    // Admin and client contact details are never shown on public pages.
+    if (
+      !target ||
+      target.status === "suspended" ||
+      (!isSelf && (target.role === "admin" || target.accountType === "client"))
+    ) {
+      return res.status(404).json({ error: "Contact details not available" });
+    }
+
+    res.json({
+      phoneNumber: target.phoneNumber || "",
+      email: target.email || "",
+    });
+  } catch (err) {
+    console.error("❌ GET /users/contact/:userId:", err);
+    res.status(500).json({ error: "Failed to load contact details" });
+  }
+});
+
+// ── Provider profile details ────────────────────────────────────────────────
+// Whitelisted so this endpoint can never touch credits, role, badges, etc.
+const PROFILE_DETAIL_LIMITS = {
+  catersTo: 120,
+  bodyType: 60,
+  height: 40,
+  weight: 40,
+  ethnicity: 60,
+  cupSize: 20,
+  hairColor: 40,
+  eyeColor: 40,
+  tourSchedule: 1000,
+};
+const MAX_ACTIVITIES = 30;
+const MAX_ACTIVITY_LENGTH = 80;
+
+router.patch("/me/profile-details", enforceRestriction("profile:update"), async (req, res) => {
+  try {
+    const body = req.body || {};
+    const update = {};
+
+    for (const [field, max] of Object.entries(PROFILE_DETAIL_LIMITS)) {
+      if (body[field] === undefined) continue;
+      if (body[field] !== null && typeof body[field] !== "string") {
+        return res.status(400).json({ error: `${field} must be text.` });
+      }
+      update[field] = String(body[field] ?? "").trim().slice(0, max);
+    }
+
+    if (body.activities !== undefined) {
+      if (!Array.isArray(body.activities)) {
+        return res.status(400).json({ error: "activities must be a list." });
+      }
+      const seen = new Set();
+      update.activities = body.activities
+        .map((a) => String(a ?? "").trim().slice(0, MAX_ACTIVITY_LENGTH))
+        .filter((a) => {
+          const key = a.toLowerCase();
+          if (!a || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .slice(0, MAX_ACTIVITIES);
+    }
+
+    if (body.showLastActive !== undefined) {
+      update.showLastActive = Boolean(body.showLastActive);
+    }
+
+    const user = await User.findByIdAndUpdate(req.user._id, { $set: update }, { new: true, runValidators: true })
+      .select("-password");
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.json({ message: "Profile details updated", user });
+  } catch (err) {
+    console.error("❌ PATCH /users/me/profile-details:", err);
+    res.status(500).json({ error: "Failed to update profile details" });
+  }
+});
+
+// ── Provider media library ──────────────────────────────────────────────────
+const MAX_MEDIA_BYTES = 100 * 1024 * 1024; // 100 MB per file (videos)
+const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
+const MAX_MEDIA_PER_USER = 200;
+
+const mediaUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_MEDIA_BYTES, files: 1 },
+  fileFilter: (req, file, cb) => {
+    if (/^(image|video)\//.test(file.mimetype)) return cb(null, true);
+    cb(new Error("Only image and video files are allowed."));
+  },
+});
+
+const serializeMedia = (m) => ({
+  _id: String(m._id),
+  url: m.url,
+  mediaType: m.mediaType,
+  mimeType: m.mimeType,
+  originalName: m.originalName,
+  sizeBytes: m.sizeBytes,
+  width: m.width,
+  height: m.height,
+  duration: m.duration,
+  thumbnailUrl: m.thumbnailUrl,
+  showOnProfile: m.showOnProfile,
+  createdAt: m.createdAt,
+});
+
+const uploadMediaToCloudinary = (buffer, resourceType) =>
+  new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "user_media", resource_type: resourceType },
+      (err, result) => (err ? reject(err) : resolve(result)),
+    );
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+
+const ensureMediaOwnerAccount = (req, res, next) => {
+  if (req.user?.accountType === "client" && req.user?.role !== "admin") {
+    return res.status(403).json({ error: "The media library is available to provider accounts only." });
+  }
+  next();
+};
+
+router.get("/me/media", ensureMediaOwnerAccount, async (req, res) => {
+  try {
+    const items = await UserMedia.find({ userId: req.user._id }).sort({ createdAt: -1 }).lean();
+    res.json({ items: items.map(serializeMedia), limit: MAX_MEDIA_PER_USER });
+  } catch (err) {
+    console.error("❌ GET /users/me/media:", err);
+    res.status(500).json({ error: "Failed to load media" });
+  }
+});
+
+router.post(
+  "/me/media",
+  ensureMediaOwnerAccount,
+  enforceRestriction("profile:update"),
+  (req, res, next) =>
+    mediaUpload.single("file")(req, res, (err) => {
+      if (!err) return next();
+      const message = err.code === "LIMIT_FILE_SIZE"
+        ? `Files must be ${MAX_MEDIA_BYTES / (1024 * 1024)} MB or smaller.`
+        : err.message || "Upload failed.";
+      res.status(400).json({ error: message, message });
+    }),
+  async (req, res) => {
+    try {
+      const file = req.file;
+      if (!file) return res.status(400).json({ error: "No file uploaded.", message: "No file uploaded." });
+
+      const isVideo = file.mimetype.startsWith("video/");
+      if (!isVideo && file.size > MAX_IMAGE_BYTES) {
+        const message = `Images must be ${MAX_IMAGE_BYTES / (1024 * 1024)} MB or smaller.`;
+        return res.status(400).json({ error: message, message });
+      }
+
+      const count = await UserMedia.countDocuments({ userId: req.user._id });
+      if (count >= MAX_MEDIA_PER_USER) {
+        const message = `You can store up to ${MAX_MEDIA_PER_USER} media items. Delete some to upload more.`;
+        return res.status(409).json({ error: message, message });
+      }
+
+      const result = await uploadMediaToCloudinary(file.buffer, isVideo ? "video" : "image");
+
+      const media = await UserMedia.create({
+        userId: req.user._id,
+        url: result.secure_url,
+        publicId: result.public_id,
+        mediaType: isVideo ? "video" : "image",
+        mimeType: file.mimetype,
+        originalName: String(file.originalname || "").slice(0, 255),
+        sizeBytes: result.bytes || file.size,
+        width: result.width ?? null,
+        height: result.height ?? null,
+        duration: result.duration ?? null,
+        // Cloudinary renders a poster frame when a video URL is requested as .jpg.
+        thumbnailUrl: isVideo
+          ? cloudinary.url(result.public_id, { resource_type: "video", format: "jpg", secure: true })
+          : "",
+        showOnProfile: String(req.body?.showOnProfile ?? "true") !== "false",
+      });
+
+      res.status(201).json({ item: serializeMedia(media) });
+    } catch (err) {
+      console.error("❌ POST /users/me/media:", err);
+      res.status(500).json({ error: "Failed to upload media", message: "Failed to upload media" });
+    }
+  },
+);
+
+router.patch("/me/media/:mediaId/visibility", ensureMediaOwnerAccount, enforceRestriction("profile:update"), async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.mediaId)) {
+      return res.status(400).json({ error: "Invalid media id", message: "Invalid media id" });
+    }
+    const media = await UserMedia.findOneAndUpdate(
+      { _id: req.params.mediaId, userId: req.user._id },
+      { $set: { showOnProfile: Boolean(req.body?.showOnProfile) } },
+      { new: true },
+    ).lean();
+    if (!media) return res.status(404).json({ error: "Media not found", message: "Media not found" });
+    res.json({ item: serializeMedia(media) });
+  } catch (err) {
+    console.error("❌ PATCH /users/me/media/:id/visibility:", err);
+    res.status(500).json({ error: "Failed to update media", message: "Failed to update media" });
+  }
+});
+
+router.delete("/me/media/:mediaId", ensureMediaOwnerAccount, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.mediaId)) {
+      return res.status(400).json({ error: "Invalid media id", message: "Invalid media id" });
+    }
+    const media = await UserMedia.findOneAndDelete({ _id: req.params.mediaId, userId: req.user._id }).lean();
+    if (!media) return res.status(404).json({ error: "Media not found", message: "Media not found" });
+
+    cloudinary.uploader
+      .destroy(media.publicId, { resource_type: media.mediaType === "video" ? "video" : "image" })
+      .catch((err) => console.error("⚠️ Cloudinary media cleanup failed:", err.message));
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("❌ DELETE /users/me/media/:id:", err);
+    res.status(500).json({ error: "Failed to delete media", message: "Failed to delete media" });
   }
 });
 
@@ -149,6 +570,14 @@ router.delete("/delete-account", async (req, res) => {
         Review.deleteMany({ $or: [{ authorUserId: userId }, { targetUserId: userId }] }),
         Profile.deleteOne({ userId }),
       ]);
+
+    const ownedMedia = await UserMedia.find({ userId }).select("publicId mediaType").lean();
+    await UserMedia.deleteMany({ userId });
+    for (const m of ownedMedia) {
+      cloudinary.uploader
+        .destroy(m.publicId, { resource_type: m.mediaType === "video" ? "video" : "image" })
+        .catch((err) => console.error("⚠️ Cloudinary media cleanup failed:", err.message));
+    }
 
     // Remove references to this user from promo code assignment/redemption history.
     await Promise.all([

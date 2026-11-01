@@ -5,6 +5,7 @@ import Post from '../../models/Post.js';
 import User from '../../models/User.js';
 import { authMiddleware } from '../../common/middleware/authMiddleware.js';
 import { createNotification } from '../notifications/notificationController.js';
+import { sendFlagSubmittedEmail, sendAccountFlaggedEmail } from '../../common/utils/sendAccountFlagEmail.js';
 
 const router = express.Router();
 
@@ -89,6 +90,30 @@ router.post('/', async (req, res) => {
         message: 'A report was submitted and is waiting for review by our team.',
         meta: { flagId: flag._id },
       }).catch((err) => console.error('❌ flag target notification:', err.message));
+    }
+
+    // ── Email notifications (fire-and-forget) ─────────────────────────────────
+    if (req.user.email) {
+      sendFlagSubmittedEmail({
+        to: req.user.email,
+        username: req.user.username,
+        targetType,
+      }).catch((err) => console.error('❌ flag submitted email:', err.message));
+    }
+
+    if (reportedUserId && String(reportedUserId) !== String(req.user._id)) {
+      User.findById(reportedUserId)
+        .select('email username')
+        .lean()
+        .then((reported) => {
+          if (!reported?.email) return;
+          return sendAccountFlaggedEmail({
+            to: reported.email,
+            username: reported.username,
+            targetType,
+          });
+        })
+        .catch((err) => console.error('❌ account flagged email:', err.message));
     }
 
     res.status(201).json({ success: true, flagId: flag._id });

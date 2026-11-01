@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
                     <img src={Logo} alt="" className="signin-logo" />
                 </div>
                 <h3 className="text-red-700 text-xl sm:text-[1.5rem]">Forgot Password?</h3>
-                <p className="text-black text-base sm:text-[1.2rem]">We all do at times, reset password &amp; get back to promoting your sex lifestyle!</p>
+                <p className="text-black text-base sm:text-[1.2rem]">We all do at times, reset password &amp; get back to promoting your adult lifestyle!</p>
                 <div className="w-full">
                     <ForgotPassword />
                 </div>

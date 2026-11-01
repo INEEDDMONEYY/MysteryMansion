@@ -3,6 +3,7 @@ import Post from "../../models/Post.js";
 import SiteDiscount from "../../models/SiteDiscount.js";
 import { createNotification } from "../notifications/notificationController.js";
 import { notifyIfLowCredits } from "../credits/creditAlerts.js";
+import { sendPromotionEmail } from "../../common/utils/sendPromotionEmail.js";
 import {
   PROMOTION_TIERS,
   BLUE_BADGE_MONTHLY_CREDITS,
@@ -35,6 +36,17 @@ const notify = (userId, type, title, message, meta = {}) =>
   createNotification({ audience: "user", type, title, message, userId, meta }).catch((err) =>
     console.error("❌ Promotion notification failed:", err.message),
   );
+
+// Fire-and-forget promotional email; never blocks the purchase/renewal flow.
+const emailPromo = async (userId, event, tierLabel, detail) => {
+  try {
+    const user = await User.findById(userId).select("email username").lean();
+    if (!user?.email) return;
+    await sendPromotionEmail({ to: user.email, username: user.username, event, tierLabel, detail });
+  } catch (err) {
+    console.error(`❌ Promotion email (${event}) failed:`, err.message);
+  }
+};
 
 const getBestDiscountPercent = async (tierLabel, now) => {
   const discounts = await SiteDiscount.find({
@@ -192,6 +204,7 @@ export async function purchaseTier(userId, tierId) {
       tierId: tier.id,
       cost,
     });
+    emailPromo(userId, "purchased", tier.label, `${cost} credits used. ${detail}`);
     await notifyIfLowCredits(userId, charged.credits);
 
     return {
@@ -227,6 +240,12 @@ export async function cancelBadgeRenewal(userId) {
     "Monthly Blue Badge cancelled",
     `You won't be charged again. Your badge stays active until ${new Date(updated.badgeExpiresAt).toLocaleDateString("en-US")}.`,
   );
+  emailPromo(
+    userId,
+    "badge_cancelled",
+    "Blue Badge",
+    `Your badge stays active until ${new Date(updated.badgeExpiresAt).toLocaleDateString("en-US")}.`,
+  );
 
   return { ok: true, data: { badgeExpiresAt: updated.badgeExpiresAt } };
 }
@@ -254,6 +273,12 @@ export async function processBadgeRenewals(now = new Date()) {
         "Blue Badge renewed",
         `${BLUE_BADGE_MONTHLY_CREDITS} credits were deducted. Next renewal ${next.toLocaleDateString("en-US")}.`,
       );
+      emailPromo(
+        _id,
+        "badge_renewed",
+        "Blue Badge",
+        `${BLUE_BADGE_MONTHLY_CREDITS} credits were deducted. Next renewal ${next.toLocaleDateString("en-US")}.`,
+      );
       await notifyIfLowCredits(_id, renewed.credits);
       continue;
     }
@@ -266,6 +291,7 @@ export async function processBadgeRenewals(now = new Date()) {
         "Blue Badge removed",
         `Your balance was below ${BLUE_BADGE_MONTHLY_CREDITS} credits at renewal, so your Blue Badge was removed. Add credits and resubscribe from the Promote page.`,
       );
+      emailPromo(lapsedId, "badge_removed", "Blue Badge");
     }
   }
 
@@ -286,6 +312,7 @@ export async function processBadgeRenewals(now = new Date()) {
     });
     if (lapsedId) {
       await notify(lapsedId, "promo_expiring", "Blue Badge expired", "Your verification badge has expired.");
+      emailPromo(lapsedId, "badge_expired", "Blue Badge");
     }
   }
 }

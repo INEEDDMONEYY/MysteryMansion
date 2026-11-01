@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -198,10 +199,7 @@ export default function MyMembershipPage() {
 
   if (!membership.loaded) {
     return (
-      <div className="max-w-4xl animate-pulse space-y-4" aria-label="Loading membership">
-        <div className="h-40 rounded-2xl bg-gray-200" />
-        <div className="h-64 rounded-2xl bg-gray-200" />
-      </div>
+      <BrandLoader size="md" label="Loading membership..." className="max-w-4xl" />
     );
   }
 

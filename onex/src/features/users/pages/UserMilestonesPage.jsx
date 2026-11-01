@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from "react";
 import { CircleCheck, Sparkles, Trophy, Lock } from "lucide-react";
 import api from "@/shared/utils/api";
@@ -70,10 +71,7 @@ export default function UserMilestonesPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-40 bg-white/30 rounded-2xl animate-pulse" />
-          <div className="h-40 bg-white/30 rounded-2xl animate-pulse" />
-        </div>
+        <BrandLoader size="sm" />
       ) : error ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm">{error}</div>
       ) : (

@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useContext, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Check, Coins, Sparkles } from "lucide-react";
@@ -165,11 +166,7 @@ export default function MembershipPlans() {
         </motion.div>
 
         {plans === null ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3" aria-label="Loading plans">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="h-96 animate-pulse rounded-2xl bg-neutral-900" />
-            ))}
-          </div>
+          <BrandLoader size="sm" tone="dark" label="Loading plans..." />
         ) : plans.length === 0 ? (
           <div className="mx-auto max-w-3xl rounded-3xl bg-gradient-to-br from-fuchsia-500/40 via-neutral-700 to-yellow-300/30 p-px">
             <div className="rounded-3xl bg-neutral-950 px-6 py-12 text-center sm:px-12 sm:py-16">

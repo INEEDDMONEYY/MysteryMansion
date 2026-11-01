@@ -9,23 +9,17 @@ import { Link } from "react-router-dom";
 import LocationSet from "@/shared/components/Location/LocationSet";
 import PromotionPosts from "@/shared/components/Promotion/PromotedPosts";
 import EmptyCategoryLoader from "@/shared/components/Loaders/EmptyCategoryLoader";
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import PostCard from "@/features/posts/components/PostCard";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
-import { statesMatch } from "@/shared/utils/stateNormalizer";
-import { setLocationSEO } from "@/shared/utils/seo";
+import { toNearParams } from "@/features/posts/utils/postLocation";
+import { setLocationSEO, setPublicPageSEO } from "@/shared/utils/seo";
 import api from "@/shared/utils/api";
 import { useServerReady } from "@/context/ServerReadyContext";
 
 import HomeCategorySelector from "./HomeCategorySelector";
 import HomeSearch from "./HomeSearch";
 import HomeFilters from "./HomeFilters";
-
-const sanitizeLocation = (str) =>
-  (str || "")
-    .replace(/[^a-z0-9\s]/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
 
 const POSTS_PER_PAGE = 20;
 
@@ -162,26 +156,67 @@ function OnboardingGuide({ steps, onFinish }) {
   );
 }
 
-function HomeSidebar({ popularProviders = [] }) {
-  const popularSearches = [
-    {
-      label: "Denver Escorts",
-      value: 85,
-    },
-    {
-      label: "Las Vegas Escorts",
-      value: 65,
-    },
-    {
-      label: "Independent Providers",
-      value: 54,
-    },
-    {
-      label: "Verified Profiles",
-      value: 41,
-    },
-  ];
+function PopularSearches({ onSelect }) {
+  const serverReady = useServerReady();
+  const [items, setItems] = useState(null);
 
+  useEffect(() => {
+    let active = true;
+
+    api
+      .get("/search/popular", { params: { limit: 5 } })
+      .then(({ data }) => {
+        if (active) setItems(Array.isArray(data?.items) ? data.items : []);
+      })
+      .catch(() => {
+        if (active) setItems((current) => current ?? []);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [serverReady]);
+
+  if (items === null) {
+    return <BrandLoader size="xs" className="!py-4" />;
+  }
+
+  if (!items.length) {
+    return (
+      <p className="text-xs text-gray-500">
+        No popular searches yet — try searching for a provider.
+      </p>
+    );
+  }
+
+  const topPercent = Math.max(...items.map((item) => item.percent), 1);
+
+  return items.map((item) => (
+    <button
+      key={item.term}
+      type="button"
+      onClick={() => onSelect?.(item.term)}
+      className="group mb-5 block w-full text-left last:mb-0"
+      title={`Search for "${item.term}"`}
+    >
+      <div className="mb-2 flex justify-between gap-3 text-xs text-gray-500">
+        <span className="truncate group-hover:text-pink-600">{item.term}</span>
+        <span className="shrink-0">{item.percent}%</span>
+      </div>
+
+      <div className="h-1.5 overflow-hidden rounded-full bg-pink-100">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-pink-400 to-pink-600"
+          style={{
+            width: `${Math.max(4, Math.round((item.percent / topPercent) * 100))}%`,
+          }}
+        />
+      </div>
+    </button>
+  ));
+}
+
+function HomeSidebar({ popularProviders = [], onSearch }) {
   return (
     <aside className="hidden flex-col gap-5 xl:flex">
       <div className="relative overflow-hidden rounded-3xl p-[2px]">
@@ -232,23 +267,7 @@ function HomeSidebar({ popularProviders = [] }) {
             Popular Searches
           </h3>
 
-          {popularSearches.map((item) => (
-            <div key={item.label} className="mb-5">
-              <div className="mb-2 flex justify-between text-xs text-gray-500">
-                <span>{item.label}</span>
-                <span>{item.value}%</span>
-              </div>
-
-              <div className="h-1.5 overflow-hidden rounded-full bg-pink-100">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-pink-400 to-pink-600"
-                  style={{
-                    width: `${item.value}%`,
-                  }}
-                />
-              </div>
-            </div>
-          ))}
+          <PopularSearches onSelect={onSearch} />
         </div>
       </div>
     </aside>
@@ -364,10 +383,19 @@ export default function HomeContent({
     }
   }, []);
 
+  const latestPostsRequest = useRef(0);
+
+  // Explicit filters (state/city chosen in the Filters panel) win; otherwise
+  // the API returns listings near the viewer's location, local city first.
   const fetchPosts = useCallback(
-    async (filters = {}) => {
+    async (filters = {}, nearLocation = null) => {
+      const requestId = ++latestPostsRequest.current;
+
       try {
-        const params = {};
+        const params =
+          filters.state || filters.city
+            ? {}
+            : toNearParams(nearLocation);
 
         if (filters.state) {
           params.state = filters.state;
@@ -385,12 +413,20 @@ export default function HomeContent({
           params,
         });
 
+        if (requestId !== latestPostsRequest.current) {
+          return;
+        }
+
         const normalized = Array.isArray(data)
           ? data
           : [];
 
         setPosts(dedupePostsById(normalized));
       } catch (error) {
+        if (requestId !== latestPostsRequest.current) {
+          return;
+        }
+
         console.error(
           "Failed to fetch posts:",
           error
@@ -442,12 +478,10 @@ export default function HomeContent({
     }, []);
 
   useEffect(() => {
-    fetchPosts();
     fetchUsers();
     fetchPopularProviders();
     fetchFilterOptions();
   }, [
-    fetchPosts,
     fetchUsers,
     fetchPopularProviders,
     fetchFilterOptions,
@@ -474,7 +508,7 @@ export default function HomeContent({
       !hasActiveServerFilter &&
       !hasActiveSearch
     ) {
-      fetchPosts();
+      fetchPosts({}, location);
     }
 
     if (users.length === 0) {
@@ -496,15 +530,40 @@ export default function HomeContent({
     filterOptions.states.length,
     activeFilters,
     searchQuery,
+    location,
     fetchPosts,
     fetchUsers,
     fetchPopularProviders,
     fetchFilterOptions,
   ]);
 
+  // The home page stays canonical at "/"; a known viewer location only
+  // localises the title and description.
   useEffect(() => {
-    setLocationSEO(location);
-  }, [location]);
+    if (location?.city || location?.state) {
+      setLocationSEO(location, {
+        canonicalPath: "/",
+        indexable: true,
+        providerCount: popularProviders.length,
+        providers: popularProviders,
+      });
+    } else {
+      setPublicPageSEO("/");
+    }
+  }, [location, popularProviders]);
+
+  // Reload the feed for the viewer's area whenever their location changes,
+  // unless they've applied explicit filters.
+  const activeFiltersRef = useRef(activeFilters);
+  activeFiltersRef.current = activeFilters;
+  const locationKey = JSON.stringify(toNearParams(location));
+
+  useEffect(() => {
+    const filters = activeFiltersRef.current;
+    if (filters.state || filters.city) return;
+    setCurrentPage(1);
+    fetchPosts({ gender: filters.gender }, JSON.parse(locationKey));
+  }, [locationKey, fetchPosts]);
 
   const getAreaLabel = useCallback(
     (selectedLocation) => {
@@ -625,11 +684,12 @@ export default function HomeContent({
 
     setActiveFilters(filters);
     setCurrentPage(1);
-    fetchPosts(filters);
+    fetchPosts(filters, location);
   }, [
     pendingState,
     pendingCity,
     pendingGender,
+    location,
     fetchPosts,
   ]);
 
@@ -645,8 +705,8 @@ export default function HomeContent({
     setPendingGender("");
     setActiveFilters(clearedFilters);
     setCurrentPage(1);
-    fetchPosts({});
-  }, [fetchPosts]);
+    fetchPosts({}, location);
+  }, [fetchPosts, location]);
 
   const handleSearchResults =
     useCallback((results) => {
@@ -679,105 +739,45 @@ export default function HomeContent({
       setCurrentPage(1);
     }, []);
 
-  const locationMatchesPost = useCallback(
-    (post) => {
-      if (!location) {
-        return true;
-      }
-
-      const locationCity =
-        location?.city
-          ?.trim()
-          ?.toLowerCase();
-
-      const locationState =
-        location?.state?.trim();
-
-      const locationCountry =
-        location?.country
-          ?.trim()
-          ?.toLowerCase();
-
-      const hasCity =
-        Boolean(locationCity) &&
-        !locationCity.includes("unknown");
-
-      const hasState =
-        Boolean(locationState) &&
-        !locationState
-          .toLowerCase()
-          .includes("unknown");
-
-      const hasCountry =
-        Boolean(locationCountry);
-
-      const postCities = (
-        post?.city || ""
-      )
-        .split(",")
-        .map(sanitizeLocation)
-        .filter(Boolean);
-
-      const cityMatch =
-        hasCity &&
-        postCities.some(
-          (city) =>
-            city ===
-            sanitizeLocation(locationCity)
-        );
-
-      const postState = (
-        post?.state || ""
-      )
-        .replace(/[^a-z0-9\s]/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      const stateFromCityParts =
-        !postState
-          ? postCities.find((part) =>
-              statesMatch(
-                part,
-                locationState
-              )
-            )
-          : null;
-
-      const stateMatch =
-        hasState &&
-        (statesMatch(
-          postState,
-          locationState
-        ) ||
-          Boolean(stateFromCityParts));
-
-      const countryMatch =
-        hasCountry &&
-        post?.country
-          ?.trim()
-          ?.toLowerCase() ===
-          locationCountry;
-
-      if (
-        !hasCity &&
-        !hasState &&
-        !hasCountry
-      ) {
-        return true;
-      }
-
-      return (
-        cityMatch ||
-        stateMatch ||
-        countryMatch
-      );
-    },
-    [location]
-  );
-
   const hasSearchQuery =
     typeof searchQuery === "string" &&
     searchQuery.trim().length > 0;
+
+  // Count a search toward "Popular Searches" once the visitor pauses typing
+  // and the term actually found listings (once per term per session).
+  const searchHasResults =
+    Array.isArray(searchResults) && searchResults.length > 0;
+
+  useEffect(() => {
+    const term = searchQuery.trim().toLowerCase();
+    if (term.length < 2 || !searchHasResults) return undefined;
+
+    const timer = setTimeout(() => {
+      let logged = [];
+      try {
+        logged = JSON.parse(sessionStorage.getItem("mm_logged_searches") || "[]");
+      } catch {
+        logged = [];
+      }
+      if (logged.includes(term)) return;
+
+      sessionStorage.setItem(
+        "mm_logged_searches",
+        JSON.stringify([...logged, term].slice(-50))
+      );
+      api.post("/search/log", { term }).catch(() => {});
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchHasResults]);
+
+  const handlePopularSearch = useCallback(
+    (term) => {
+      handleSearchQueryChange(term);
+      postsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    },
+    [handleSearchQueryChange]
+  );
 
   const sourcePosts = hasSearchQuery
     ? Array.isArray(searchResults)
@@ -790,16 +790,8 @@ export default function HomeContent({
     Boolean(activeFilters.city) ||
     Boolean(activeFilters.gender);
 
-  const filteredPostsPool =
-    sourcePosts.filter((post) => {
-      const matchesLocation =
-        hasSearchQuery ||
-        hasServerFilter
-          ? true
-          : locationMatchesPost(post);
-
-      return matchesLocation;
-    });
+  // Location filtering happens server-side (see fetchPosts).
+  const filteredPostsPool = sourcePosts;
 
   const totalPages = Math.max(
     1,
@@ -1063,9 +1055,15 @@ export default function HomeContent({
               ref={postsRef}
               className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
             >
-              {filteredPosts.length > 0
-                ? listingRows
-                : <EmptyCategoryLoader />}
+              {filteredPosts.length > 0 ? (
+                listingRows
+              ) : hasSearchQuery && Array.isArray(searchResults) ? (
+                <p className="col-span-full py-10 text-center text-sm text-gray-500">
+                  No listings match “{searchQuery.trim()}”.
+                </p>
+              ) : (
+                <EmptyCategoryLoader />
+              )}
             </div>
 
             {totalPages > 1 && (
@@ -1134,6 +1132,7 @@ export default function HomeContent({
             popularProviders={
               popularProviders
             }
+            onSearch={handlePopularSearch}
           />
         </div>
 

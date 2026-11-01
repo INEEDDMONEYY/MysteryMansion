@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { setSEO } from "@/shared/utils/seo";
+import { setPublicPageSEO } from "@/shared/utils/seo";
 import {
   MembershipHero,
   MembershipPlans,
@@ -8,14 +8,10 @@ import {
   MembershipFaq,
   MembershipCta,
 } from "../components/membership/components";
-import { membershipPageData } from "../components/membership/data/membershipPageData";
 
 export default function MembershipPage() {
   useEffect(() => {
-    setSEO(
-      membershipPageData.seo.title,
-      membershipPageData.seo.description
-    );
+    setPublicPageSEO("/membership");
   }, []);
 
   return (

@@ -24,6 +24,8 @@ import ClientForumActivity from "@/features/users/components/client-profile/Clie
 import ClientLibrary from "@/features/users/components/client-profile/ClientLibrary";
 import ClientReviewsGiven from "@/features/users/components/client-profile/ClientReviewsGiven";
 import ClientComments from "@/features/users/components/client-profile/ClientComments";
+import ProviderMediaGallery from "@/features/users/components/provider-profile/ProviderMediaGallery";
+import ProviderProfileStats from "@/features/users/components/provider-profile/ProviderProfileStats";
 
 import UserProfileHeader from "@/features/users/components/UserProfileHeader";
 import PostList from "@/features/posts/components/PostList";
@@ -34,6 +36,11 @@ import ReferencesLinks from "@/shared/components/References/ReferencesLinks.jsx"
 import CompletedDates from "@/shared/components/References/CompletedDates.jsx";
 import ReviewsPanel from "@/features/reviews/components/ReviewsPanel";
 import api from "@/shared/utils/api.js";
+import {
+  isPrivateSEOPath,
+  setProviderProfileSEO,
+  setSEO,
+} from "@/shared/utils/seo";
 
 // eslint-disable-next-line no-unused-vars -- Icon is rendered as <Icon />
 function ProfilePanel({ icon: Icon, title, subtitle, children }) {
@@ -87,6 +94,7 @@ export default function UserProfileViewPage({
 
   // Admin and client accounts get their own tabs instead of the provider ones.
   const [profile, setProfile] = useState({ loaded: false, isAdmin: false, isClient: false });
+  const [providerDetails, setProviderDetails] = useState(null);
   const { user: viewer } = useContext(UserContext) || {};
   const viewerIsAdmin = viewer?.role === "admin";
 
@@ -100,6 +108,7 @@ export default function UserProfileViewPage({
     let cancelled = false;
 
     setProfile({ loaded: false, isAdmin: false, isClient: false });
+    setProviderDetails(null);
 
     api
       .get(`/public/users/id/${userId}`)
@@ -113,6 +122,8 @@ export default function UserProfileViewPage({
           isAdmin: u.role === "admin",
           isClient: u.role !== "admin" && u.accountType === "client",
         });
+
+        setProviderDetails(u);
 
         const rawAvail = u.availability;
 
@@ -165,6 +176,27 @@ export default function UserProfileViewPage({
   }, [userId]);
 
   // ─────────────────────────────────────────────────────────────
+  // SEO
+  // ─────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    // Embedded in a dashboard (e.g. /user/profilepage): the route-level noindex applies.
+    if (!profile.loaded || isPrivateSEOPath(location.pathname)) return;
+
+    if (!providerDetails) {
+      setSEO("Profile Unavailable | Mystery Mansion", "", {
+        robots: "noindex, follow",
+      });
+      return;
+    }
+
+    setProviderProfileSEO(
+      { ...providerDetails, reviewCount },
+      profile.isAdmin || profile.isClient ? { indexable: false } : {}
+    );
+  }, [profile, providerDetails, reviewCount, location.pathname]);
+
+  // ─────────────────────────────────────────────────────────────
   // DERIVED DATA
   // ─────────────────────────────────────────────────────────────
 
@@ -197,10 +229,13 @@ export default function UserProfileViewPage({
 
   const providerTabs = [
     { key: "posts", label: "Posts", icon: LayoutGrid, path: basePath, show: true },
+    { key: "media", label: "Media Library", icon: Images, path: `${basePath}/media`, show: true },
+    // Profile details tab
+    //{ key: "profile details", label: "Details", icon: Info, path: `${basePath}/profile-details`, show: true },
     { key: "references", label: "References", icon: FileCheck2, path: `${basePath}/references`, show: true },
     { key: "completed-dates", label: "Completed Dates", icon: CalendarCheck, path: `${basePath}/completed-dates`, show: true },
     { key: "availability", label: "Availability", icon: Clock3, path: `${basePath}/availability`, show: Boolean(availability.status) },
-    { key: "pricing", label: "Pricing", icon: DollarSign, path: `${basePath}/pricing`, show: hasPrices },
+    { key: "pricing", label: "Donantions", icon: DollarSign, path: `${basePath}/pricing`, show: hasPrices },
     { key: "reviews", label: "Reviews", icon: MessageSquareText, path: `${basePath}/reviews`, show: true, count: reviewCount },
   ];
 
@@ -664,7 +699,17 @@ export default function UserProfileViewPage({
                 <ClientComments userId={userId} />
               </ProfilePanel>
             )}
+
+            {activeTab === "media" && profile.loaded && !profile.isAdmin && !profile.isClient && (
+              <ProfilePanel icon={Images} title="Media Library" subtitle="Photos and videos shared to this profile.">
+                <ProviderMediaGallery userId={userId} />
+              </ProfilePanel>
+            )}
           </div>
+
+          {profile.loaded && !profile.isAdmin && !profile.isClient && (
+            <ProviderProfileStats details={providerDetails} />
+          )}
         </div>
       </div>
 

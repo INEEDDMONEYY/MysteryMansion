@@ -13,6 +13,7 @@ import adminPromoCodesRouter from "./adminPromoCodes.js";import adminCreditReque
 import adminFlagsRouter from './adminFlags.js';
 import adminCreditEarnRulesRouter from './adminCreditEarnRules.js';
 import adminProfileDataRouter from './adminProfileData.js';
+import adminContactInquiriesRouter from './adminContactInquiries.js';
 const router = express.Router();
 
 /* --- Settings --- */
@@ -33,4 +34,5 @@ router.use("/promo-codes", adminPromoCodesRouter);router.use('/credit-requests',
 router.use('/flags', adminFlagsRouter);
 router.use('/credit-earn-rules', adminCreditEarnRulesRouter);
 router.use('/profile-data', adminProfileDataRouter);
+router.use('/contact-inquiries', adminContactInquiriesRouter);
 export default router;

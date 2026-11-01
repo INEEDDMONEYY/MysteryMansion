@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from "react";
 import {
   Users, FileText, ShieldAlert, Mail, Clock3, Ticket,
@@ -302,9 +303,7 @@ export default function AdminDashboard() {
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-5">
           <SectionHead icon={UserCheck} label="Recent Signups" />
           {loading ? (
-            <div className="space-y-2">
-              {[1,2,3,4].map(i => <div key={i} className="h-10 bg-neutral-800 rounded-xl animate-pulse" />)}
-            </div>
+            <BrandLoader size="sm" tone="dark" />
           ) : recentUsers.length === 0 ? (
             <p className="text-neutral-600 text-sm">No users yet.</p>
           ) : (
@@ -335,9 +334,7 @@ export default function AdminDashboard() {
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-5">
           <SectionHead icon={TrendingUp} label="Posts — Last 7 Days" />
           {loading ? (
-            <div className="space-y-3 mt-2">
-              {[1,2,3,4,5,6,7].map(i => <div key={i} className="h-4 bg-neutral-800 rounded animate-pulse" />)}
-            </div>
+            <BrandLoader size="sm" tone="dark" />
           ) : (
             <div className="space-y-3 mt-2">
               {last7Days.map(d => (
@@ -369,9 +366,7 @@ export default function AdminDashboard() {
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-5">
           <SectionHead icon={Tag} label="Top Post Categories" />
           {loading ? (
-            <div className="space-y-3">
-              {[1,2,3,4].map(i => <div key={i} className="h-4 bg-neutral-800 rounded animate-pulse" />)}
-            </div>
+            <BrandLoader size="sm" tone="dark" />
           ) : topCats.length === 0 ? (
             <p className="text-neutral-600 text-sm">No posts to analyze.</p>
           ) : (
@@ -387,9 +382,7 @@ export default function AdminDashboard() {
         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-5">
           <SectionHead icon={Crown} label="Credit Payments" />
           {loading ? (
-            <div className="space-y-2">
-              {[1,2,3].map(i => <div key={i} className="h-12 bg-neutral-800 rounded-xl animate-pulse" />)}
-            </div>
+            <BrandLoader size="sm" tone="dark" />
           ) : (
             <>
               <div className="grid grid-cols-3 gap-3 mb-4">
@@ -422,9 +415,7 @@ export default function AdminDashboard() {
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 sm:p-5">
         <SectionHead icon={FileText} label="Recent Posts" />
         {loading ? (
-          <div className="space-y-2">
-            {[1,2,3].map(i => <div key={i} className="h-12 bg-neutral-800 rounded-xl animate-pulse" />)}
-          </div>
+          <BrandLoader size="sm" tone="dark" />
         ) : recentPosts.length === 0 ? (
           <p className="text-neutral-600 text-sm">No posts yet.</p>
         ) : (
@@ -459,9 +450,7 @@ export default function AdminDashboard() {
       <div>
         <SectionHead icon={Clock3} label="Active Promo Countdowns" />
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {[1,2,3].map(i => <div key={i} className="h-32 bg-neutral-900 border border-neutral-800 rounded-2xl animate-pulse" />)}
-          </div>
+          <BrandLoader size="sm" tone="dark" />
         ) : activePromoEntries.length === 0 ? (
           <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-5">
             <p className="text-neutral-500 text-sm">No active promo code redemptions right now.</p>

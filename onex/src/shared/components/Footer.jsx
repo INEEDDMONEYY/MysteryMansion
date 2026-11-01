@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import Logo from "@/assets/Logo.png";
-import Partners from "/partner.png";
+import Partners from "/fantome.png";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 
 const headingClass =
@@ -77,6 +77,10 @@ export default function Footer() {
             
             <Link to="/promote" className={linkClass}>
               Promote Account
+            </Link>
+
+            <Link to="/locations" className={linkClass}>
+              Browse by Location
             </Link>
             
           </FooterSection>

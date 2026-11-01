@@ -5,8 +5,21 @@ import * as postController from './controllers/postController.js';
 import { toggleLike, getLikeStatus } from './controllers/postLikeController.js';
 import { authMiddleware, optionalAuthMiddleware, adminOnlyMiddleware } from '../../common/middleware/authMiddleware.js';
 import { enforceRestriction } from '../../common/middleware/restrictionMiddleware.js';
+import { detectMediaKind } from './mediaKind.js';
+import * as locationController from './controllers/locationController.js';
+import { invalidateLocationIndex } from '../../common/utils/locationIndex.js';
 
 const router = express.Router();
+
+// Successful post writes refresh the cached location directory.
+router.use((req, res, next) => {
+  if (req.method !== 'GET') {
+    res.on('finish', () => {
+      if (res.statusCode < 400) invalidateLocationIndex();
+    });
+  }
+  next();
+});
 
 // Memory storage for multer
 const storage = multer.memoryStorage();
@@ -20,11 +33,7 @@ const upload = multer({
     fileSize: MAX_FILE_SIZE_BYTES,
   },
   fileFilter: (req, file, cb) => {
-    const mime = String(file?.mimetype || "").toLowerCase();
-    const isImage = mime.startsWith("image/");
-    const isVideo = mime.startsWith("video/");
-
-    if (!isImage && !isVideo) {
+    if (!detectMediaKind(file)) {
       return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", file?.fieldname || "media"));
     }
 
@@ -34,6 +43,8 @@ const upload = multer({
 
 const uploadPostMedia = (req, res, next) => {
   const uploadHandler = upload.fields([
+    // 'media' accepts photos and videos together; 'pictures'/'videos' kept for older clients.
+    { name: 'media', maxCount: MAX_MEDIA_FILES },
     { name: 'pictures', maxCount: 5 },
     { name: 'videos', maxCount: 5 },
   ]);
@@ -58,7 +69,7 @@ const uploadPostMedia = (req, res, next) => {
 
       if (err.code === "LIMIT_UNEXPECTED_FILE") {
         return res.status(400).json({
-          error: "Only image and video uploads are allowed, with up to 5 images and 5 videos.",
+          error: `Only photos and videos can be uploaded, up to ${MAX_MEDIA_FILES} files per post.`,
           code: err.code,
           field: err.field,
         });
@@ -90,8 +101,16 @@ router.post(
   postController.createPost
 );
 
+// Resolve the poster's city/state from device coordinates — must be before /:id
+router.get('/resolve-location', authMiddleware, postController.resolveLocation);
+
 // Get filter options (states + cities with actual posts) — must be before /:id
 router.get('/filter-options', postController.getFilterOptions);
+
+// Location pages (/locations, /locations/:slug) — must be before /:id
+router.get('/locations', locationController.listLocations);
+router.get('/locations/sitemap.xml', locationController.locationsSitemap);
+router.get('/locations/:slug', locationController.getLocation);
 
 // Get all posts
 router.get('/', postController.getPosts);

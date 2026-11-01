@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
@@ -7,6 +8,21 @@ import CategoryDisplay from "../components/Categories/categoryDisplay";
 import { formatCategoryTitle } from "../services/postCategories";
 import { useServerReady } from "@/context/ServerReadyContext";
 import { setSEO } from "@/shared/utils/seo";
+import { toNearParams } from "../utils/postLocation";
+
+const STORED_LOCATION_KEYS = ["userLocation", "location", "mm_location"];
+
+const readStoredLocation = () => {
+  for (const key of STORED_LOCATION_KEYS) {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(key) || "null");
+      if (parsed && typeof parsed === "object") return parsed;
+    } catch {
+      // ignore malformed entries
+    }
+  }
+  return null;
+};
 
 const createCategorySlug = (value = "") =>
   String(value)
@@ -67,8 +83,8 @@ export default function CategoryPage() {
 
   const [posts, setPosts] = useState([]);
   const [users, setUsers] = useState([]);
-  const [location, setLocation] =
-    useState(null);
+  const [location] = useState(readStoredLocation);
+  const locationKey = JSON.stringify(toNearParams(location));
 
   const [loading, setLoading] =
     useState(true);
@@ -95,7 +111,12 @@ export default function CategoryPage() {
             usersResponse,
           ] = await Promise.all([
             api.get("/categories"),
-            api.get("/posts"),
+            api.get("/posts", {
+              params: {
+                category: categorySlug,
+                ...JSON.parse(locationKey),
+              },
+            }),
             api.get("/public/users"),
           ]);
 
@@ -149,7 +170,7 @@ export default function CategoryPage() {
     return () => {
       mounted = false;
     };
-  }, [categorySlug, serverReady]);
+  }, [categorySlug, locationKey, serverReady]);
 
   const category = useMemo(
     () =>
@@ -185,38 +206,6 @@ export default function CategoryPage() {
     DEFAULT_CATEGORY_IMAGE;
 
   useEffect(() => {
-    const possibleKeys = [
-      "location",
-      "userLocation",
-      "mm_location",
-    ];
-
-    for (const key of possibleKeys) {
-      try {
-        const stored =
-          localStorage.getItem(key);
-
-        if (!stored) {
-          continue;
-        }
-
-        const parsed =
-          JSON.parse(stored);
-
-        if (
-          parsed &&
-          typeof parsed === "object"
-        ) {
-          setLocation(parsed);
-          break;
-        }
-      } catch {
-        continue;
-      }
-    }
-  }, []);
-
-  useEffect(() => {
     const title = `${categoryNameDisplay} | Mystery Mansion`;
 
     const metaDescription =
@@ -239,34 +228,9 @@ export default function CategoryPage() {
 
   if (loading) {
     return (
-      <main className="w-full">
-        <section className="relative w-full overflow-hidden bg-black">
-          <div className="mx-auto flex min-h-[420px] max-w-screen-2xl items-center px-4 sm:px-6 lg:px-10">
-            <div className="w-full max-w-3xl animate-pulse">
-              <div className="mb-5 h-4 w-28 rounded bg-white/20" />
-
-              <div className="h-12 w-80 rounded bg-white/20 sm:h-16 sm:w-[520px]" />
-
-              <div className="mt-5 h-5 w-[420px] max-w-full rounded bg-white/20" />
-            </div>
-          </div>
-        </section>
-
-        <section className="w-full bg-white">
-          <div className="mx-auto max-w-screen-2xl px-4 py-10 sm:px-6 lg:px-10">
-            <div className="grid grid-cols-1 gap-5 min-[520px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({
-                length: 8,
-              }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-64 animate-pulse rounded-xl bg-gray-100"
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
+      <section className="w-full bg-white">
+        <BrandLoader size="lg" className="min-h-[60vh]" />
+      </section>
     );
   }
 

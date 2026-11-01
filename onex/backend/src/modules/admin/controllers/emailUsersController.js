@@ -1,6 +1,7 @@
 import User from '../../../models/User.js';
 import PromoCode from '../../../models/PromoCode.js';
 import { sendEmail, FROM_ADDRESS } from '../../../common/utils/unosend.js';
+import { EMAIL_CATEGORIES } from '../../../common/utils/notificationPreferences.js';
 import env from '../../../config/env.js';
 
 /**
@@ -62,6 +63,7 @@ export const emailUsers = async (req, res) => {
     const results = await Promise.allSettled(
       recipients.map((user) =>
         sendEmail({
+          category: EMAIL_CATEGORIES.PROMOTIONAL,
           from: FROM_ADDRESS,
           to: user.email,
           subject: subject.trim(),

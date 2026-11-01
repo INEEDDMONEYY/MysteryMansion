@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useCallback, useEffect, useState } from 'react';
 import { Coins, Plus, Pencil, Trash2, Gift, X, AlertCircle } from 'lucide-react';
 import api from '@/shared/utils/api';
@@ -329,9 +330,7 @@ export default function AdminCreditEarnRulesPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-neutral-900" />)}
-        </div>
+        <BrandLoader size="sm" tone="dark" />
       ) : tab === 'rules' ? (
         <div className="space-y-3">
           {rules.length === 0 && (

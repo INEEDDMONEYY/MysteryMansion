@@ -8,7 +8,8 @@
     "test": "NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest",
     "start": "node server.js",
     "backfill:media-backups": "node scripts/backfillMediaBackups.js",
-    "backfill:post-gender": "node scripts/backfillPostGenderFromAccount.js"
+    "backfill:post-gender": "node scripts/backfillPostGenderFromAccount.js",
+    "backfill:post-locations": "node scripts/normalizePostLocations.js"
   },
   "keywords": [],
   "author": "",

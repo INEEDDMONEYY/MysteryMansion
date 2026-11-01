@@ -46,7 +46,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
     id: 'Premium',
     name: 'Premium Plan',
     description: 'More boosts, thread pinning and a membership badge on your profile.',
-    monthlyCoinCost: 2600,
+    monthlyCoinCost: 2400,
     monthlyCoinAllocation: 600,
     featured: true,
     perks: {
@@ -70,7 +70,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
     id: 'Elite',
     name: 'Elite Plan',
     description: 'The full toolkit: uploads, categories, maximum boosts and every new feature.',
-    monthlyCoinCost: 4000,
+    monthlyCoinCost: 3000,
     monthlyCoinAllocation: 1000,
     featured: false,
     perks: {

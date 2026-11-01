@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -47,7 +48,7 @@ export default function ForumCategoryPage() {
     <main className="min-h-screen w-full bg-gray-50">
       <ForumPageHero
         {...hero}
-        title={category?.name || "Loading..."}
+        title={category?.name || <BrandLoader size="md" tone="dark" inline />}
         description={category?.description}
       >
         <NewThreadButton categorySlug={slug} />

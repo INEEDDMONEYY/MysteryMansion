@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { Line } from 'react-chartjs-2';
 import { format } from 'date-fns';
 import { chartOptions } from './chartOptions';
@@ -30,7 +31,7 @@ export default function TrafficChart({ data = [], loading }) {
       </h2>
       <div className="flex-1 min-h-[260px]">
         {loading ? (
-          <div className="h-full bg-neutral-800 animate-pulse rounded-xl" />
+          <BrandLoader size="sm" tone="dark" className="h-full min-h-[260px]" />
         ) : data.length ? (
           <Line data={lineData} options={chartOptions} />
         ) : (

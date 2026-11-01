@@ -26,3 +26,6 @@ export const fetchProfileReviews = ({ userId, ...params }) =>
 
 export const fetchProfileComments = ({ userId, ...params }) =>
   get(userId, "comments", params);
+
+export const fetchProfileMedia = ({ userId, type, ...params }) =>
+  get(userId, "media", type && type !== "all" ? { ...params, type } : params);

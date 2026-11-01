@@ -49,6 +49,8 @@ import categoryRoutes from './modules/categories/routes.js';
 import referralRoutes from './modules/referrals/routes.js';
 import milestoneRoutes from './modules/milestones/routes.js';
 import flagRoutes from './modules/flags/routes.js';
+import contactRoutes from './modules/contact/routes.js';
+import searchRoutes from './modules/search/routes.js';
 
 // Utilities
 import { startPromoExpiryReminderJob } from './common/utils/promoExpiryReminderJob.js';
@@ -203,6 +205,12 @@ app.use('/api/referrals', referralRoutes);
 app.use('/api/milestones', milestoneRoutes);
 
 app.use('/api/flags', flagRoutes);
+
+// Contact form
+app.use('/api/contact', contactRoutes);
+
+// Search analytics (popular searches)
+app.use('/api/search', searchRoutes);
 /**
  * ==========================================
  * STATIC FILES & PUBLIC ROUTES

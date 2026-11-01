@@ -2,6 +2,7 @@ import User from "../../models/User.js";
 import Message from "../../models/Message.js";
 import Conversation from "../../models/Conversation.js";
 import { getPrimaryAdminId, ensureUserAdminConversation } from "./ensureAdminWelcomeConversation.js";
+import { sendPromotionEmail } from "./sendPromotionEmail.js";
 
 const REMINDER_WINDOW_MS = 24 * 60 * 60 * 1000;
 const JOB_INTERVAL_MS = 60 * 60 * 1000;
@@ -25,7 +26,7 @@ const processPromoExpiryReminders = async () => {
       $gt: now,
       $lte: windowEnd,
     },
-  }).select("_id activePromoExpiry lastPromoExpiryReminderFor");
+  }).select("_id email username activePromoExpiry lastPromoExpiryReminderFor");
 
   for (const user of candidates) {
     const activePromoExpiry = user?.activePromoExpiry ? new Date(user.activePromoExpiry) : null;
@@ -64,6 +65,16 @@ const processPromoExpiryReminders = async () => {
     await User.findByIdAndUpdate(user._id, {
       lastPromoExpiryReminderFor: activePromoExpiry,
     });
+
+    // Email reminder mirrors the in-app admin message; never blocks the job.
+    if (user.email) {
+      sendPromotionEmail({
+        to: user.email,
+        username: user.username,
+        event: "expiring_soon",
+        detail: `Your promoted account status expires on ${activePromoExpiry.toLocaleString()}.`,
+      }).catch((err) => console.error("❌ Promo expiry email failed:", err.message));
+    }
   }
 };
 

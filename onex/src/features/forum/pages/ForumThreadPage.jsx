@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useContext, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
@@ -58,10 +59,7 @@ export default function ForumThreadPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-gray-50 px-4 py-10 sm:px-6">
-        <div className="mx-auto max-w-4xl animate-pulse space-y-4" aria-label="Loading discussion">
-          <div className="h-4 w-48 rounded bg-gray-200" />
-          <div className="h-64 rounded-2xl bg-gray-200" />
-        </div>
+        <BrandLoader size="md" label="Loading discussion..." className="mx-auto max-w-4xl" />
       </main>
     );
   }

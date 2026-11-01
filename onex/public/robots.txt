@@ -1,13 +1,33 @@
 User-agent: *
 Allow: /
+
+# Admin, account, and auth screens (also noindexed in seo.js).
+# Public profiles at /user/<id> stay crawlable.
 Disallow: /admin
 Disallow: /analytics
-Disallow: /user/
+Disallow: /client/
+Disallow: /user/dashboard
+Disallow: /user/saved-posts
+Disallow: /user/profile
+Disallow: /user/messages
+Disallow: /user/activity
+Disallow: /user/notifications
+Disallow: /user/liked-posts
+Disallow: /user/milestones
+Disallow: /user/credits
+Disallow: /user/membership
+Disallow: /user/referrals
+Disallow: /user/reports
+Disallow: /user/settings
+Disallow: /user/media
 Disallow: /signin
 Disallow: /signup
 Disallow: /forgotpass
 Disallow: /reset-password/
 Disallow: /signout
-Disallow: /post
+Disallow: /post$
+Disallow: /forum/create
+Disallow: /referral/
 
 Sitemap: https://mysterymansion.app/sitemap.xml
+Sitemap: https://mysterymansion.app/sitemap-locations.xml

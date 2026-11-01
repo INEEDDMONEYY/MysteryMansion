@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, BadgeCheck, Rocket, Star, ArrowLeft } from 'lucide-react';
@@ -104,11 +105,7 @@ export default function LikedPostsPage() {
       )}
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-2xl bg-white/60 animate-pulse" />
-          ))}
-        </div>
+        <BrandLoader size="sm" />
       ) : posts.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-pink-200 bg-white p-10 text-center">
           <Heart size={40} className="mx-auto mb-3 text-pink-200" />

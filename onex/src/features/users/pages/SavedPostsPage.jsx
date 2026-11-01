@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useState, useEffect, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -458,9 +459,7 @@ export default function SavedPostsPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="flex justify-center py-16">
-          <div className="w-8 h-8 rounded-full border-2 border-pink-600 border-t-transparent animate-spin" />
-        </div>
+        <BrandLoader size="sm" />
       )}
 
       {/* Empty state */}

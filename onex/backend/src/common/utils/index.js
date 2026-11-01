@@ -12,6 +12,9 @@ export { ensureUserAdminConversation, ensureAdminConversationsForAllUsers, getPr
 export { default as promoExpiryReminderJob } from './promoExpiryReminderJob.js';
 export { sendAccountActivityEmail, sendAccountInactivityEmail } from './sendAccountActivityEmail.js';
 export { sendMilestoneAchievedEmail } from './sendMilestoneAchievedEmail.js';
+export { sendMembershipEmail } from './sendMembershipEmail.js';
+export { sendPromotionEmail } from './sendPromotionEmail.js';
+export { sendFlagSubmittedEmail, sendFlagStatusUpdateEmail, sendAccountFlaggedEmail } from './sendAccountFlagEmail.js';
 export { startMilestoneAchievementJob } from './milestoneAchievementJob.js';
 export { startAccountInactivityEmailJob } from './accountInactivityEmailJob.js';
 export { allowEmail } from './emailRateLimiter.js';

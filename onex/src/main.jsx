@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { X } from "lucide-react";
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
+import ServerWarmupScreen from "@/shared/components/Loaders/ServerWarmupScreen";
 
 import "./index.css";
 
@@ -44,6 +46,8 @@ import ClientLayout from "@/layouts/ClientLayout";
 // ── Public pages ─────────────────────────────────────────────────────────────
 const Home = lazy(() => import("@/features/posts/pages/homePage"));
 const CategoryPage = lazy(() => import("@/features/posts/pages/CategoryPage"));
+const LocationsIndexPage = lazy(() => import("@/features/locations/pages/LocationsIndexPage"));
+const LocationPage = lazy(() => import("@/features/locations/pages/LocationPage"));
 const PostDetail = lazy(() => import("@/features/posts/components/PostDetail"));
 const PostPage = lazy(() => import("@/features/posts/pages/postPage"));
 const UserProfileView = lazy(() => import("@/features/users/pages/UserProfileViewPage"));
@@ -90,6 +94,9 @@ const ProfilePage = lazy(() => import("@/features/users/pages/ProfilePage"));
 const UserActivity = lazy(() => import("@/features/users/pages/UserActivity"));
 const UserMilestonesPage = lazy(() => import("@/features/users/pages/UserMilestonesPage"));
 const UserReferralsPage = lazy(() => import("@/features/users/pages/UserReferralsPage"));
+const UserSettingsPage = lazy(() => import("@/features/users/pages/UserSettingsPage"));
+const UserMediaPage = lazy(() => import("@/features/users/pages/UserMediaPage"));
+const ClientSettingsPage = lazy(() => import("@/features/clients/pages/ClientSettingsPage"));
 
 // ── Admin pages ───────────────────────────────────────────────────────────────
 const AdminDashboard = lazy(() => import("@/features/admin/pages/dashboard"));
@@ -103,6 +110,7 @@ const AdminBanners = lazy(() => import("@/features/admin/pages/AdminBannersPage"
 const AdminDiscounts = lazy(() => import("@/features/admin/pages/AdminDiscountsPage"));
 const AdminEmailUsers = lazy(() => import("@/features/admin/pages/AdminEmailUsersPage"));
 const AdminCreditRequests = lazy(() => import("@/features/admin/pages/AdminCreditRequestsPage"));
+const AdminContactInquiries = lazy(() => import("@/features/admin/pages/AdminContactInquiriesPage"));
 const AdminCreditPackages = lazy(() => import("@/features/admin/pages/AdminCreditPackagesPage"));
 const AdminCreditEarnRules = lazy(() => import("@/features/admin/pages/AdminCreditEarnRulesPage"));
 const AdminFAQPage = lazy(() => import("@/features/admin/pages/AdminFAQPage"));
@@ -130,6 +138,8 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Home /> },
       { path: "/category/:categoryName", element: <CategoryPage /> },
+      { path: "/locations", element: <LocationsIndexPage /> },
+      { path: "/locations/:locationSlug", element: <LocationPage /> },
       { path: "/home", element: <Navigate to="/" replace /> },
       { path: "/post", element: <ProviderOnlyRoute><PostPage /></ProviderOnlyRoute> },
       { path: "/posts/:postId", element: <PostDetail /> },
@@ -199,6 +209,8 @@ const router = createBrowserRouter([
           { path: "/user/membership", element: <MyMembershipPage /> },
           { path: "/user/referrals", element: <UserReferralsPage /> },
           { path: "/user/reports", element: <MyReportsPage /> },
+          { path: "/user/settings", element: <UserSettingsPage /> },
+          { path: "/user/media", element: <UserMediaPage /> },
         ],
       },
     ],
@@ -220,6 +232,7 @@ const router = createBrowserRouter([
           { path: "/client/membership", element: <MyMembershipPage /> },
           { path: "/client/milestones", element: <UserMilestonesPage /> },
           { path: "/client/reports", element: <MyReportsPage /> },
+          { path: "/client/settings", element: <ClientSettingsPage /> }
         ],
       },
     ],
@@ -243,6 +256,7 @@ const router = createBrowserRouter([
           { path: "/admin/discounts", element: <AdminDiscounts /> },
           { path: "/admin/email-users", element: <AdminEmailUsers /> },
           { path: "/admin/credit-requests", element: <AdminCreditRequests /> },
+          { path: "/admin/contact-inquiries", element: <AdminContactInquiries /> },
           { path: "/admin/credit-packages", element: <AdminCreditPackages /> },
           { path: "/admin/credit-earn-rules", element: <AdminCreditEarnRules /> },
           { path: "/admin/faqs", element: <AdminFAQPage /> },
@@ -268,7 +282,6 @@ const router = createBrowserRouter([
 
 export function AppGate() {
   const serverReady = useServerReady();
-  const [bannerDismissed, setBannerDismissed] = useState(false);
   const [emailBannerDismissed, setEmailBannerDismissed] = useState(false);
   const [issueDismissed, setIssueDismissed] = useState(false);
   const [countdown, setCountdown] = useState(80);
@@ -303,43 +316,19 @@ export function AppGate() {
   }, []);
 
   useEffect(() => {
-    if (serverReady || bannerDismissed) return;
+    if (serverReady) return;
     if (countdown <= 0) return;
     const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
     return () => clearTimeout(t);
-  }, [serverReady, bannerDismissed, countdown]);
+  }, [serverReady, countdown]);
 
   // Server-issue: countdown expired but server still not ready
   const showServerIssue =
     !serverReady && countdown <= 0 && !issueDisabled && !issueDismissed;
 
-  // Warming-up: counting down, server not yet ready
-  const showWarmup =
-    !serverReady && countdown > 0 && !bannerDismissed;
 
   return (
     <>
-      {/* ── Warming-up banner ── */}
-      {showWarmup && (
-        <div className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-amber-950 shadow-sm">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 text-sm">
-            <p className="pr-2">
-              Server is waking up — ready in approximately{" "}
-              <span className="font-semibold">{Math.max(countdown, 0)}s</span>.
-              Platform content and authentication services will be available once the server is online.
-            </p>
-            <button
-              type="button"
-              onClick={() => setBannerDismissed(true)}
-              aria-label="Dismiss notice"
-              className="shrink-0 rounded p-1 text-amber-900 transition hover:bg-amber-100"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* ── Server issue banner (fires after 80s with no response) ── */}
       {showServerIssue && (
         <div className="border-b border-red-700 bg-red-950 px-4 py-3 text-red-100 shadow-sm">
@@ -395,9 +384,13 @@ export function AppGate() {
         </div>
       )}
       <Toaster position="top-right" toastOptions={{ duration: 6000 }} />
-      <Suspense fallback={null}>
-        <RouterProvider router={router} />
-      </Suspense>
+      {serverReady ? (
+        <Suspense fallback={<BrandLoader fullScreen delay size="lg" />}>
+          <RouterProvider router={router} />
+        </Suspense>
+      ) : (
+        <ServerWarmupScreen />
+      )}
     </>
   );
 }

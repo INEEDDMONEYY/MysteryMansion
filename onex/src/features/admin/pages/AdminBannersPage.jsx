@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, ToggleLeft, ToggleRight, Megaphone, Info, AlertTriangle, CheckCircle, Tag, Server, Mail } from 'lucide-react';
 import api from '@/shared/utils/api';
@@ -278,7 +279,7 @@ export default function AdminBannersPage() {
         </h2>
 
         {loading ? (
-          <div className="text-center py-10 text-neutral-500 text-sm">Loading…</div>
+          <BrandLoader size="sm" tone="dark" />
         ) : banners.length === 0 ? (
           <div className="text-center py-10 text-neutral-600 text-sm">No banners yet. Create one above.</div>
         ) : (

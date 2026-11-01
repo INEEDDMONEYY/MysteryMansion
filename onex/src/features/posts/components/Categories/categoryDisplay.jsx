@@ -2,22 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import UserSearch from "@/features/users/components/UserSearch";
-import CategoryPostsLoader from "@/shared/components/Loaders/CategoryPostsLoader";
 import PostCard from "../PostCard";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
-import { statesMatch } from "@/shared/utils/stateNormalizer";
 import { hasPermanentProviderBadge } from "@/features/users/services/providerBadgeEligibility";
 import {
   formatCategoryTitle,
   postHasCategory,
 } from "../../services/postCategories";
-
-const sanitizeLocation = (str) =>
-  (str || "")
-    .replace(/[^a-z0-9\s]/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
 
 const normalizeCategory = (value = "") =>
   String(value).trim().toLowerCase();
@@ -162,107 +153,7 @@ export default function CategoryDisplay({
     );
   }, [posts]);
 
-  const locationMatchesPost = useCallback(
-    (post) => {
-      if (!location) {
-        return true;
-      }
-
-      const locationCity =
-        location?.city
-          ?.trim()
-          ?.toLowerCase();
-
-      const locationState =
-        location?.state?.trim();
-
-      const locationCountry =
-        location?.country
-          ?.trim()
-          ?.toLowerCase();
-
-      const hasCity =
-        Boolean(locationCity) &&
-        !locationCity.includes("unknown");
-
-      const hasState =
-        Boolean(locationState) &&
-        !locationState
-          .toLowerCase()
-          .includes("unknown");
-
-      const hasCountry =
-        Boolean(locationCountry) &&
-        !locationCountry.includes(
-          "unknown"
-        );
-
-      const postCities = (
-        post?.city || ""
-      )
-        .split(",")
-        .map(sanitizeLocation)
-        .filter(Boolean);
-
-      const cityMatch =
-        hasCity &&
-        postCities.some(
-          (city) =>
-            city ===
-            sanitizeLocation(
-              locationCity
-            )
-        );
-
-      const postState = (
-        post?.state || ""
-      )
-        .replace(/[^a-z0-9\s]/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      const stateFromCityParts =
-        !postState && hasState
-          ? postCities.find((part) =>
-              statesMatch(
-                part,
-                locationState
-              )
-            )
-          : null;
-
-      const stateMatch =
-        hasState &&
-        (statesMatch(
-          postState,
-          locationState
-        ) ||
-          Boolean(stateFromCityParts));
-
-      const countryMatch =
-        hasCountry &&
-        post?.country
-          ?.trim()
-          ?.toLowerCase() ===
-          locationCountry;
-
-      if (
-        !hasCity &&
-        !hasState &&
-        !hasCountry
-      ) {
-        return true;
-      }
-
-      return (
-        cityMatch ||
-        stateMatch ||
-        countryMatch
-      );
-    },
-    [location]
-  );
-
+  // Posts arrive already filtered by category + viewer location (server-side).
   const categoryPosts = useMemo(() => {
     const sourcePosts = Array.isArray(
       visiblePosts
@@ -279,9 +170,6 @@ export default function CategoryDisplay({
           categorySlug
         );
 
-      const matchesLocation =
-        locationMatchesPost(post);
-
       const matchesUser = selectedUser
         ? post?.userId?.username ===
           selectedUser
@@ -289,14 +177,12 @@ export default function CategoryDisplay({
 
       return (
         matchesCategory &&
-        matchesLocation &&
         matchesUser
       );
     });
   }, [
     visiblePosts,
     categorySlug,
-    locationMatchesPost,
     selectedUser,
   ]);
 
@@ -433,7 +319,17 @@ export default function CategoryDisplay({
             )}
           </div>
         ) : (
-          <CategoryPostsLoader />
+          <div className="rounded-2xl border border-black/10 bg-gray-50 px-6 py-12 text-center">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {selectedUser
+                ? `No ${categoryTitle} posts from ${selectedUser}`
+                : `No ${categoryTitle} posts near ${areaLabel} yet`}
+            </h3>
+
+            <p className="mt-2 text-sm text-gray-500">
+              Check back soon, or change your location to see listings in another area.
+            </p>
+          </div>
         )}
       </div>
     </section>

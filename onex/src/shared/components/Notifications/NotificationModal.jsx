@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useRef, useEffect } from 'react';
 import { X, UserPlus, MessageSquare, TrendingUp, Bell, CheckCheck, Star, PartyPopper, Eye, Coins, Heart, Trophy, Flag, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -132,9 +133,7 @@ export default function NotificationModal({
       {/* List */}
       <div className="max-h-[380px] overflow-y-auto divide-y divide-neutral-800/50">
         {loading ? (
-          <div className="flex items-center justify-center py-10">
-            <div className="h-6 w-6 rounded-full border-2 border-pink-500 border-t-transparent animate-spin" />
-          </div>
+          <BrandLoader size="sm" />
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 py-10 text-neutral-500">
             <Bell size={28} className="opacity-30" />

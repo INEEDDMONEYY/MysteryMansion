@@ -12,3 +12,6 @@ export { default as PromotionRequest } from './PromotionRequest.js';
 export { default as Review } from './Review.js';
 export { default as Comment } from './Comment.js';
 export { default as AnalyticsEvent } from './AnalyticsEvent.js';
+export { default as UserMedia } from './UserMedia.js';
+export { default as ContactInquiry } from './ContactInquiry.js';
+export { default as SearchQuery } from './SearchQuery.js';

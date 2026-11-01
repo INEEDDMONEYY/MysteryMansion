@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, CheckCircle, XCircle, Eye, EyeOff, Save, X, HelpCircle, AlertCircle } from 'lucide-react';
 import api from '@/shared/utils/api';
@@ -273,11 +274,7 @@ export default function AdminFAQPage() {
 
       {/* List */}
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 rounded-2xl bg-neutral-800 animate-pulse" />
-          ))}
-        </div>
+        <BrandLoader size="sm" tone="dark" />
       ) : faqs.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-20 text-neutral-500">
           <HelpCircle size={40} className="opacity-20" />

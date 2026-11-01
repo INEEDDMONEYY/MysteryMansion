@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useMemo, useState } from 'react';
 import { Link2, TrendingUp, Gift, Percent, Search } from 'lucide-react';
 import api from '@/shared/utils/api';
@@ -79,9 +80,7 @@ export default function AdminReferralsPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-2xl bg-neutral-800 animate-pulse" />)}
-        </div>
+        <BrandLoader size="sm" tone="dark" />
       ) : filtered.length === 0 ? (
         <p className="text-sm text-neutral-500">
           {referrals.length === 0 ? 'No providers have generated a referral link yet.' : 'No providers match your search.'}

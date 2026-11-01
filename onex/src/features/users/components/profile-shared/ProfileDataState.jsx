@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 /** Shared loading / error / empty / load-more wrapper for the admin profile panels. */
 export default function ProfileDataState({
   loading,
@@ -12,11 +13,7 @@ export default function ProfileDataState({
 }) {
   if (loading) {
     return (
-      <div className="space-y-3" aria-label="Loading">
-        {[1, 2, 3].map((item) => (
-          <div key={item} className="h-24 animate-pulse rounded-xl bg-gray-100" />
-        ))}
-      </div>
+      <BrandLoader size="sm" />
     );
   }
 

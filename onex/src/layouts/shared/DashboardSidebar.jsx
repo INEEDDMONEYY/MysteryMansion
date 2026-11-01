@@ -1,33 +1,7 @@
-/**
- * DashboardSidebar — shared sidebar shell used by both AdminSidebar & UserSidebar.
- *
- * Structure (identical for admin + user, only props differ):
- *   ┌──────────────────┐
- *   │  Brand / Avatar  │  ← brand prop
- *   ├──────────────────┤
- *   │  Nav items       │  ← navItems prop
- *   ├──────────────────┤
- *   │  Extra slot      │  ← extraNav prop  (feature-flagged items, etc.)
- *   ├──────────────────┤
- *   │  Footer actions  │  ← footerActions prop
- *   └──────────────────┘
- *
- * Props:
- *   variant       — 'admin' | 'user'   adds a BEM modifier for theming
- *   isOpen        — bool               mobile drawer state
- *   onClose       — fn()               close the drawer
- *   brand         — { label, avatarSrc, avatarAlt }
- *   navItems      — NavItem[]          see type below
- *   extraNav      — ReactNode          optional slot after navItems (feature flags etc.)
- *   footerActions — FooterAction[]     see type below
- *
- * NavItem: { to, label, icon: LucideIcon, end?: bool, badge?: number }
- * FooterAction: { label, icon: LucideIcon, onClick: fn, danger?: bool }
- */
-import { NavLink } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
 
 export default function DashboardSidebar({
-  variant = 'user',
+  variant = "user",
   isOpen = false,
   onClose,
   brand = {},
@@ -35,67 +9,128 @@ export default function DashboardSidebar({
   extraNav,
   footerActions = [],
 }) {
+  const isClient = variant === "client";
+
+  const sidebarTheme = isClient
+    ? "bg-white border-gray-200"
+    : "bg-white border-gray-200";
+
+  const brandBorder = isClient
+    ? "border-gray-200"
+    : "border-gray-200";
+
+  const brandText = isClient
+    ? "text-black"
+    : "text-gray-900";
+
+  const getNavClass = (isActive) => {
+    if (isClient) {
+      return `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+        isActive
+          ? "bg-gray-100 text-black font-semibold shadow-[inset_3px_0_0_0_#000]"
+          : "text-gray-600 hover:bg-gray-100 hover:text-black"
+      }`;
+    }
+
+    return `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+      isActive
+        ? "bg-pink-600 text-white font-medium"
+        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+    }`;
+  };
+
+  const getBadgeClass = (badge, isActive) => {
+    if (isClient) {
+      return `min-w-5 text-center rounded-full px-1.5 py-0.5 text-xs font-semibold ${
+        badge > 0
+          ? "bg-black text-white"
+          : "bg-gray-200 text-gray-600"
+      }`;
+    }
+
+    return `min-w-5 text-center rounded-full px-1.5 py-0.5 text-xs font-semibold ${
+      badge > 0
+        ? "bg-pink-500 text-white"
+        : "bg-gray-200 text-gray-500"
+    }`;
+  };
+
+  const getFooterClass = (danger) => {
+    if (isClient) {
+      return danger
+        ? "text-gray-800 hover:bg-gray-100 hover:text-black"
+        : "text-gray-600 hover:bg-gray-100 hover:text-black";
+    }
+
+    return danger
+      ? "text-red-600 hover:bg-red-50 hover:text-red-700"
+      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
+  };
+
   return (
     <>
-      {/* Mobile backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-[280px] flex flex-col border-r transition-transform duration-300
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0
-          ${variant === 'client'
-            ? 'bg-slate-900 border-slate-800'
-            : 'bg-white border-gray-200'
-          }`}
-        aria-label={`${variant === 'admin' ? 'Admin' : 'User'} navigation`}
+        className={`fixed left-0 top-0 z-50 flex h-full w-[280px] flex-col border-r transition-transform duration-300
+          ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0
+          ${sidebarTheme}`}
+        aria-label={`${
+          variant === "admin"
+            ? "Admin"
+            : isClient
+              ? "Client"
+              : "User"
+        } navigation`}
       >
-        {/* ── Brand / profile row ── */}
-        <div className={`flex items-center gap-3 px-6 py-5 border-b ${variant === 'client' ? 'border-slate-800' : 'border-gray-200'}`}>
+        <div
+          className={`flex items-center gap-3 border-b px-6 py-5 ${brandBorder}`}
+        >
           {brand.avatarSrc && (
             <img
               src={brand.avatarSrc}
-              alt={brand.avatarAlt ?? 'Avatar'}
-              className="w-9 h-9 rounded-full object-cover shrink-0"
+              alt={brand.avatarAlt ?? "Avatar"}
+              className="h-9 w-9 shrink-0 rounded-full object-cover"
             />
           )}
-          <span className={`font-semibold text-sm truncate ${variant === 'client' ? 'text-white' : 'text-gray-900'}`}>{brand.label}</span>
+
+          <span
+            className={`truncate text-sm font-semibold ${brandText}`}
+          >
+            {brand.label}
+          </span>
         </div>
 
-        {/* ── Navigation ── */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {navItems.map(({ to, label, icon: Icon, end, badge }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                  isActive
-                    ? variant === 'client'
-                      ? 'bg-blue-700 text-white font-medium'
-                      : 'bg-pink-600 text-white font-medium'
-                    : variant === 'client'
-                      ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                }`
-              }
+              className={({ isActive }) => getNavClass(isActive)}
             >
-              {Icon && <Icon size={18} aria-hidden="true" className="shrink-0" />}
-              <span className="flex-1">{label}</span>
-              {typeof badge === 'number' && (
-                <span
-                  className={`min-w-5 text-center rounded-full px-1.5 py-0.5 text-xs font-semibold ${
-                    badge > 0
-                      ? variant === 'client' ? 'bg-blue-600 text-white' : 'bg-pink-500 text-white'
-                      : 'bg-gray-200 text-gray-500'
+              {Icon && (
+                <Icon
+                  size={18}
+                  aria-hidden="true"
+                  className={`shrink-0 ${
+                    isClient ? "text-black" : ""
                   }`}
+                />
+              )}
+
+              <span className="flex-1">{label}</span>
+
+              {typeof badge === "number" && (
+                <span
+                  className={getBadgeClass(badge)}
                   aria-label={`${badge} unread`}
                 >
                   {badge}
@@ -104,33 +139,37 @@ export default function DashboardSidebar({
             </NavLink>
           ))}
 
-          {/* Optional extra nav slot */}
           {extraNav}
         </nav>
 
-        {/* ── Footer actions ── */}
-        <div className={`px-3 py-4 border-t space-y-1 ${variant === 'client' ? 'border-slate-800' : 'border-gray-200'}`}>
+        <div
+          className={`space-y-1 border-t px-3 py-4 ${
+            isClient ? "border-gray-200" : "border-gray-200"
+          }`}
+        >
           {footerActions.map(({ label, icon: Icon, onClick, danger }) => (
             <button
               key={label}
               type="button"
               onClick={onClick}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${getFooterClass(
                 danger
-                  ? variant === 'client'
-                    ? 'text-red-400 hover:bg-red-900/30 hover:text-red-300'
-                    : 'text-red-600 hover:bg-red-50 hover:text-red-700'
-                  : variant === 'client'
-                    ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-              }`}
+              )}`}
             >
-              {Icon && <Icon size={18} aria-hidden="true" className="shrink-0" />}
+              {Icon && (
+                <Icon
+                  size={18}
+                  aria-hidden="true"
+                  className={`shrink-0 ${
+                    isClient ? "text-black" : ""
+                  }`}
+                />
+              )}
+
               <span>{label}</span>
             </button>
           ))}
         </div>
-
       </aside>
     </>
   );

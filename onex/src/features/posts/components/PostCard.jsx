@@ -15,6 +15,8 @@ import { hasPermanentProviderBadge } from "@/features/users/services/providerBad
 import { getPostCategories } from "../services/postCategories";
 import FlagButton from "@/features/flagging/components/FlagButton";
 import { FLAG_TARGET_TYPES } from "@/features/flagging/utils/flagTargets";
+import ProfilePostCard from "./ProfilePostCard";
+import { formatLocation } from "../utils/postLocation";
 
 const getPostedAgoLabel = (createdAt) => {
   if (!createdAt) {
@@ -326,6 +328,21 @@ export default function PostCard({
     }
   };
 
+  if (post.postType === "profile") {
+    return (
+      <ProfilePostCard
+        post={post}
+        showBlueBadge={showBlueBadge}
+        showPinkBadge={showPinkBadge}
+        isOwner={isOwner}
+        isDeleting={isDeleting}
+        onDelete={handleDelete}
+      />
+    );
+  }
+
+  const displayLocation = formatLocation(post);
+
   return (
     <article
       className={`relative w-full overflow-hidden rounded-md p-[1.5px] shadow-md [content-visibility:auto] [contain-intrinsic-size:auto_360px] ${
@@ -558,21 +575,6 @@ export default function PostCard({
                   </div>
                 )}
             </div>
-
-            {post.visibility && (
-              <div
-                className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold text-white shadow-md sm:px-2 sm:text-[10px] md:text-xs ${
-                  showBlueBadge
-                    ? "bg-gradient-to-r from-blue-700 via-sky-500 to-cyan-400"
-                    : "bg-pink-600"
-                }`}
-              >
-                {post.visibility ===
-                "Both"
-                  ? "See's Both"
-                  : `See's Only: ${post.visibility}`}
-              </div>
-            )}
           </div>
 
           <div className="mb-1 flex items-center gap-2">
@@ -616,10 +618,8 @@ export default function PostCard({
           </p>
 
           <p className="mt-1 break-words text-[10px] text-gray-700">
-            {post.city &&
-            post.state
-              ? `${post.city}, ${post.state}`
-              : "Location not specified."}
+            {displayLocation ||
+              "Location not specified."}
           </p>
 
           {displayCategories.length >

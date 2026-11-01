@@ -1,3 +1,4 @@
+export { default as BrandLoader } from './BrandLoader.jsx';
 export { default as CategoryPostsLoader } from './CategoryPostsLoader.jsx';
 export { default as EmptyCategoryLoader } from './EmptyCategoryLoader.jsx';
 export { default as PostDetailLoader } from './PostDetailLoader.jsx';

@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useState, useEffect } from 'react';
 import { Send, Users, User, Search, CheckCircle2, XCircle, Loader2, Mail, Tag } from 'lucide-react';
 import api from '@/shared/utils/api';
@@ -201,9 +202,7 @@ export default function AdminEmailUsersPage() {
                 {/* User list — always visible */}
                 <div className="max-h-64 overflow-y-auto divide-y divide-neutral-700/50">
                   {usersLoading ? (
-                    <div className="flex items-center justify-center py-10">
-                      <Loader2 size={18} className="animate-spin text-neutral-500" />
-                    </div>
+                    <BrandLoader size="sm" tone="dark" />
                   ) : filteredUsers.length === 0 ? (
                     <p className="text-center text-sm text-neutral-500 py-10">No users found</p>
                   ) : (

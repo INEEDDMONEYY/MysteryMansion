@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from 'react';
 import { Coins, CheckCircle, XCircle, Clock, ChevronDown } from 'lucide-react';
 import api from '@/shared/utils/api';
@@ -203,11 +204,7 @@ export default function AdminCreditRequestsPage() {
 
       {/* List */}
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 rounded-xl bg-neutral-800 animate-pulse" />
-          ))}
-        </div>
+        <BrandLoader size="sm" tone="dark" />
       ) : requests.length === 0 ? (
         <div className="text-center py-16 text-neutral-500">
           <Coins size={40} className="mx-auto mb-3 opacity-30" />

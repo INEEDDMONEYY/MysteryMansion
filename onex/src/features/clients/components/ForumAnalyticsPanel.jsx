@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -162,14 +163,7 @@ export default function ForumAnalyticsPanel() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-[74px] animate-pulse rounded-xl bg-gray-100" />
-            ))}
-          </div>
-          <div className="h-28 animate-pulse rounded-xl bg-gray-100" />
-        </div>
+        <BrandLoader size="sm" />
       ) : error ? (
         <p role="alert" className="py-6 text-center text-sm text-red-600">
           {error}

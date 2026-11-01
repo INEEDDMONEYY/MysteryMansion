@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -344,19 +345,9 @@ export default function UserActivity() {
         </div>
       )}
 
-      {/* Loading skeleton */}
+      {/* Loading */}
       {loading && !data && (
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="px-4 py-3 border-b border-gray-50 flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-lg animate-pulse shrink-0" />
-              <div className="flex-1 space-y-2">
-                <div className="h-3 bg-gray-100 rounded animate-pulse w-1/2" />
-                <div className="h-3 bg-gray-100 rounded animate-pulse w-1/4" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <BrandLoader size="sm" />
       )}
 
       {/* Content */}

@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState, useContext } from "react";
 import { ArrowLeft, Coins, AlertCircle, MessageCircle, RefreshCw } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -112,9 +113,7 @@ export default function UserMessages() {
 
   if (userLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 rounded-full border-2 border-pink-500 border-t-transparent animate-spin" />
-      </div>
+      <BrandLoader size="md" className="h-64" />
     );
   }
 
@@ -175,9 +174,7 @@ export default function UserMessages() {
 
             {/* Messages */}
             {msgLoading ? (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="w-7 h-7 rounded-full border-2 border-pink-500 border-t-transparent animate-spin" />
-              </div>
+              <BrandLoader size="sm" className="flex-1" />
             ) : (
               <MessageList messages={messages} currentUserId={user?._id} onReact={handleReact} className="flex-1" />
             )}

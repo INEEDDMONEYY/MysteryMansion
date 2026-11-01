@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState } from "react";
 import { CalendarPlus, CheckCircle2, XCircle, RefreshCcw, Trash2 } from "lucide-react";
 import { useUser } from "@/context/useUser";
@@ -176,7 +177,7 @@ export default function CompletedDates({ userId }) {
 
       {/* Entries list */}
       {loading ? (
-        <p className="mt-5 text-center text-xs text-gray-400">Loading completed dates...</p>
+        <BrandLoader size="sm" label="Loading completed dates..." />
       ) : entries.length > 0 ? (
         <ul className="mt-5 space-y-2">
           {entries.map(({ id, date, status }) => {

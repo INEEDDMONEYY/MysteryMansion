@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useState, useEffect } from 'react';
 import api from '@/shared/utils/api';
 import PostCard from './PostCard';
@@ -103,9 +104,7 @@ export default function PostList({ authorId = "" }) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh] text-gray-500 text-lg">
-        Loading posts...
-      </div>
+      <BrandLoader size="sm" label="Loading posts..." className="min-h-[40vh]" />
     );
   }
 

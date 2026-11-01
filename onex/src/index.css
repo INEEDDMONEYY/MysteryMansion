@@ -13,6 +13,16 @@
   box-sizing: border-box;
 }
 
+/* BrandLoader: fade in after a beat so quick loads don't flash the splash. */
+@keyframes mm-loader-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mm-loader-fade-in {
+  animation: mm-loader-fade-in 0.3s ease-out 0.25s both;
+}
+
 /*
   Prevent iOS Safari from auto-zooming on form-field focus.
   Safari zooms in whenever a focused input/select/textarea has font-size < 16px.

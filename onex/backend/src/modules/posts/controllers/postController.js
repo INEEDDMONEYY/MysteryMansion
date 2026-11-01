@@ -1,17 +1,25 @@
 // backend/controllers/postController.js
 import Post from '../../../models/Post.js';
+import { applyContactMask } from '../../../common/utils/contactPrivacy.js';
 import Comment from '../../../models/Comment.js';
 import User from '../../../models/User.js';
 import cloudinary from '../../../common/utils/cloudinary.js';
 import streamifier from 'streamifier';
 import env from '../../../config/env.js';
-import { normalizeState } from '../../../common/utils/stateNormalizer.js';
+import {
+  normalizeLocation,
+  parseLocationString,
+  reverseGeocode,
+  hasLocation,
+  exactMatch,
+} from '../../../common/utils/locationNormalizer.js';
 import { createNotification } from '../../notifications/notificationController.js';
 import { sendAccountActivityEmail } from '../../../common/utils/sendAccountActivityEmail.js';
 import { uploadBackupCopy } from '../../../common/utils/backupStorage.js';
 import { awardCredits } from '../../credits/creditEarnService.js';
 import { consumeBoost, notifyBoostApplied } from '../../membership/membershipService.js';
 import { BOOST_DURATION_MS } from '../../membership/membershipCatalog.js';
+import { detectMediaKind } from '../mediaKind.js';
 
 // Maps the account-level gender (set on the user's profile) to the post-level
 // gender enum, used as a fallback when a post itself doesn't specify one.
@@ -19,6 +27,56 @@ const ACCOUNT_GENDER_TO_POST_GENDER = {
   'Woman escort': 'female',
   'Man escort': 'male',
   'TS escort': 'ts',
+};
+
+// Author fields shown on cards/feeds.
+export const AUTHOR_LIST_FIELDS =
+  'username bio profilePic age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry createdAt badgeType location';
+
+// Post details also show the author's profile details (body type, height, ...).
+// phoneNumber/email are selected only so they can be masked before sending.
+const AUTHOR_DETAIL_FIELDS = `${AUTHOR_LIST_FIELDS} phoneNumber email catersTo bodyType height weight ethnicity cupSize hairColor eyeColor tourSchedule activities showLastActive lastActiveAt`;
+
+// Last-active is opt-in; never expose it unless the author enabled it.
+const stripPrivateAuthorFields = (postDoc) => {
+  if (!postDoc) return postDoc;
+  const post = typeof postDoc.toObject === 'function' ? postDoc.toObject() : postDoc;
+  if (post.userId && typeof post.userId === 'object') {
+    if (!post.userId.showLastActive) delete post.userId.lastActiveAt;
+    applyContactMask(post.userId);
+  }
+  return post;
+};
+
+/**
+ * Works out where a post is being made from, most reliable source first:
+ * device coordinates (reverse-geocoded server-side) -> location the client
+ * already detected -> the location on the author's profile.
+ */
+async function resolvePostLocation(body = {}, user = {}) {
+  if (body.latitude !== undefined && body.longitude !== undefined) {
+    const geocoded = await reverseGeocode(body.latitude, body.longitude);
+    if (geocoded) return geocoded;
+  }
+
+  const fromClient = normalizeLocation({ city: body.city, state: body.state, country: body.country });
+  if (hasLocation(fromClient)) return fromClient;
+
+  return normalizeLocation(parseLocationString(user?.location));
+}
+
+// "body-rubs" -> /^\s*body[^a-z0-9]+rubs\s*$/i, matching "Body Rubs", "body_rubs", etc.
+const categorySlugMatcher = (value) => {
+  const parts = String(value || '')
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  if (!parts.length) return null;
+  const pattern = parts
+    .map((part) => (part === 'and' ? '(?:and|&)' : part))
+    .join('[^a-z0-9]+');
+  return new RegExp(`^\\s*${pattern}\\s*$`, 'i');
 };
 
 const normalizeCategories = ({ categories, category }) => {
@@ -48,20 +106,32 @@ export async function createPost(req, res) {
   try {
     if (!req.user?._id) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { title, description, city, state, country, category, categories, visibility, gender } = req.body;
-    if (!title || !description)
+    const { category, categories, gender } = req.body;
+    const postType = req.body.postType === 'profile' ? 'profile' : 'listing';
+    const title = String(req.body.title || '').trim();
+    const description = String(req.body.description || '').trim();
+
+    if (postType === 'listing' && (!title || !description))
       return res.status(400).json({ error: 'Title and description required' });
 
     const promoExpiry = req.user.activePromoExpiry ? new Date(req.user.activePromoExpiry) : null;
     const hasActivePromo = Boolean(promoExpiry && !Number.isNaN(promoExpiry.getTime()) && promoExpiry > new Date());
     const effectiveCategories = normalizeCategories({ categories, category });
     const effectiveCategory = effectiveCategories[0];
-    const normalizedCity = city?.trim() || '';
-    const normalizedState = normalizeState(state);
-    const normalizedCountry = country?.trim() || '';
+    const location = await resolvePostLocation(req.body, req.user);
     const normalizedGender = ['female', 'male', 'ts'].includes(gender)
       ? gender
       : ACCOUNT_GENDER_TO_POST_GENDER[req.user.gender] || '';
+
+    if (postType === 'profile') {
+      return saveProfilePost(req, res, {
+        categories: effectiveCategories,
+        location,
+        gender: normalizedGender,
+        hasActivePromo,
+        promoExpiry,
+      });
+    }
 
     let imageUrls = [];
     let videoUrls = [];
@@ -71,6 +141,7 @@ export async function createPost(req, res) {
     const uploadedFiles = Array.isArray(req.files)
       ? req.files
       : [
+          ...(Array.isArray(req.files?.media) ? req.files.media : []),
           ...(Array.isArray(req.files?.pictures) ? req.files.pictures : []),
           ...(Array.isArray(req.files?.videos) ? req.files.videos : []),
         ];
@@ -80,7 +151,7 @@ export async function createPost(req, res) {
     // Cloudinary's moderation has been flagging/removing legitimate videos.
     if (uploadedFiles.length > 0) {
       const uploadPromises = uploadedFiles.map((file) => {
-        const isVideo = file.mimetype?.startsWith('video/');
+        const isVideo = detectMediaKind(file) === 'video';
 
         if (isVideo) {
           return uploadBackupCopy({
@@ -88,7 +159,7 @@ export async function createPost(req, res) {
             folder: 'posts',
             userId: req.user._id,
             originalName: file.originalname,
-            contentType: file.mimetype,
+            contentType: file.mimetype || 'video/mp4',
           }).then((uploaded) => {
             if (!uploaded) throw new Error('Video upload failed: Cloudflare storage is not configured');
             return { url: uploaded.url, backupUrl: '', type: 'video' };
@@ -97,7 +168,12 @@ export async function createPost(req, res) {
 
         return new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
-            { folder: 'posts', resource_type: 'auto' },
+            {
+              folder: 'posts',
+              resource_type: 'auto',
+              // HEIC/HEIF (iPhone) isn't viewable in most browsers; store as JPEG.
+              ...(/\.hei[cf]$/i.test(file.originalname || '') || /hei[cf]/i.test(file.mimetype || '') ? { format: 'jpg' } : {}),
+            },
             async (error, result) => {
               if (error) return reject(error);
               const backup = await uploadBackupCopy({
@@ -129,15 +205,15 @@ export async function createPost(req, res) {
 
     const newPost = new Post({
       userId: req.user._id,
+      postType,
       title,
       description,
-      city: normalizedCity,
-      state: normalizedState,
-      country: normalizedCountry,
+      city: location.city,
+      state: location.state,
+      country: location.country,
       gender: normalizedGender,
       category: effectiveCategory,
       categories: effectiveCategories,
-      visibility,
       pictures: imageUrls,
       videos: videoUrls,
       pictureBackups: imageBackupUrls,
@@ -160,7 +236,7 @@ export async function createPost(req, res) {
 
     const populatedPost = await Post.findById(savedPost._id).populate({
       path: 'userId',
-      select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry createdAt badgeType',
+      select: AUTHOR_LIST_FIELDS,
     });
 
     res.status(201).json(populatedPost);
@@ -190,31 +266,79 @@ export async function createPost(req, res) {
   }
 }
 
+// ---------------- Profile posts ----------------
+// One profile post per member: posting again updates its categories and
+// location rather than creating duplicates. Avatar, prices and bio are read
+// live from the author's profile when rendered, so they never go stale.
+async function saveProfilePost(req, res, { categories, location, gender, hasActivePromo, promoExpiry }) {
+  const fields = {
+    title: `${req.user.username || 'Member'}'s profile`,
+    description: String(req.user.bio || '').trim(),
+    city: location.city,
+    state: location.state,
+    country: location.country,
+    gender,
+    category: categories[0],
+    categories,
+    isPromo: hasActivePromo,
+    promoExpiresAt: hasActivePromo ? promoExpiry : null,
+    badgeType: req.user.badgeType || '',
+  };
+
+  const existing = await Post.findOne({ userId: req.user._id, postType: 'profile' });
+  let postId;
+  let created = false;
+
+  if (existing) {
+    existing.set(fields);
+    await existing.save();
+    postId = existing._id;
+  } else {
+    const saved = await new Post({ ...fields, userId: req.user._id, postType: 'profile' }).save();
+    postId = saved._id;
+    created = true;
+    awardCredits({ userId: req.user._id, eventKey: 'create_post', refId: String(saved._id) });
+    await User.findByIdAndUpdate(req.user._id, {
+      lastPostAt: saved.createdAt,
+      lastInactivityEmailDays: 0,
+    }).catch((err) => console.error('❌ Failed to update lastPostAt:', err.message));
+  }
+
+  const populated = await Post.findById(postId).populate({ path: 'userId', select: AUTHOR_LIST_FIELDS });
+  return res.status(created ? 201 : 200).json({ ...populated.toObject(), updated: !created });
+}
+
+// ---------------- Resolve the poster's location ----------------
+// Lets the post form show "Posting in <city, state>" before submitting.
+export async function resolveLocation(req, res) {
+  try {
+    const location = await resolvePostLocation(req.query, req.user);
+    res.json({ location: hasLocation(location) ? location : null });
+  } catch (err) {
+    console.error('❌ [resolveLocation] Error:', err);
+    res.status(500).json({ error: 'Failed to resolve location' });
+  }
+}
+
 // ---------------- Get filter options (states + cities from real posts) ----------------
 export async function getFilterOptions(req, res) {
   try {
     const raw = await Post.find(
       { state: { $exists: true, $ne: '' } },
-      { state: 1, city: 1 }
+      { state: 1, city: 1, country: 1 }
     ).lean();
 
-    // Normalize to Title Case so "colorado springs" and "Colorado Springs"
-    // collapse into a single entry rather than appearing as duplicates.
-    const toTitleCase = (str) =>
-      str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
-
+    // Normalize so "colorado springs, CO" and "Colorado Springs, Colorado"
+    // collapse into one entry.
     const stateSet = new Set();
     const citiesByState = {};
 
     for (const post of raw) {
-      const st = toTitleCase((post.state || '').trim());
-      if (!st) continue;
-      stateSet.add(st);
-      const cities = (post.city || '').split(',').map((c) => toTitleCase(c.trim())).filter(Boolean);
-      for (const c of cities) {
-        if (!citiesByState[st]) citiesByState[st] = new Set();
-        citiesByState[st].add(c);
-      }
+      const { city, state } = normalizeLocation(post);
+      if (!state) continue;
+      stateSet.add(state);
+      if (!citiesByState[state]) citiesByState[state] = new Set();
+      if (city) citiesByState[state].add(city);
     }
 
     const citiesByStateArr = {};
@@ -232,14 +356,52 @@ export async function getFilterOptions(req, res) {
   }
 }
 
+/**
+ * Location filter for the feed.
+ * - match=near (discovery): everything in the viewer's state/province, falling
+ *   back to city, then country, when the broader part is unknown. Results are
+ *   ordered with the viewer's own city first.
+ * - default (explicit filters): every provided part must match.
+ */
+const buildLocationFilter = (query) => {
+  const loc = normalizeLocation({ city: query.city, state: query.state, country: query.country });
+
+  if (query.match === 'near') {
+    if (loc.state) return { filter: { state: exactMatch(loc.state) }, loc };
+    if (loc.city) return { filter: { city: exactMatch(loc.city) }, loc };
+    if (loc.country) return { filter: { country: exactMatch(loc.country) }, loc };
+    return { filter: {}, loc };
+  }
+
+  const filter = {};
+  if (loc.state) filter.state = exactMatch(loc.state);
+  if (loc.city) filter.city = exactMatch(loc.city);
+  if (loc.country && !loc.state && !loc.city) filter.country = exactMatch(loc.country);
+  return { filter, loc };
+};
+
 // ---------------- Get all posts ----------------
 export async function getPosts(req, res) {
   try {
-    const { userId, state, city, gender } = req.query;
-    const filter = {};
-    if (userId) filter.userId = userId;
-    if (state) filter.state = { $regex: new RegExp(`^${state.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
-    if (city)  filter.city  = { $regex: new RegExp(city.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') };
+    const { userId, gender, category, postType } = req.query;
+    const conditions = [];
+
+    if (userId) conditions.push({ userId });
+    if (['listing', 'profile'].includes(postType)) {
+      conditions.push(
+        postType === 'listing'
+          ? { postType: { $in: ['listing', null] } }
+          : { postType: 'profile' }
+      );
+    }
+
+    const { filter: locationFilter, loc } = buildLocationFilter(req.query);
+    if (Object.keys(locationFilter).length) conditions.push(locationFilter);
+
+    const categoryMatcher = categorySlugMatcher(category);
+    if (categoryMatcher) {
+      conditions.push({ $or: [{ categories: categoryMatcher }, { category: categoryMatcher }] });
+    }
 
     if (gender && ['female', 'male', 'ts'].includes(gender)) {
       // Many posts predate the per-post gender field or skip it, so also match
@@ -250,15 +412,28 @@ export async function getPosts(req, res) {
         ? await User.find({ gender: accountGender }).select('_id').lean()
         : [];
 
-      filter.$or = [
-        { gender },
-        { gender: { $in: ['', null] }, userId: { $in: genderOwnerIds.map((u) => u._id) } },
-      ];
+      conditions.push({
+        $or: [
+          { gender },
+          { gender: { $in: ['', null] }, userId: { $in: genderOwnerIds.map((u) => u._id) } },
+        ],
+      });
     }
 
-    const posts = await Post.find(filter)
+    const filter = conditions.length ? { $and: conditions } : {};
+
+    let posts = await Post.find(filter)
       .sort({ createdAt: -1 })
-      .populate({ path: 'userId', select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry createdAt badgeType' });
+      .populate({ path: 'userId', select: AUTHOR_LIST_FIELDS })
+      .lean();
+
+    if (req.query.match === 'near' && loc.city) {
+      const cityRe = exactMatch(loc.city);
+      const local = [];
+      const rest = [];
+      for (const post of posts) (cityRe.test(post.city || '') ? local : rest).push(post);
+      posts = [...local, ...rest];
+    }
 
     res.json(posts);
   } catch (err) {
@@ -272,12 +447,12 @@ export async function getPostById(req, res) {
   try {
     const post = await Post.findById(req.params.id).populate({
       path: 'userId',
-      select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry createdAt badgeType',
+      select: AUTHOR_DETAIL_FIELDS,
     });
 
     if (!post) return res.status(404).json({ error: 'Post not found' });
 
-    res.json(post);
+    res.json(stripPrivateAuthorFields(post));
   } catch (err) {
     console.error('❌ [getPostById] Error:', err);
     res.status(500).json({ error: 'Failed to fetch post', details: err.message });
@@ -316,6 +491,8 @@ export async function boostPost(req, res) {
 }
 
 // ---------------- Update post ----------------
+const EDITABLE_POST_TEXT_FIELDS = ['title', 'description', 'city', 'state', 'country'];
+
 export async function updatePost(req, res) {
   try {
     const post = await Post.findById(req.params.id);
@@ -325,7 +502,39 @@ export async function updatePost(req, res) {
       return res.status(403).json({ error: 'Not authorized to update this post' });
     }
 
-    const updateData = { ...req.body };
+    // Only content fields are editable. Ownership, post type, media, promo,
+    // boost, badge and moderation fields are managed by dedicated endpoints.
+    const body = req.body || {};
+    const has = (key) => Object.prototype.hasOwnProperty.call(body, key);
+    const updateData = {};
+
+    for (const key of EDITABLE_POST_TEXT_FIELDS) {
+      if (!has(key)) continue;
+      if (body[key] !== null && typeof body[key] !== 'string') {
+        return res.status(400).json({ error: `${key} must be text.` });
+      }
+      updateData[key] = String(body[key] ?? '').trim();
+    }
+
+    if (post.postType !== 'profile') {
+      if (has('title') && !updateData.title) return res.status(400).json({ error: 'Title cannot be empty.' });
+      if (has('description') && !updateData.description) {
+        return res.status(400).json({ error: 'Description cannot be empty.' });
+      }
+    }
+
+    if (has('gender')) updateData.gender = String(body.gender ?? '').trim().toLowerCase();
+    if (has('categories')) updateData.categories = body.categories;
+    if (has('category')) updateData.category = body.category;
+
+    if (['city', 'state', 'country'].some((key) => Object.prototype.hasOwnProperty.call(updateData, key))) {
+      const location = normalizeLocation({
+        city: updateData.city ?? post.city,
+        state: updateData.state ?? post.state,
+        country: updateData.country ?? post.country,
+      });
+      Object.assign(updateData, location);
+    }
 
     if (Object.prototype.hasOwnProperty.call(updateData, 'categories') || Object.prototype.hasOwnProperty.call(updateData, 'category')) {
       const effectiveCategories = normalizeCategories({
@@ -336,15 +545,26 @@ export async function updatePost(req, res) {
       updateData.category = effectiveCategories[0];
     }
 
-    const updatedPost = await Post.findByIdAndUpdate(req.params.id, updateData, { new: true }).populate({
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: 'No editable post fields were provided.' });
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    ).populate({
       path: 'userId',
-      select: 'username email bio profilePic phoneNumber age availability incallPrice outcallPrice overnightPrice flyOutPrice gender activePromoExpiry badgeType',
+      select: AUTHOR_LIST_FIELDS,
     });
 
     res.json(updatedPost);
   } catch (err) {
+    if (err?.name === 'ValidationError' || err?.name === 'CastError') {
+      return res.status(400).json({ error: err.message });
+    }
     console.error('❌ [updatePost] Error:', err);
-    res.status(500).json({ error: 'Failed to update post', details: err.message });
+    res.status(500).json({ error: 'Failed to update post' });
   }
 }
 

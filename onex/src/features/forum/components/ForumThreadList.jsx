@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { MessageSquareText } from "lucide-react";
 
 import ForumThreadCard from "./ForumThreadCard";
@@ -11,19 +12,7 @@ export default function ForumThreadList({
 }) {
   if (loading) {
     return (
-      <div className="space-y-4" aria-label="Loading discussions">
-        {[1, 2, 3, 4].map((item) => (
-          <div
-            key={item}
-            className="animate-pulse rounded-2xl border border-gray-200 bg-white p-6"
-          >
-            <div className="h-4 w-28 rounded bg-gray-200" />
-            <div className="mt-4 h-6 w-3/4 rounded bg-gray-200" />
-            <div className="mt-3 h-4 w-full rounded bg-gray-100" />
-            <div className="mt-2 h-4 w-2/3 rounded bg-gray-100" />
-          </div>
-        ))}
-      </div>
+      <BrandLoader size="sm" label="Loading discussions..." />
     );
   }
 

@@ -1,3 +1,4 @@
+import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CountUp from 'react-countup';
@@ -101,11 +102,7 @@ export default function ClientDashboard() {
 
       {/* Stat cards */}
       {loading ? (
-        <div key="stats-loading" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 rounded-2xl bg-white/60 animate-pulse" />
-          ))}
-        </div>
+        <BrandLoader key="stats-loading" size="sm" />
       ) : (
         <div key="stats-loaded" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard

@@ -11,14 +11,17 @@ import { Outlet, useMatches } from 'react-router-dom';
 import AdminSidebar from './admin/AdminSidebar';
 import AdminDashboardHeader from './admin/AdminDashboardHeader';
 import ScrollToTop from '@/shared/components/ScrollToTop';
+import RouteSEO from '@/shared/components/SEO/RouteSEO';
 import NotificationToastHost from '@/shared/components/Notifications/NotificationToastHost';
 import useUnreadMessages from '@/shared/hooks/useUnreadMessages';
 import usePendingCreditRequests from '@/shared/hooks/usePendingCreditRequests';
+import useNewContactInquiries from '@/shared/hooks/useNewContactInquiries';
 
 export default function AdminLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { unreadCount: unreadMessages } = useUnreadMessages();
   const { count: pendingCreditRequests } = usePendingCreditRequests();
+  const { count: newContactInquiries } = useNewContactInquiries();
 
   // Derive a page title from the current route's pathname for the header
   const matches = useMatches();
@@ -29,6 +32,7 @@ export default function AdminLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-neutral-950">
       <ScrollToTop />
+      <RouteSEO />
       <NotificationToastHost />
 
       {/* ── Sidebar (fixed, 280 px, hidden on mobile until open) ── */}
@@ -37,6 +41,7 @@ export default function AdminLayout() {
         onClose={() => setMenuOpen(false)}
         unreadMessages={unreadMessages}
         pendingCreditRequests={pendingCreditRequests}
+        newContactInquiries={newContactInquiries}
       />
 
       {/* ── Main column — offset by sidebar width on lg+ ── */}

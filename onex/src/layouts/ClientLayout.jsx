@@ -5,6 +5,7 @@ import { UserContext } from '@/context/UserContext';
 import ClientSidebar from './client/ClientSidebar';
 import ClientDashboardHeader from './client/ClientDashboardHeader';
 import ScrollToTop from '@/shared/components/ScrollToTop';
+import RouteSEO from '@/shared/components/SEO/RouteSEO';
 import NotificationToastHost from '@/shared/components/Notifications/NotificationToastHost';
 import api from '@/shared/utils/api';
 
@@ -39,6 +40,7 @@ export default function ClientLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-slate-100">
       <ScrollToTop />
+      <RouteSEO />
       <NotificationToastHost />
 
       <ClientSidebar

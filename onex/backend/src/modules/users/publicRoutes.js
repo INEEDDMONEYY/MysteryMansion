@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import User from '../../models/User.js';
 import PromoCode from '../../models/PromoCode.js';
 import profileActivityRoutes from './profileActivityRoutes.js';
+import { applyContactMask } from '../../common/utils/contactPrivacy.js';
 import { getLiveMembership } from '../membership/membershipService.js';
 import { MEMBERSHIP_TIERS } from '../membership/membershipCatalog.js';
 
@@ -14,7 +15,13 @@ const badgeTierFor = async (userId) => {
 
 const router = express.Router();
 
+// Last-active is opt-in: only exposed when the member enabled showLastActive.
+// Contact details are left out of list endpoints entirely; single-profile
+// endpoints send masked versions (see contactPrivacy.js).
+const PRIVATE_FIELDS = '-password -resetPasswordToken -resetPasswordExpires -email -phoneNumber -lastActiveAt';
+
 const normalizeUsername = (value = '') => String(value).trim().toLowerCase();
+const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // GET currently promoted users (public, no auth)
 router.get('/promoted', async (req, res) => {
@@ -45,7 +52,7 @@ router.get('/promoted', async (req, res) => {
     const directlyPromoted = await User.find({
       activePromoExpiry: { $gt: now },
       status: { $ne: 'suspended' },
-    }).select('-password -resetPasswordToken -resetPasswordExpires -email');
+    }).select(PRIVATE_FIELDS);
 
     directlyPromoted.forEach((user) => {
       const key = String(user._id);
@@ -64,7 +71,7 @@ router.get('/promoted', async (req, res) => {
     const users = await User.find({
       _id: { $in: promotedUserIds },
       status: { $ne: 'suspended' },
-    }).select('-password -resetPasswordToken -resetPasswordExpires -email');
+    }).select(PRIVATE_FIELDS);
 
     const promotedUsers = users
       .map((user) => {
@@ -140,7 +147,7 @@ router.get('/popular', async (req, res) => {
       { $sort: { score: -1 } },
       { $limit: 6 },
       { $project: {
-        password: 0, email: 0,
+        password: 0, email: 0, phoneNumber: 0, lastActiveAt: 0,
         resetPasswordToken: 0, resetPasswordExpires: 0,
         _posts: 0, _reviews: 0, _commentData: 0,
       }},
@@ -164,10 +171,12 @@ router.get('/id/:userId', async (req, res) => {
       return res.status(400).json({ error: 'Invalid user id' });
     }
     const user = await User.findById(userId).select(
-      '-password -resetPasswordToken -resetPasswordExpires -email'
+      '-password -resetPasswordToken -resetPasswordExpires'
     );
     if (!user) return res.status(404).json({ error: 'User not found' });
-    return res.status(200).json({ ...user.toObject(), membershipTier: await badgeTierFor(user._id) });
+    const profile = applyContactMask(user.toObject());
+    if (!profile.showLastActive) delete profile.lastActiveAt;
+    return res.status(200).json({ ...profile, membershipTier: await badgeTierFor(user._id) });
   } catch (err) {
     console.error('❌ Failed to fetch user by id', err);
     return res.status(500).json({ error: 'Failed to fetch user' });
@@ -182,12 +191,14 @@ router.get('/:username', async (req, res) => {
       return res.status(400).json({ error: 'Username is required' });
     }
     const user = await User.findOne({
-      username: { $regex: `^${username}$`, $options: 'i' },
+      username: { $regex: `^${escapeRegex(username)}$`, $options: 'i' },
     }).select('-password -resetPasswordToken -resetPasswordExpires');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    return res.status(200).json(user);
+    const profile = applyContactMask(user.toObject());
+    if (!profile.showLastActive) delete profile.lastActiveAt;
+    return res.status(200).json(profile);
   } catch (err) {
     console.error('❌ Failed to fetch user by username', err);
     return res.status(500).json({ error: 'Failed to fetch user' });
@@ -197,7 +208,7 @@ router.get('/:username', async (req, res) => {
 // GET all users (public, no auth)
 router.get('/', async (req, res) => {
   try {
-    const users = await User.find({ role: 'user', status: { $ne: 'suspended' } }).select('-password');
+    const users = await User.find({ role: 'user', status: { $ne: 'suspended' } }).select(PRIVATE_FIELDS);
     res.status(200).json(users);
   } catch (err) {
     console.error('❌ Failed to fetch users', err);

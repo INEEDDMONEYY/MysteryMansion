@@ -20,15 +20,31 @@ import {
   ScrollText,
   Headset,
   Rocket,
+  WalletCards,
 } from "lucide-react";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useUser();
+
   const isAdmin = user?.role === "admin";
-  const isProvider = user?.role === "user" && user?.accountType === "provider";
-  const isClient = user?.role === "user" && user?.accountType === "client";
+  const isProvider =
+    user?.role === "user" && user?.accountType === "provider";
+  const isClient =
+    user?.role === "user" && user?.accountType === "client";
+
+  const profileName =
+    user?.username ||
+    user?.displayName ||
+    user?.name ||
+    "Profile";
+
+  const profilePic =
+    user?.profilePic ||
+    user?.profilePicture ||
+    localStorage.getItem("profilePicture") ||
+    "";
 
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -42,50 +58,93 @@ export default function Navbar() {
     }
 
     let active = true;
-    const notificationsEndpoint = isAdmin ? "/notifications" : "/notifications/user";
+    const notificationsEndpoint = isAdmin
+      ? "/notifications"
+      : "/notifications/user";
 
     const fetchCounts = async () => {
       const [notifResult, messagesResult] = await Promise.allSettled([
         api.get(notificationsEndpoint),
         api.get("/messages/unread/count"),
       ]);
+
       if (!active) return;
 
       setUnreadNotifications(
-        notifResult.status === "fulfilled" ? Number(notifResult.value.data?.unreadCount) || 0 : 0
+        notifResult.status === "fulfilled"
+          ? Number(notifResult.value.data?.unreadCount) || 0
+          : 0
       );
+
       setUnreadMessages(
-        messagesResult.status === "fulfilled" ? Number(messagesResult.value.data?.unreadCount) || 0 : 0
+        messagesResult.status === "fulfilled"
+          ? Number(messagesResult.value.data?.unreadCount) || 0
+          : 0
       );
     };
 
     fetchCounts();
+
     const id = setInterval(fetchCounts, 30_000);
-    return () => { active = false; clearInterval(id); };
+
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
   }, [user?._id, isAdmin]);
 
   const handleProfileClick = () => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const { role, accountType } = user;
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const { role, accountType } = storedUser;
 
     if (role === "admin") return navigate("/admin");
+
     if (role === "user") {
-      return navigate(accountType === "client" ? "/client/dashboard" : "/user/dashboard");
+      return navigate(
+        accountType === "client"
+          ? "/client/dashboard"
+          : "/user/dashboard"
+      );
     }
+
     navigate("/signin");
   };
 
   // Bottom bar items for mobile; desktop keeps the inline header links below.
   let mobileNavItems;
+
   if (isAdmin) {
     mobileNavItems = [
-      { key: "home", label: "Home", icon: Home, to: "/", match: (p) => p === "/" },
-      { key: "analytics", label: "Analytics", icon: BarChart3, to: "/admin/analytics" },
-      { key: "notifications", label: "Notifications", icon: Bell, to: "/admin/notifications", badge: unreadNotifications },
-      { key: "messages", label: "Messages", icon: MessageCircle, to: "/admin/messages", badge: unreadMessages },
+      {
+        key: "home",
+        label: "Home",
+        icon: Home,
+        to: "/",
+        match: (p) => p === "/",
+      },
+      {
+        key: "analytics",
+        label: "Analytics",
+        icon: BarChart3,
+        to: "/admin/analytics",
+      },
+      {
+        key: "notifications",
+        label: "Notifications",
+        icon: Bell,
+        to: "/admin/notifications",
+        badge: unreadNotifications,
+      },
+      {
+        key: "messages",
+        label: "Messages",
+        icon: MessageCircle,
+        to: "/admin/messages",
+        badge: unreadMessages,
+      },
       {
         key: "profile",
-        label: "Profile",
+        label: profileName,
         icon: CircleUser,
         onClick: handleProfileClick,
         match: (p) =>
@@ -97,28 +156,77 @@ export default function Navbar() {
     ];
   } else if (isProvider) {
     mobileNavItems = [
-      { key: "home", label: "Home", icon: Home, to: "/", match: (p) => p === "/" },
-      { key: "notifications", label: "Notifications", icon: Bell, to: "/user/notifications", badge: unreadNotifications },
-      { key: "post", label: "Post", icon: CirclePlus, to: "/post", center: true },
-      { key: "messages", label: "Messages", icon: MessageCircle, to: "/user/messages", badge: unreadMessages },
+      {
+        key: "home",
+        label: "Home",
+        icon: Home,
+        to: "/",
+        match: (p) => p === "/",
+      },
+      {
+        key: "notifications",
+        label: "Notifications",
+        icon: Bell,
+        to: "/user/notifications",
+        badge: unreadNotifications,
+      },
+      {
+        key: "post",
+        label: "Post",
+        icon: CirclePlus,
+        to: "/post",
+        center: true,
+      },
+      {
+        key: "messages",
+        label: "Messages",
+        icon: MessageCircle,
+        to: "/user/messages",
+        badge: unreadMessages,
+      },
       {
         key: "profile",
-        label: "Profile",
+        label: profileName,
         icon: CircleUser,
         onClick: handleProfileClick,
         match: (p) =>
-          p.startsWith("/user") && !p.startsWith("/user/notifications") && !p.startsWith("/user/messages"),
+          p.startsWith("/user") &&
+          !p.startsWith("/user/notifications") &&
+          !p.startsWith("/user/messages"),
       },
     ];
   } else if (isClient) {
     mobileNavItems = [
-      { key: "home", label: "Home", icon: Home, to: "/", match: (p) => p === "/" },
-      { key: "notifications", label: "Notifications", icon: Bell, to: "/client/notifications", badge: unreadNotifications },
-      { key: "messages", label: "Messages", icon: MessageCircle, to: "/client/messages", badge: unreadMessages },
-      { key: "Forums", label: "Forums", icon: CreditCard, to: "/forum" },
+      {
+        key: "home",
+        label: "Home",
+        icon: Home,
+        to: "/",
+        match: (p) => p === "/",
+      },
+      {
+        key: "notifications",
+        label: "Notifications",
+        icon: Bell,
+        to: "/client/notifications",
+        badge: unreadNotifications,
+      },
+      {
+        key: "messages",
+        label: "Messages",
+        icon: MessageCircle,
+        to: "/client/messages",
+        badge: unreadMessages,
+      },
+      {
+        key: "Forums",
+        label: "Forums",
+        icon: CreditCard,
+        to: "/forum",
+      },
       {
         key: "profile",
-        label: "Profile",
+        label: profileName,
         icon: CircleUser,
         onClick: handleProfileClick,
         match: (p) =>
@@ -130,21 +238,40 @@ export default function Navbar() {
     ];
   } else {
     mobileNavItems = [
-      { key: "home", label: "Home", icon: Home, to: "/", match: (p) => p === "/" },
-      { key: "credits", label: "Credits", icon: HandCoins, to: "/credits/how-it-works" },
-      { key: "Forum", label: "Forum", icon: ScrollText, to: "/forum" },
+      {
+        key: "home",
+        label: "Home",
+        icon: Home,
+        to: "/",
+        match: (p) => p === "/",
+      },
+      {
+        key: "credits",
+        label: "Credits",
+        icon: HandCoins,
+        to: "/credits/how-it-works",
+      },
+      {
+        key: "Forum",
+        label: "Forum",
+        icon: ScrollText,
+        to: "/forum",
+      },
       FEATURE_FLAGS.ENABLE_PROMOTE_ACCOUNT_NAV && {
-        key: "support",
-        label: "Support",
-        icon: Headset,
-        to: "/contact",
+        key: "membership",
+        label: "Membership",
+        icon: WalletCards,
+        to: "/membership",
       },
       {
         key: "profile",
-        label: "Profile",
+        label: profileName,
         icon: CircleUser,
         onClick: handleProfileClick,
-        match: (p) => p.startsWith("/admin") || p.startsWith("/user") || p.startsWith("/client"),
+        match: (p) =>
+          p.startsWith("/admin") ||
+          p.startsWith("/user") ||
+          p.startsWith("/client"),
       },
     ].filter(Boolean);
   }
@@ -153,7 +280,12 @@ export default function Navbar() {
     <header className="bg-black text-white flex justify-between items-center px-4 py-3 w-full shadow-md">
       {/* Logo */}
       <Link to="/home" className="flex items-center gap-2 min-w-0">
-        <img src={Logo} alt="Logo" className="h-10 w-auto shrink-0" />
+        <img
+          src={Logo}
+          alt="Logo"
+          className="h-10 w-auto shrink-0"
+        />
+
         <span className="text-sm sm:text-base md:text-lg font-semibold tracking-wide whitespace-nowrap">
           Mystery Mansion
         </span>
@@ -161,34 +293,67 @@ export default function Navbar() {
 
       {/* Navigation Links (desktop) */}
       <nav className="nav-items hidden md:flex gap-5 items-center">
-        <Link to="/signup" className="flex items-center gap-1 hover:text-pink-400">
-          <FileUser size={18} /> Sign Up
+        <Link
+          to="/signup"
+          className="flex items-center gap-1 hover:text-pink-400"
+        >
+          <FileUser size={18} />
+          Sign Up
         </Link>
 
-        <Link to="/membership" className="flex items-center gap-1 hover:text-pink-400">
-          <Flame size={18} /> Membership
+        <Link
+          to="/membership"
+          className="flex items-center gap-1 hover:text-pink-400"
+        >
+          <Flame size={18} />
+          Membership
         </Link>
 
-        <Link to="/forum" className="flex items-center gap-1 hover:text-pink-400">
-          <ScrollText size={18} /> Forums
+        <Link
+          to="/forum"
+          className="flex items-center gap-1 hover:text-pink-400"
+        >
+          <ScrollText size={18} />
+          Forums
         </Link>
 
-        <Link to="/credit-packages" className="flex items-center gap-1 hover:text-pink-400">
-          <HandCoins size={18} /> Credits
+        <Link
+          to="/credit-packages"
+          className="flex items-center gap-1 hover:text-pink-400"
+        >
+          <HandCoins size={18} />
+          Credits
         </Link>
 
-        {/* ✔ FEATURE FLAG APPLIED HERE */}
+        {/* FEATURE FLAG APPLIED HERE */}
         {FEATURE_FLAGS.ENABLE_PROMOTE_ACCOUNT_NAV && (
-          <Link to="/promote" className="flex items-center gap-1 hover:text-pink-400">
-            <Rocket size={18} /> Promote Account
+          <Link
+            to="/promote"
+            className="flex items-center gap-1 hover:text-pink-400"
+          >
+            <Rocket size={18} />
+            Promote Account
           </Link>
         )}
 
         <button
+          type="button"
           onClick={handleProfileClick}
-          className="flex items-center gap-1 hover:text-pink-400"
+          className="flex max-w-48 items-center gap-2 hover:text-pink-400"
         >
-          <CircleUser size={18} /> Profile
+          {profilePic ? (
+            <img
+              src={profilePic}
+              alt={profileName}
+              className="h-8 w-8 shrink-0 rounded-full border border-white/30 object-cover"
+            />
+          ) : (
+            <CircleUser size={20} className="shrink-0" />
+          )}
+
+          <span className="truncate text-sm font-medium">
+            {profileName}
+          </span>
         </button>
       </nav>
 
@@ -196,65 +361,116 @@ export default function Navbar() {
       <nav className="md:hidden fixed inset-x-0 bottom-0 z-50">
         <ul
           className={`grid items-center bg-gradient-to-r from-white to-pink-200 shadow-lg px-2 py-2 ${
-            { 4: "grid-cols-4", 5: "grid-cols-5" }[mobileNavItems.length] || "grid-cols-5"
+            { 4: "grid-cols-4", 5: "grid-cols-5" }[
+              mobileNavItems.length
+            ] || "grid-cols-5"
           }`}
         >
-          {mobileNavItems.map(({ key, label, icon: Icon, to, onClick, match, center, badge }) => {
-            const active = match ? match(location.pathname) : location.pathname === to;
-            const elevated = center || active;
-            const badgeLabel = badge > 0 ? (badge > 9 ? "9+" : badge) : null;
-            const itemBody = (
-              <>
-                {elevated ? (
+          {mobileNavItems.map(
+            ({
+              key,
+              label,
+              icon: Icon,
+              to,
+              onClick,
+              match,
+              center,
+              badge,
+            }) => {
+              const active = match
+                ? match(location.pathname)
+                : location.pathname === to;
+
+              const elevated = center || active;
+              const isProfile = key === "profile";
+
+              const badgeLabel =
+                badge > 0 ? (badge > 9 ? "9+" : badge) : null;
+
+              const itemBody = (
+                <>
+                  {elevated ? (
+                    <span
+                      className={`absolute -top-8 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg ring-4 ring-white ${
+                        center
+                          ? "bg-gradient-to-br from-pink-500 to-fuchsia-600"
+                          : "bg-pink-500"
+                      }`}
+                    >
+                      {isProfile && profilePic ? (
+                        <img
+                          src={profilePic}
+                          alt={profileName}
+                          className="h-12 w-12 rounded-full border-2 border-white object-cover"
+                        />
+                      ) : (
+                        <Icon size={22} />
+                      )}
+
+                      {badgeLabel && (
+                        <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white leading-none ring-2 ring-white">
+                          {badgeLabel}
+                        </span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="relative inline-flex">
+                      {isProfile && profilePic ? (
+                        <img
+                          src={profilePic}
+                          alt={profileName}
+                          className="h-[18px] w-[18px] rounded-full object-cover ring-1 ring-neutral-300"
+                        />
+                      ) : (
+                        <Icon
+                          size={18}
+                          className="text-neutral-500"
+                        />
+                      )}
+
+                      {badgeLabel && (
+                        <span className="absolute -top-1.5 -right-2 h-4 min-w-[16px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white leading-none">
+                          {badgeLabel}
+                        </span>
+                      )}
+                    </span>
+                  )}
+
                   <span
-                    className={`absolute -top-8 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg ring-4 ring-white ${
-                      center ? "bg-gradient-to-br from-pink-500 to-fuchsia-600" : "bg-pink-500"
+                    title={label}
+                    className={`mt-1 max-w-full truncate px-1 text-[11px] ${
+                      elevated
+                        ? "font-semibold text-black"
+                        : "text-neutral-500"
                     }`}
                   >
-                    <Icon size={22} />
-                    {badgeLabel && (
-                      <span className="absolute -top-1 -right-1 h-4 min-w-[16px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white leading-none ring-2 ring-white">
-                        {badgeLabel}
-                      </span>
-                    )}
+                    {label}
                   </span>
-                ) : (
-                  <span className="relative inline-flex">
-                    <Icon size={18} className="text-neutral-500" />
-                    {badgeLabel && (
-                      <span className="absolute -top-1.5 -right-2 h-4 min-w-[16px] px-0.5 flex items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white leading-none">
-                        {badgeLabel}
-                      </span>
-                    )}
-                  </span>
-                )}
-                <span
-                  className={`mt-1 text-[11px] ${
-                    elevated ? "font-semibold text-black" : "text-neutral-500"
-                  }`}
-                >
-                  {label}
-                </span>
-              </>
-            );
+                </>
+              );
 
-            const itemClass =
-              "relative flex h-14 w-full flex-col items-center justify-end gap-0";
+              const itemClass =
+                "relative flex h-14 w-full flex-col items-center justify-end gap-0";
 
-            return (
-              <li key={key}>
-                {to ? (
-                  <Link to={to} className={itemClass}>
-                    {itemBody}
-                  </Link>
-                ) : (
-                  <button type="button" onClick={onClick} className={itemClass}>
-                    {itemBody}
-                  </button>
-                )}
-              </li>
-            );
-          })}
+              return (
+                <li key={key}>
+                  {to ? (
+                    <Link to={to} className={itemClass}>
+                      {itemBody}
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={onClick}
+                      className={itemClass}
+                    >
+                      {itemBody}
+                    </button>
+                  )}
+                </li>
+              );
+            }
+          )}
         </ul>
       </nav>
     </header>

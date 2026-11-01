@@ -173,6 +173,18 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  // Merges a server-returned user (or partial) into state and local storage.
+  const mergeUser = (partial) => {
+    if (!partial) return null;
+    let merged = null;
+    setUser((current) => {
+      merged = { ...(current || {}), ...partial };
+      persistUser(merged);
+      return merged;
+    });
+    return merged;
+  };
+
   const refreshUser = async () => {
     try {
       const res = await api.get("/auth/me");
@@ -227,6 +239,7 @@ export const UserProvider = ({ children }) => {
           login,
           logout,
           updateProfile,
+          mergeUser,
           refreshUser,
           deleteAccount,
           loading,

@@ -29,7 +29,7 @@ export default function ClientSidebar({ isOpen, onClose, unreadMessages = 0 }) {
     //{ to: '/referrals',              label: 'Referrals', icon: Waypoints },
     { to: '/client/profile',         label: 'Edit Profile',  icon: User },
     { to: '/',                       label: 'Browse Listings', icon: Search },
-    //{ to: '*',                       label: 'Settings', icon: Cog },
+    { to: '/client/settings',         label: 'Settings', icon: Cog },
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const footerActions = [
