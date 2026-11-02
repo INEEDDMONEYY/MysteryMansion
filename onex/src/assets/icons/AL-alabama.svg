@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 144" width="240" height="288" role="img" aria-label="Alabama">
+<title>Alabama</title>
+<defs><linearGradient id="g-al" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fae"/><stop offset=".55" stop-color="#d23bc0"/><stop offset="1" stop-color="#7b2fd6"/></linearGradient>
+<clipPath id="c-al"><path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z"/></clipPath></defs>
+<path d="M8 18L60 3l52 15v72q0 26-52 49Q8 116 8 90z" fill="#fff" stroke="#17141b" stroke-width="3" stroke-linejoin="round"/>
+<path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z" fill="url(#g-al)" stroke="#17141b" stroke-width="2.5" stroke-linejoin="round"/>
+<g clip-path="url(#c-al)"><path d="M0 40L120 22v20L0 60z" fill="#ffd1e8" opacity=".35"/><path d="M0 110q60-30 120 0v40H0z" fill="#17141b" opacity=".25"/></g>
+<g transform="rotate(-3 60 38)"><rect x="22" y="26" width="76" height="24" rx="3" fill="#fff" stroke="#17141b" stroke-width="2.5"/><path d="M57.85 45 56.69 41.66H51.71L50.55 45H47.81L52.58 31.93H55.81L60.56 45ZM54.19 33.94 54.14 34.15Q54.04 34.48 53.91 34.91Q53.78 35.33 52.32 39.6H56.08L54.79 35.84L54.39 34.58ZM62.33 45V31.93H65.07V42.88H72.08V45Z" fill="#c02a9c" stroke="#17141b" stroke-width=".6"/></g>
+<circle cx="60" cy="86" r="26" fill="#fff" stroke="#17141b" stroke-width="2.5"/>
+<g transform="translate(40 66)" fill="#c02a9c" stroke="#17141b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M20 3C27 9 27 20 24 28H16C13 20 13 9 20 3Z"/><circle cx="20" cy="14" r="3" fill="#fff"/><path fill="#ffd23f" d="M16 22L9 30l7-2zM24 22l7 8-7-2zM17 31l3 7 3-7z"/></g>
+<path d="M22 70l2 5 5 .5-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3 5-.5z" fill="#fff" stroke="#17141b" stroke-width="1" stroke-linejoin="round"/>
+</svg>

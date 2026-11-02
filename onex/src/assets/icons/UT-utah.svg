@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 144" width="240" height="288" role="img" aria-label="Utah">
+<title>Utah</title>
+<defs><linearGradient id="g-ut" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fae"/><stop offset=".55" stop-color="#d23bc0"/><stop offset="1" stop-color="#7b2fd6"/></linearGradient>
+<clipPath id="c-ut"><path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z"/></clipPath></defs>
+<path d="M8 18L60 3l52 15v72q0 26-52 49Q8 116 8 90z" fill="#fff" stroke="#17141b" stroke-width="3" stroke-linejoin="round"/>
+<path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z" fill="url(#g-ut)" stroke="#17141b" stroke-width="2.5" stroke-linejoin="round"/>
+<g clip-path="url(#c-ut)"><path d="M0 40L120 22v20L0 60z" fill="#ffd1e8" opacity=".35"/><path d="M0 110q60-30 120 0v40H0z" fill="#17141b" opacity=".25"/></g>
+<g transform="rotate(-3 60 38)"><rect x="22" y="26" width="76" height="24" rx="3" fill="#fff" stroke="#17141b" stroke-width="2.5"/><path d="M54.04 45.19Q51.34 45.19 49.91 43.87Q48.48 42.55 48.48 40.1V31.93H51.21V39.89Q51.21 41.44 51.95 42.24Q52.69 43.04 54.12 43.04Q55.58 43.04 56.37 42.2Q57.16 41.36 57.16 39.8V31.93H59.9V39.96Q59.9 42.45 58.36 43.82Q56.83 45.19 54.04 45.19ZM68.23 34.04V45H65.49V34.04H61.27V31.93H72.46V34.04Z" fill="#c02a9c" stroke="#17141b" stroke-width=".6"/></g>
+<circle cx="60" cy="86" r="26" fill="#fff" stroke="#17141b" stroke-width="2.5"/>
+<g transform="translate(40 66)" fill="#c02a9c" stroke="#17141b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path fill="#fff" d="M12 12h16l2 24H10z"/><path d="M11 6h18v6H11z"/><g fill="#17141b" stroke="none"><circle cx="16" cy="9" r="1"/><circle cx="20" cy="9" r="1"/><circle cx="24" cy="9" r="1"/></g></g>
+<path d="M22 70l2 5 5 .5-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3 5-.5z" fill="#fff" stroke="#17141b" stroke-width="1" stroke-linejoin="round"/>
+</svg>

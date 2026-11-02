@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 144" width="240" height="288" role="img" aria-label="Michigan">
+<title>Michigan</title>
+<defs><linearGradient id="g-mi" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fae"/><stop offset=".55" stop-color="#d23bc0"/><stop offset="1" stop-color="#7b2fd6"/></linearGradient>
+<clipPath id="c-mi"><path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z"/></clipPath></defs>
+<path d="M8 18L60 3l52 15v72q0 26-52 49Q8 116 8 90z" fill="#fff" stroke="#17141b" stroke-width="3" stroke-linejoin="round"/>
+<path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z" fill="url(#g-mi)" stroke="#17141b" stroke-width="2.5" stroke-linejoin="round"/>
+<g clip-path="url(#c-mi)"><path d="M0 40L120 22v20L0 60z" fill="#ffd1e8" opacity=".35"/><path d="M0 110q60-30 120 0v40H0z" fill="#17141b" opacity=".25"/></g>
+<g transform="rotate(-3 60 38)"><rect x="22" y="26" width="76" height="24" rx="3" fill="#fff" stroke="#17141b" stroke-width="2.5"/><path d="M61.57 45V37.08Q61.57 36.81 61.58 36.54Q61.58 36.27 61.67 34.23Q61.01 36.72 60.69 37.71L58.33 45H56.39L54.03 37.71L53.04 34.23Q53.15 36.38 53.15 37.08V45H50.72V31.93H54.38L56.72 39.24L56.92 39.94L57.37 41.7L57.95 39.6L60.36 31.93H64V45ZM66.55 45V31.93H69.28V45Z" fill="#c02a9c" stroke="#17141b" stroke-width=".6"/></g>
+<circle cx="60" cy="86" r="26" fill="#fff" stroke="#17141b" stroke-width="2.5"/>
+<g transform="translate(40 66)" fill="#c02a9c" stroke="#17141b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M3 28v-6l5-2 5-8h14l5 8 3 2v6z"/><path fill="#fff" d="M14 20l3-6h6l3 6z"/><circle cx="11" cy="29" r="4" fill="#17141b"/><circle cx="29" cy="29" r="4" fill="#17141b"/></g>
+<path d="M22 70l2 5 5 .5-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3 5-.5z" fill="#fff" stroke="#17141b" stroke-width="1" stroke-linejoin="round"/>
+</svg>

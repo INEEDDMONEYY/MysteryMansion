@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 144" width="240" height="288" role="img" aria-label="Mississippi">
+<title>Mississippi</title>
+<defs><linearGradient id="g-ms" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fae"/><stop offset=".55" stop-color="#d23bc0"/><stop offset="1" stop-color="#7b2fd6"/></linearGradient>
+<clipPath id="c-ms"><path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z"/></clipPath></defs>
+<path d="M8 18L60 3l52 15v72q0 26-52 49Q8 116 8 90z" fill="#fff" stroke="#17141b" stroke-width="3" stroke-linejoin="round"/>
+<path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z" fill="url(#g-ms)" stroke="#17141b" stroke-width="2.5" stroke-linejoin="round"/>
+<g clip-path="url(#c-ms)"><path d="M0 40L120 22v20L0 60z" fill="#ffd1e8" opacity=".35"/><path d="M0 110q60-30 120 0v40H0z" fill="#17141b" opacity=".25"/></g>
+<g transform="rotate(-3 60 38)"><rect x="22" y="26" width="76" height="24" rx="3" fill="#fff" stroke="#17141b" stroke-width="2.5"/><path d="M57.88 45V37.08Q57.88 36.81 57.88 36.54Q57.88 36.27 57.97 34.23Q57.31 36.72 56.99 37.71L54.64 45H52.69L50.33 37.71L49.34 34.23Q49.45 36.38 49.45 37.08V45H47.02V31.93H50.69L53.02 39.24L53.23 39.94L53.67 41.7L54.26 39.6L56.66 31.93H60.31V45ZM73.51 41.23Q73.51 43.15 72.08 44.17Q70.66 45.19 67.9 45.19Q65.39 45.19 63.96 44.29Q62.53 43.4 62.12 41.6L64.77 41.16Q65.04 42.2 65.82 42.67Q66.6 43.14 67.98 43.14Q70.85 43.14 70.85 41.39Q70.85 40.83 70.52 40.47Q70.19 40.11 69.59 39.87Q68.99 39.63 67.29 39.29Q65.83 38.94 65.25 38.73Q64.68 38.52 64.21 38.24Q63.75 37.96 63.42 37.56Q63.1 37.16 62.92 36.62Q62.74 36.08 62.74 35.39Q62.74 33.62 64.07 32.68Q65.4 31.73 67.94 31.73Q70.37 31.73 71.59 32.49Q72.81 33.25 73.16 35.01L70.51 35.37Q70.31 34.53 69.68 34.1Q69.05 33.67 67.89 33.67Q65.4 33.67 65.4 35.23Q65.4 35.74 65.66 36.07Q65.93 36.39 66.45 36.62Q66.97 36.85 68.55 37.19Q70.44 37.59 71.25 37.93Q72.06 38.26 72.53 38.71Q73.01 39.16 73.26 39.79Q73.51 40.42 73.51 41.23Z" fill="#c02a9c" stroke="#17141b" stroke-width=".6"/></g>
+<circle cx="60" cy="86" r="26" fill="#fff" stroke="#17141b" stroke-width="2.5"/>
+<g transform="translate(40 66)" fill="#c02a9c" stroke="#17141b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path fill="none" stroke-width="5" d="M19 21L33 7"/><path d="M30 4l6-1 1 6z"/><ellipse cx="13" cy="27" rx="9" ry="8" fill="#c9803a"/><circle cx="13" cy="27" r="3" fill="#17141b"/></g>
+<path d="M22 70l2 5 5 .5-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3 5-.5z" fill="#fff" stroke="#17141b" stroke-width="1" stroke-linejoin="round"/>
+</svg>

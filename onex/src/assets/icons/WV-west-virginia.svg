@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 144" width="240" height="288" role="img" aria-label="West Virginia">
+<title>West Virginia</title>
+<defs><linearGradient id="g-wv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fae"/><stop offset=".55" stop-color="#d23bc0"/><stop offset="1" stop-color="#7b2fd6"/></linearGradient>
+<clipPath id="c-wv"><path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z"/></clipPath></defs>
+<path d="M8 18L60 3l52 15v72q0 26-52 49Q8 116 8 90z" fill="#fff" stroke="#17141b" stroke-width="3" stroke-linejoin="round"/>
+<path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z" fill="url(#g-wv)" stroke="#17141b" stroke-width="2.5" stroke-linejoin="round"/>
+<g clip-path="url(#c-wv)"><path d="M0 40L120 22v20L0 60z" fill="#ffd1e8" opacity=".35"/><path d="M0 110q60-30 120 0v40H0z" fill="#17141b" opacity=".25"/></g>
+<g transform="rotate(-3 60 38)"><rect x="22" y="26" width="76" height="24" rx="3" fill="#fff" stroke="#17141b" stroke-width="2.5"/><path d="M59.23 45H55.99L54.22 37.44Q53.89 36.1 53.67 34.65Q53.45 35.86 53.31 36.5Q53.17 37.13 51.33 45H48.08L44.72 31.93H47.49L49.38 40.37L49.81 42.41Q50.07 41.12 50.31 39.95Q50.56 38.77 52.17 31.93H55.23L56.88 38.89Q57.07 39.67 57.54 42.41L57.77 41.34L58.26 39.2L59.84 31.93H62.61ZM70.37 45H67.59L62.76 31.93H65.62L68.31 40.32Q68.56 41.14 68.99 42.79L69.19 41.99L69.66 40.32L72.34 31.93H75.17Z" fill="#c02a9c" stroke="#17141b" stroke-width=".6"/></g>
+<circle cx="60" cy="86" r="26" fill="#fff" stroke="#17141b" stroke-width="2.5"/>
+<g transform="translate(40 66)" fill="#c02a9c" stroke="#17141b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path fill="none" stroke-width="4" d="M10 34L28 12"/><path fill="#c0c4cc" d="M14 8c10-4 20 2 22 14-4-6-10-9-16-8z"/></g>
+<path d="M22 70l2 5 5 .5-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3 5-.5z" fill="#fff" stroke="#17141b" stroke-width="1" stroke-linejoin="round"/>
+</svg>

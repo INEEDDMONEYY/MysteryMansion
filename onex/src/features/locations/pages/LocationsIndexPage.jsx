@@ -9,6 +9,18 @@ import LocationLinkPill from "../components/LocationLinkPill";
 import { setPublicPageSEO } from "@/shared/utils/seo";
 
 const HERO_IMAGE = "/mm-hero.png";
+const STATE_BADGES = Object.fromEntries(
+  Object.entries(
+    import.meta.glob("/src/assets/icons/[A-Z][A-Z]-*.svg", {
+      eager: true,
+      query: "?url",
+      import: "default",
+    })
+  ).map(([path, url]) => [
+    path.split("/").pop().replace(/^[A-Z]{2}-|\.svg$/g, ""),
+    url,
+  ])
+);
 
 export default function LocationsIndexPage() {
   const serverReady = useServerReady();
@@ -136,7 +148,18 @@ export default function LocationsIndexPage() {
                     className="group mb-3 flex items-center justify-between gap-2"
                   >
                     <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 group-hover:text-pink-600">
-                      <MapPin size={18} className="text-pink-500" />
+                      {STATE_BADGES[state.slug] ? (
+                        <img
+                          src={STATE_BADGES[state.slug]}
+                          alt=""
+                          width={48}
+                          height={58}
+                          loading="lazy"
+                          className="h-14 w-12 shrink-0 object-contain"
+                        />
+                      ) : (
+                        <MapPin size={18} className="shrink-0 text-pink-500" />
+                      )}
                       {state.state}
                     </h2>
                     <span className="text-xs text-gray-500">

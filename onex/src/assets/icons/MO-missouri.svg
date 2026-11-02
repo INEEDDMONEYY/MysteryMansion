@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 144" width="240" height="288" role="img" aria-label="Missouri">
+<title>Missouri</title>
+<defs><linearGradient id="g-mo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fae"/><stop offset=".55" stop-color="#d23bc0"/><stop offset="1" stop-color="#7b2fd6"/></linearGradient>
+<clipPath id="c-mo"><path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z"/></clipPath></defs>
+<path d="M8 18L60 3l52 15v72q0 26-52 49Q8 116 8 90z" fill="#fff" stroke="#17141b" stroke-width="3" stroke-linejoin="round"/>
+<path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z" fill="url(#g-mo)" stroke="#17141b" stroke-width="2.5" stroke-linejoin="round"/>
+<g clip-path="url(#c-mo)"><path d="M0 40L120 22v20L0 60z" fill="#ffd1e8" opacity=".35"/><path d="M0 110q60-30 120 0v40H0z" fill="#17141b" opacity=".25"/></g>
+<g transform="rotate(-3 60 38)"><rect x="22" y="26" width="76" height="24" rx="3" fill="#fff" stroke="#17141b" stroke-width="2.5"/><path d="M56.82 45V37.08Q56.82 36.81 56.83 36.54Q56.83 36.27 56.92 34.23Q56.26 36.72 55.94 37.71L53.58 45H51.64L49.28 37.71L48.29 34.23Q48.4 36.38 48.4 37.08V45H45.97V31.93H49.63L51.97 39.24L52.17 39.94L52.62 41.7L53.2 39.6L55.61 31.93H59.25V45ZM74.51 38.4Q74.51 40.44 73.7 41.99Q72.89 43.54 71.39 44.36Q69.89 45.19 67.88 45.19Q64.8 45.19 63.05 43.37Q61.3 41.56 61.3 38.4Q61.3 35.26 63.05 33.5Q64.79 31.73 67.9 31.73Q71.01 31.73 72.76 33.51Q74.51 35.3 74.51 38.4ZM71.71 38.4Q71.71 36.29 70.71 35.09Q69.71 33.89 67.9 33.89Q66.06 33.89 65.06 35.08Q64.06 36.27 64.06 38.4Q64.06 40.56 65.08 41.79Q66.11 43.03 67.88 43.03Q69.72 43.03 70.72 41.83Q71.71 40.62 71.71 38.4Z" fill="#c02a9c" stroke="#17141b" stroke-width=".6"/></g>
+<circle cx="60" cy="86" r="26" fill="#fff" stroke="#17141b" stroke-width="2.5"/>
+<g transform="translate(40 66)" fill="#c02a9c" stroke="#17141b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M5 37C5 10 35 10 35 37h-7c0-17-16-17-16 0z"/></g>
+<path d="M22 70l2 5 5 .5-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3 5-.5z" fill="#fff" stroke="#17141b" stroke-width="1" stroke-linejoin="round"/>
+</svg>

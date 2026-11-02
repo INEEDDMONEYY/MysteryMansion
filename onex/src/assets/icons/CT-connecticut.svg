@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 144" width="240" height="288" role="img" aria-label="Connecticut">
+<title>Connecticut</title>
+<defs><linearGradient id="g-ct" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fae"/><stop offset=".55" stop-color="#d23bc0"/><stop offset="1" stop-color="#7b2fd6"/></linearGradient>
+<clipPath id="c-ct"><path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z"/></clipPath></defs>
+<path d="M8 18L60 3l52 15v72q0 26-52 49Q8 116 8 90z" fill="#fff" stroke="#17141b" stroke-width="3" stroke-linejoin="round"/>
+<path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z" fill="url(#g-ct)" stroke="#17141b" stroke-width="2.5" stroke-linejoin="round"/>
+<g clip-path="url(#c-ct)"><path d="M0 40L120 22v20L0 60z" fill="#ffd1e8" opacity=".35"/><path d="M0 110q60-30 120 0v40H0z" fill="#17141b" opacity=".25"/></g>
+<g transform="rotate(-3 60 38)"><rect x="22" y="26" width="76" height="24" rx="3" fill="#fff" stroke="#17141b" stroke-width="2.5"/><path d="M54.71 43.03Q57.19 43.03 58.15 40.55L60.54 41.45Q59.77 43.34 58.28 44.26Q56.79 45.19 54.71 45.19Q51.56 45.19 49.84 43.4Q48.12 41.61 48.12 38.4Q48.12 35.18 49.78 33.46Q51.44 31.73 54.59 31.73Q56.89 31.73 58.34 32.66Q59.79 33.58 60.37 35.37L57.96 36.03Q57.65 35.05 56.76 34.47Q55.86 33.89 54.65 33.89Q52.79 33.89 51.83 35.04Q50.87 36.19 50.87 38.4Q50.87 40.66 51.86 41.85Q52.85 43.03 54.71 43.03ZM68.23 34.04V45H65.49V34.04H61.27V31.93H72.46V34.04Z" fill="#c02a9c" stroke="#17141b" stroke-width=".6"/></g>
+<circle cx="60" cy="86" r="26" fill="#fff" stroke="#17141b" stroke-width="2.5"/>
+<g transform="translate(40 66)" fill="#c02a9c" stroke="#17141b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path fill="#ffd23f" d="M6 18a14 11 0 0128 0z"/><rect x="5" y="21" width="30" height="6" rx="3" fill="#c9803a"/><path fill="#ffd23f" d="M6 30h28a6 6 0 01-6 6H12a6 6 0 01-6-6z"/></g>
+<path d="M22 70l2 5 5 .5-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3 5-.5z" fill="#fff" stroke="#17141b" stroke-width="1" stroke-linejoin="round"/>
+</svg>

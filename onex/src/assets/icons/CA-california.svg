@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 144" width="240" height="288" role="img" aria-label="California">
+<title>California</title>
+<defs><linearGradient id="g-ca" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fae"/><stop offset=".55" stop-color="#d23bc0"/><stop offset="1" stop-color="#7b2fd6"/></linearGradient>
+<clipPath id="c-ca"><path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z"/></clipPath></defs>
+<path d="M8 18L60 3l52 15v72q0 26-52 49Q8 116 8 90z" fill="#fff" stroke="#17141b" stroke-width="3" stroke-linejoin="round"/>
+<path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z" fill="url(#g-ca)" stroke="#17141b" stroke-width="2.5" stroke-linejoin="round"/>
+<g clip-path="url(#c-ca)"><path d="M0 40L120 22v20L0 60z" fill="#ffd1e8" opacity=".35"/><path d="M0 110q60-30 120 0v40H0z" fill="#17141b" opacity=".25"/></g>
+<g transform="rotate(-3 60 38)"><rect x="22" y="26" width="76" height="24" rx="3" fill="#fff" stroke="#17141b" stroke-width="2.5"/><path d="M53.65 43.03Q56.13 43.03 57.1 40.55L59.48 41.45Q58.71 43.34 57.22 44.26Q55.73 45.19 53.65 45.19Q50.5 45.19 48.78 43.4Q47.06 41.61 47.06 38.4Q47.06 35.18 48.72 33.46Q50.38 31.73 53.53 31.73Q55.83 31.73 57.28 32.66Q58.73 33.58 59.31 35.37L56.9 36.03Q56.6 35.05 55.7 34.47Q54.8 33.89 53.59 33.89Q51.73 33.89 50.77 35.04Q49.81 36.19 49.81 38.4Q49.81 40.66 50.8 41.85Q51.79 43.03 53.65 43.03ZM70.51 45 69.35 41.66H64.37L63.21 45H60.47L65.24 31.93H68.47L73.22 45ZM66.86 33.94 66.8 34.15Q66.71 34.48 66.58 34.91Q66.45 35.33 64.98 39.6H68.74L67.45 35.84L67.05 34.58Z" fill="#c02a9c" stroke="#17141b" stroke-width=".6"/></g>
+<circle cx="60" cy="86" r="26" fill="#fff" stroke="#17141b" stroke-width="2.5"/>
+<g transform="translate(40 66)" fill="#c02a9c" stroke="#17141b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path fill="#7bd36b" d="M20 3l10 14h-5l8 11H7l8-11h-5z"/><rect x="17" y="28" width="6" height="9" fill="#c9803a"/></g>
+<path d="M22 70l2 5 5 .5-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3 5-.5z" fill="#fff" stroke="#17141b" stroke-width="1" stroke-linejoin="round"/>
+</svg>

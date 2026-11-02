@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 144" width="240" height="288" role="img" aria-label="Pennsylvania">
+<title>Pennsylvania</title>
+<defs><linearGradient id="g-pa" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6fae"/><stop offset=".55" stop-color="#d23bc0"/><stop offset="1" stop-color="#7b2fd6"/></linearGradient>
+<clipPath id="c-pa"><path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z"/></clipPath></defs>
+<path d="M8 18L60 3l52 15v72q0 26-52 49Q8 116 8 90z" fill="#fff" stroke="#17141b" stroke-width="3" stroke-linejoin="round"/>
+<path d="M15 22L60 9l45 13v66q0 22-45 42q-45-20-45-42z" fill="url(#g-pa)" stroke="#17141b" stroke-width="2.5" stroke-linejoin="round"/>
+<g clip-path="url(#c-pa)"><path d="M0 40L120 22v20L0 60z" fill="#ffd1e8" opacity=".35"/><path d="M0 110q60-30 120 0v40H0z" fill="#17141b" opacity=".25"/></g>
+<g transform="rotate(-3 60 38)"><rect x="22" y="26" width="76" height="24" rx="3" fill="#fff" stroke="#17141b" stroke-width="2.5"/><path d="M58.83 36.07Q58.83 37.33 58.25 38.32Q57.68 39.31 56.6 39.86Q55.53 40.4 54.06 40.4H50.81V45H48.07V31.93H53.95Q56.29 31.93 57.56 33.01Q58.83 34.09 58.83 36.07ZM56.07 36.11Q56.07 34.05 53.64 34.05H50.81V38.29H53.71Q54.85 38.29 55.46 37.73Q56.07 37.17 56.07 36.11ZM69.99 45 68.83 41.66H63.85L62.69 45H59.95L64.72 31.93H67.95L72.7 45ZM66.33 33.94 66.28 34.15Q66.18 34.48 66.05 34.91Q65.92 35.33 64.46 39.6H68.22L66.93 35.84L66.53 34.58Z" fill="#c02a9c" stroke="#17141b" stroke-width=".6"/></g>
+<circle cx="60" cy="86" r="26" fill="#fff" stroke="#17141b" stroke-width="2.5"/>
+<g transform="translate(40 66)" fill="#c02a9c" stroke="#17141b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path fill="#ffd23f" d="M20 4c-8 0-11 8-11 16l-4 8h30l-4-8c0-8-3-16-11-16z"/><path fill="none" d="M20 10l-2 8 3 6-2 6"/><circle cx="20" cy="33" r="3"/></g>
+<path d="M22 70l2 5 5 .5-4 3 1.5 5-4.5-3-4.5 3 1.5-5-4-3 5-.5z" fill="#fff" stroke="#17141b" stroke-width="1" stroke-linejoin="round"/>
+</svg>
