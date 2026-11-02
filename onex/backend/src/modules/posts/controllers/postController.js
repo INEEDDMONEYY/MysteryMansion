@@ -190,7 +190,21 @@ export async function createPost(req, res) {
               });
             }
           );
-          streamifier.createReadStream(file.buffer).pipe(stream);
+          stream.on('error', reject);
+          streamifier.createReadStream(file.buffer).on('error', reject).pipe(stream);
+        }).catch(async (error) => {
+          // Cloudinary can refuse uploads (moderation/account restrictions);
+          // keep posting working by storing the image on R2 instead.
+          console.error('⚠️ Cloudinary image upload failed, storing on R2 instead:', error?.message || error);
+          const fallback = await uploadBackupCopy({
+            buffer: file.buffer,
+            folder: 'posts',
+            userId: req.user._id,
+            originalName: file.originalname,
+            contentType: file.mimetype,
+          });
+          if (!fallback) throw error;
+          return { url: fallback.url, backupUrl: '', type: 'image' };
         });
       });
 
@@ -618,7 +632,8 @@ export async function restorePostMedia(req, res) {
           { folder: 'posts', resource_type: 'auto' },
           (error, result) => (error ? reject(error) : resolve(result))
         );
-        streamifier.createReadStream(req.file.buffer).pipe(stream);
+        stream.on('error', reject);
+        streamifier.createReadStream(req.file.buffer).on('error', reject).pipe(stream);
       });
       primaryUrl = uploadResult.secure_url;
 

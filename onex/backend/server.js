@@ -61,9 +61,10 @@ process.on('uncaughtException', (error) => {
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
+// Log instead of exiting: a single failed background promise (e.g. a media
+// cleanup call) should not take the whole API offline mid-upload.
+process.on('unhandledRejection', (reason) => {
   console.error('❌ Unhandled Rejection:', reason);
-  process.exit(1);
 });
 
 // Only start server if not in test environment

@@ -5,3 +5,4 @@
 
 # Ignore Firebase service account key
 backend/config/firebase-key.json
+!.env.example

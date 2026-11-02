@@ -88,8 +88,14 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
-    // Updated (throttled) by authMiddleware on authenticated requests.
+    // Server-recorded session activity — set on sign-in, on authenticated
+    // requests (throttled), and on sign-out. Independent of showLastActive,
+    // which only controls whether it's shown publicly.
     lastActiveAt: {
+      type: Date,
+      default: null,
+    },
+    lastLogoutAt: {
       type: Date,
       default: null,
     },

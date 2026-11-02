@@ -1,13 +1,42 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '@/context/useUser.jsx';
+import GoogleSignInButton, { isGoogleSignInEnabled } from './GoogleSignInButton';
 
 export default function SigninForm({ setLoading }) {
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { login, loginWithGoogle } = useUser();
+
+  const goToDashboard = (authUser) => {
+    if (authUser?.role === 'admin') navigate('/admin');
+    else if (authUser?.accountType === 'client') navigate('/client/dashboard');
+    else navigate('/user/dashboard');
+  };
+
+  const handleGoogleCredential = async (credential) => {
+    setError('');
+    setLoading(true);
+    try {
+      goToDashboard(await loginWithGoogle(credential));
+    } catch (err) {
+      setLoading(false);
+      if (err?.data?.code === 'GOOGLE_ACCOUNT_NOT_FOUND') {
+        navigate('/signup', {
+          state: {
+            googleSignup: {
+              email: err.data.email,
+              verificationToken: err.data.emailVerificationToken,
+            },
+          },
+        });
+        return;
+      }
+      setError(err?.message || 'Google sign-in failed');
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -23,9 +52,7 @@ export default function SigninForm({ setLoading }) {
     try {
       const authUser = await login(normalizedEmail, password);
 
-      if (authUser?.role === 'admin') navigate('/admin');
-      else if (authUser?.accountType === 'client') navigate('/client/dashboard');
-      else navigate('/user/dashboard');
+      goToDashboard(authUser);
     } catch (err) {
       setError(err?.message || 'Sign in failed');
       setLoading(false); // ❌ Stop loader on error
@@ -68,7 +95,21 @@ export default function SigninForm({ setLoading }) {
         Sign In
       </button>
 
-      {error && <div className="text-red-600 text-sm m-2">{error}</div>}
+      {isGoogleSignInEnabled && (
+        <>
+          <div className="my-2 flex items-center gap-2 px-2 text-xs font-semibold uppercase tracking-wide text-gray-700" aria-hidden="true">
+            <span className="h-px flex-1 bg-gray-500/50" />
+            or
+            <span className="h-px flex-1 bg-gray-500/50" />
+          </div>
+          <GoogleSignInButton
+            onCredential={handleGoogleCredential}
+            onError={(message) => setError(message)}
+          />
+        </>
+      )}
+
+      {error && <div className="text-red-600 text-sm m-2" role="alert">{error}</div>}
 
       <div>
         <h3 className="text-black text-[1rem] underline">

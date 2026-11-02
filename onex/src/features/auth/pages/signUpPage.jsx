@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, useLocation, Link } from "react-router-dom";
 
 import SignupForm from "../components/SignUpForm";
 import EmailVerifyStep from "../components/EmailVerifyStep";
@@ -178,11 +178,18 @@ export default function SignupPage() {
       : null
   );
 
+  // Set when arriving from "Continue with Google" with no existing account:
+  // Google already verified the email, so the code step is skipped.
+  const { state: navState } = useLocation();
+  const googleSignup = navState?.googleSignup?.email && navState?.googleSignup?.verificationToken
+    ? navState.googleSignup
+    : null;
+
   const [verifiedEmail, setVerifiedEmail] =
-    useState(null);
+    useState(googleSignup?.email || null);
 
   const [verificationToken, setVerificationToken] =
-    useState(null);
+    useState(googleSignup?.verificationToken || null);
 
   useEffect(() => {
     setSEO("Sign Up | Mystery Mansion", "", {
@@ -197,20 +204,21 @@ export default function SignupPage() {
     if (ref) storeReferralCode(ref);
   }, [searchParams]);
 
+  const resetVerification = () => {
+    setVerifiedEmail(googleSignup?.email || null);
+    setVerificationToken(googleSignup?.verificationToken || null);
+  };
+
   const handleSelect = (type) => {
     setAccountType(type);
-    setSearchParams({ type });
-
-    setVerifiedEmail(null);
-    setVerificationToken(null);
+    setSearchParams({ type }, { replace: true, state: navState });
+    resetVerification();
   };
 
   const handleBack = () => {
     setAccountType(null);
-    setSearchParams({});
-
-    setVerifiedEmail(null);
-    setVerificationToken(null);
+    setSearchParams({}, { replace: true, state: navState });
+    resetVerification();
   };
 
   const handleVerified = ({
@@ -239,7 +247,15 @@ export default function SignupPage() {
 
         <main className="flex flex-1">
           {!accountType && (
-            <AccountTypeSelector onSelect={handleSelect} />
+            <div className="flex w-full flex-1 flex-col">
+              {googleSignup && (
+                <p className="mx-auto mt-6 max-w-md rounded-lg bg-white/90 px-4 py-3 text-center text-sm text-black" role="status">
+                  No account uses <strong>{googleSignup.email}</strong> yet. Choose an account type to finish signing up —
+                  your Google email is already verified.
+                </p>
+              )}
+              <AccountTypeSelector onSelect={handleSelect} />
+            </div>
           )}
 
           {accountType && !verifiedEmail && (
@@ -258,6 +274,10 @@ export default function SignupPage() {
               verifiedEmail={verifiedEmail}
               verificationToken={verificationToken}
               onBack={() => {
+                if (googleSignup) {
+                  handleBack();
+                  return;
+                }
                 setVerifiedEmail(null);
                 setVerificationToken(null);
               }}

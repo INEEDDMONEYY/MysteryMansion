@@ -64,11 +64,8 @@ export default function AdminSidebar({
     '';
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('profilePicture');
-
-    navigate('/');
+    // The /signout flow calls the shared logout so the navbar updates instantly.
+    navigate('/signout');
   };
 
   return (

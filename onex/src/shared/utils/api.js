@@ -77,6 +77,10 @@ api.interceptors.response.use(
 
 export const getAuthToken = () => localStorage.getItem("token");
 export const setAuthToken = (token) => token ? localStorage.setItem("token", token) : localStorage.removeItem("token");
-export const clearAuthData = () => { localStorage.removeItem("token"); localStorage.removeItem("user"); };
+export const clearAuthData = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("profilePicture");
+};
 
 export default api;

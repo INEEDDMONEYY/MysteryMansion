@@ -3,6 +3,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 import User from "../../models/User.js";
 import Referral from "../../models/Referral.js";
 import env from "../../config/env.js";
@@ -14,7 +15,7 @@ import { awardCredits, dayKey } from "../credits/creditEarnService.js";
 import { sendVerificationCode, confirmVerificationCode } from "./controllers/emailVerificationController.js";
 
 // 🔐 NEW: import combined middleware
-import { authMiddleware, adminOnlyMiddleware } from "../../common/middleware/authMiddleware.js";
+import { authMiddleware, adminOnlyMiddleware, touchLastActive } from "../../common/middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -156,6 +157,41 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+/* ----------------- Shared sign-in response ----------------- */
+const sendSignedInResponse = (res, user) => {
+  const token = jwt.sign(
+    { id: user._id, username: user.username, role: user.role },
+    env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "none",
+  });
+
+  const signedInAt = new Date();
+  User.updateOne({ _id: user._id }, { $set: { lastLogin: signedInAt, lastActiveAt: signedInAt } })
+    .catch((err) => console.error("lastLogin update failed:", err.message));
+
+  awardCredits({ userId: user._id, eventKey: 'daily_login', refId: dayKey() });
+
+  return res.json({
+    message: "Login successful",
+    token,
+    user: {
+      _id: user._id,
+      username: user.username,
+      role: user.role,
+      accountType: user.accountType,
+      profilePic: user.profilePic,
+      roleRestriction: user.roleRestriction,
+      status: user.status,
+    },
+  });
+};
+
 /* -------------------------- 🔓 Signin -------------------------- */
 router.post("/signin", async (req, res) => {
   try {
@@ -172,41 +208,71 @@ router.post("/signin", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { id: user._id, username: user.username, role: user.role },
-      env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: env.NODE_ENV === "production",
-      sameSite: "none",
-    });
-
-    awardCredits({ userId: user._id, eventKey: 'daily_login', refId: dayKey() });
-
-    res.json({
-      message: "Login successful",
-      token,
-      user: {
-        _id: user._id,
-        username: user.username,
-        role: user.role,
-        accountType: user.accountType,
-        profilePic: user.profilePic,
-        roleRestriction: user.roleRestriction,
-        status: user.status,
-      },
-    });
+    return sendSignedInResponse(res, user);
   } catch (err) {
     console.error("Signin error:", err.message);
     res.status(500).json({ error: "Server error during signin" });
   }
 });
 
+/* ----------------------- 🔵 Google Sign-in ----------------------- */
+const googleClient = new OAuth2Client();
+
+router.post("/google", async (req, res) => {
+  try {
+    if (!env.GOOGLE_CLIENT_ID) {
+      return res.status(503).json({ error: "Google sign-in is not available right now." });
+    }
+    const credential = String(req.body?.credential || "");
+    if (!credential) return res.status(400).json({ error: "Missing Google credential." });
+
+    let payload;
+    try {
+      const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: env.GOOGLE_CLIENT_ID });
+      payload = ticket.getPayload();
+    } catch {
+      return res.status(401).json({ error: "Google sign-in failed. Please try again." });
+    }
+
+    const email = String(payload?.email || "").trim().toLowerCase();
+    if (!email || payload?.email_verified !== true) {
+      return res.status(401).json({ error: "Your Google account email isn't verified." });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Google already verified this address, so hand back the same short-lived
+      // token the email-code step issues and let the user finish signing up.
+      const emailVerificationToken = jwt.sign({ email, purpose: "email-verify" }, env.JWT_SECRET, { expiresIn: "15m" });
+      return res.status(404).json({
+        code: "GOOGLE_ACCOUNT_NOT_FOUND",
+        error: "No Mystery Mansion account uses this Google email yet.",
+        email,
+        emailVerificationToken,
+      });
+    }
+
+    return sendSignedInResponse(res, user);
+  } catch (err) {
+    console.error("Google signin error:", err.message);
+    res.status(500).json({ error: "Server error during Google sign-in" });
+  }
+});
+
 /* -------------------------- 🚪 Logout -------------------------- */
 router.post("/logout", (req, res) => {
+  const token = req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "");
+  if (token) {
+    try {
+      const { id } = jwt.verify(token, env.JWT_SECRET);
+      if (id) {
+        User.updateOne({ _id: id }, { $set: { lastLogoutAt: new Date() } })
+          .catch((err) => console.error("lastLogoutAt update failed:", err.message));
+      }
+    } catch {
+      // Expired/invalid token — nothing to record.
+    }
+  }
   res.clearCookie("token", { httpOnly: true, sameSite: "none", secure: true });
   res.json({ message: "Logged out successfully" });
 });
@@ -225,6 +291,7 @@ router.get("/me", async (req, res) => {
     const user = await User.findById(decoded.id).select("-password");
     if (!user) return res.status(404).json({ error: "User not found" });
 
+    touchLastActive(user);
     res.json(user);
   } catch (err) {
     console.error("Fetch current user error:", err.message);

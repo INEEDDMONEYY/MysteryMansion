@@ -34,17 +34,17 @@ export default function Navbar() {
   const isClient =
     user?.role === "user" && user?.accountType === "client";
 
-  const profileName =
-    user?.username ||
-    user?.displayName ||
-    user?.name ||
-    "Profile";
+  const profileName = user
+    ? user.username || user.displayName || user.name || "Profile"
+    : "Sign In";
 
-  const profilePic =
-    user?.profilePic ||
-    user?.profilePicture ||
-    localStorage.getItem("profilePicture") ||
-    "";
+  // Only ever show a picture for the signed-in user — never a cached one.
+  const profilePic = user
+    ? user.profilePic ||
+      user.profilePicture ||
+      (isAdmin ? localStorage.getItem("profilePicture") : "") ||
+      ""
+    : "";
 
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -94,8 +94,7 @@ export default function Navbar() {
   }, [user?._id, isAdmin]);
 
   const handleProfileClick = () => {
-    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    const { role, accountType } = storedUser;
+    const { role, accountType } = user || {};
 
     if (role === "admin") return navigate("/admin");
 

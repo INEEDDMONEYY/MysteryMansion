@@ -1,0 +1,4 @@
+# Environment files must never be committed
+.env
+.env.*
+!.env.example

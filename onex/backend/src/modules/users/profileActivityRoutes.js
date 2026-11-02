@@ -218,6 +218,7 @@ router.get('/media', async (req, res) => {
       items: items.map((m) => ({
         id: String(m._id),
         url: m.url,
+        backupUrl: m.backupUrl || '',
         mediaType: m.mediaType,
         thumbnailUrl: m.thumbnailUrl,
         width: m.width,

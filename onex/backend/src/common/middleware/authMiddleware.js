@@ -2,7 +2,18 @@ import jwt from "jsonwebtoken";
 import User from "../../models/User.js";
 import env from "../../config/env.js"; // central env file for JWT_SECRET
 
-const LAST_ACTIVE_THROTTLE_MS = 5 * 60 * 1000;
+const LAST_ACTIVE_THROTTLE_MS = 2 * 60 * 1000;
+
+// Records session activity for a signed-in user, at most once per window.
+export const touchLastActive = (user) => {
+  if (!user?._id) return;
+  const lastActive = user.lastActiveAt ? new Date(user.lastActiveAt).getTime() : 0;
+  if (Date.now() - lastActive <= LAST_ACTIVE_THROTTLE_MS) return;
+  const now = new Date();
+  user.lastActiveAt = now;
+  User.updateOne({ _id: user._id }, { $set: { lastActiveAt: now } })
+    .catch((err) => console.error("[AuthMiddleware] lastActiveAt update failed:", err.message));
+};
 
 /* ---------------------------------------------------------
    🔐 AUTH MIDDLEWARE
@@ -61,12 +72,7 @@ const authMiddleware = async (req, res, next) => {
     req.user = user; // attach user to request
     console.log("[AuthMiddleware] Attached user to req.user:", req.user._id);
 
-    // Throttled so we write at most once per window per user.
-    const lastActive = user.lastActiveAt ? new Date(user.lastActiveAt).getTime() : 0;
-    if (Date.now() - lastActive > LAST_ACTIVE_THROTTLE_MS) {
-      User.updateOne({ _id: user._id }, { $set: { lastActiveAt: new Date() } })
-        .catch((err) => console.error("[AuthMiddleware] lastActiveAt update failed:", err.message));
-    }
+    touchLastActive(user);
 
     next();
   } catch (err) {
@@ -124,7 +130,10 @@ const optionalAuthMiddleware = async (req, res, next) => {
     const userId = decoded.id || decoded._id;
     if (userId) {
       const user = await User.findById(userId).select("-password");
-      if (user) req.user = user;
+      if (user) {
+        req.user = user;
+        touchLastActive(user);
+      }
     }
   } catch {
     // silently skip

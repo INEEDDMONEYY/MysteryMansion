@@ -1,5 +1,5 @@
 // Frontend UserContext file (updated with error timeout)
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useRef } from "react";
 import api, { setAuthToken, clearAuthData, getAuthToken } from '@/shared/utils/api';
 
 export const UserContext = createContext();
@@ -8,9 +8,17 @@ const keyFor = (base, userId) => (userId ? `${base}_${userId}` : base);
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
+    // A cached user without a token is a leftover from an old session.
+    if (!getAuthToken()) return null;
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+      return null;
+    }
   });
+  // Bumped on every sign-in/sign-out so responses from an earlier session
+  // (e.g. a slow /auth/me during server warm-up) can't overwrite the new state.
+  const authEpochRef = useRef(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [appToast, setAppToast] = useState(null);
@@ -41,6 +49,7 @@ export const UserProvider = ({ children }) => {
       return;
     }
 
+    const epoch = authEpochRef.current;
     let didTimeout = false;
     const timeoutId = setTimeout(() => {
       didTimeout = true;
@@ -51,15 +60,19 @@ export const UserProvider = ({ children }) => {
     const fetchUser = async () => {
       try {
         const res = await api.get("/auth/me");
-        if (didTimeout) return; // ignore if timed out
+        if (didTimeout || epoch !== authEpochRef.current) return;
 
         const fetched = res.data?.user ?? res.data;
         setUser(fetched);
         persistUser(fetched);
       } catch (err) {
-        if (didTimeout) return;
-        clearAuthData();
-        setUser(null);
+        if (didTimeout || epoch !== authEpochRef.current) return;
+        // Only an auth rejection ends the session; network errors while the
+        // server is waking up keep the cached user signed in.
+        if (err.response?.status === 401) {
+          clearAuthData();
+          setUser(null);
+        }
         setError(err.response?.data?.error || err.message);
       } finally {
         if (!didTimeout) {
@@ -72,6 +85,25 @@ export const UserProvider = ({ children }) => {
     fetchUser();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep other open tabs in sync when the user signs in or out elsewhere.
+  useEffect(() => {
+    const handleStorage = (event) => {
+      if (event.key !== "token" && event.key !== "user" && event.key !== null) return;
+      authEpochRef.current += 1;
+      if (!getAuthToken()) {
+        setUser(null);
+        return;
+      }
+      try {
+        setUser(JSON.parse(localStorage.getItem("user") || "null"));
+      } catch {
+        setUser(null);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   // Sessions can last days, so claim the daily-login reward once per day on load.
@@ -115,10 +147,13 @@ export const UserProvider = ({ children }) => {
     };
   }, []);
 
-  const login = async (email, password) => {
+  // Shared by email/password and Google sign-in.
+  const completeSignIn = async (request, fallbackMessage) => {
+    const epoch = ++authEpochRef.current;
     try {
-      const res = await api.post("/auth/signin", { email: email?.trim()?.toLowerCase(), password });
+      const res = await request();
       const { token, user: returnedUser } = res.data;
+      if (epoch !== authEpochRef.current) throw new Error("Sign-in was interrupted. Please try again.");
       setAuthToken(token);
       let authUser = returnedUser ?? res.data;
 
@@ -130,24 +165,46 @@ export const UserProvider = ({ children }) => {
         console.warn("/me hydration failed after login, using signin payload", meErr?.message || meErr);
       }
 
+      if (epoch !== authEpochRef.current) throw new Error("Sign-in was interrupted. Please try again.");
       setUser(authUser);
       persistUser(authUser);
       setLoading(false); // ✅ Clear loading state after successful login
       return authUser;
     } catch (err) {
       setLoading(false); // ✅ Clear loading state on error too
-      throw new Error(err.response?.data?.error || "Login failed");
+      const error = new Error(err.response?.data?.error || err.message || fallbackMessage);
+      error.status = err.response?.status;
+      error.data = err.response?.data;
+      throw error;
     }
   };
 
+  const login = (email, password) =>
+    completeSignIn(
+      () => api.post("/auth/signin", { email: email?.trim()?.toLowerCase(), password }),
+      "Login failed",
+    );
+
+  const loginWithGoogle = (credential) =>
+    completeSignIn(() => api.post("/auth/google", { credential }), "Google sign-in failed");
+
   const logout = async () => {
+    authEpochRef.current += 1;
+    // Send the request with the current token, but clear local state right away
+    // so the navbar updates instantly instead of after the network round-trip.
+    const token = getAuthToken();
+    const request = api.post(
+      "/auth/logout",
+      null,
+      token ? { headers: { Authorization: `Bearer ${token}` } } : undefined,
+    );
+    clearAuthData();
+    setUser(null);
     try {
-      await api.post("/auth/logout");
+      await request;
     } catch (err) {
       console.warn("Logout error:", err.message || err);
     }
-    clearAuthData();
-    setUser(null);
   };
 
   const updateProfile = async (data, isFormData = false) => {
@@ -186,9 +243,11 @@ export const UserProvider = ({ children }) => {
   };
 
   const refreshUser = async () => {
+    const epoch = authEpochRef.current;
     try {
       const res = await api.get("/auth/me");
       const fetched = res.data?.user ?? res.data;
+      if (epoch !== authEpochRef.current) return null;
       setUser(fetched);
       persistUser(fetched);
       return fetched;
@@ -203,6 +262,7 @@ export const UserProvider = ({ children }) => {
       const currentUserId = user?._id || user?.id;
       await api.delete("/users/delete-account");
 
+      authEpochRef.current += 1;
       clearAuthData();
       if (currentUserId) {
         localStorage.removeItem(`user_${currentUserId}`);
@@ -237,6 +297,7 @@ export const UserProvider = ({ children }) => {
           user,
           setUser,
           login,
+          loginWithGoogle,
           logout,
           updateProfile,
           mergeUser,

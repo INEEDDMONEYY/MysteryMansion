@@ -662,7 +662,7 @@ export default function UserMediaPage() {
                         </div>
                       ) : (
                         <video
-                          src={item.url}
+                          src={`${item.url}#t=0.1`}
                           muted
                           playsInline
                           preload="metadata"
@@ -675,6 +675,11 @@ export default function UserMediaPage() {
                         alt={item.name}
                         loading="lazy"
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          if (item.backupUrl && e.currentTarget.src !== item.backupUrl) {
+                            e.currentTarget.src = item.backupUrl;
+                          }
+                        }}
                       />
                     )}
 

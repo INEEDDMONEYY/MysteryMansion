@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import { Send } from "lucide-react";
 
 export default function MessageInput({
@@ -26,8 +26,17 @@ export default function MessageInput({
     }
   };
 
+  // Grow with the text so new lines stay visible (capped by max-h-32).
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [text]);
+
+  // Enter inserts a new line; Ctrl/Cmd+Enter is a keyboard shortcut to send.
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSubmit();
     }
@@ -45,12 +54,16 @@ export default function MessageInput({
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
+        enterKeyHint="enter"
+        aria-label="Message"
         disabled={disabled || sending}
         className="flex-1 resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent disabled:opacity-50 max-h-32 overflow-y-auto leading-relaxed"
         style={{ minHeight: '42px' }}
       />
       <button
         type="submit"
+        aria-label="Send message"
+        title="Send (Ctrl+Enter)"
         disabled={!text.trim() || sending || disabled}
         className="shrink-0 w-10 h-10 rounded-full bg-pink-600 hover:bg-pink-500 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors"
       >

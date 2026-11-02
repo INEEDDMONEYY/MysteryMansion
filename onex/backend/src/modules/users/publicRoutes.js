@@ -18,7 +18,7 @@ const router = express.Router();
 // Last-active is opt-in: only exposed when the member enabled showLastActive.
 // Contact details are left out of list endpoints entirely; single-profile
 // endpoints send masked versions (see contactPrivacy.js).
-const PRIVATE_FIELDS = '-password -resetPasswordToken -resetPasswordExpires -email -phoneNumber -lastActiveAt';
+const PRIVATE_FIELDS = '-password -resetPasswordToken -resetPasswordExpires -email -phoneNumber -lastActiveAt -lastLogin -lastLogoutAt';
 
 const normalizeUsername = (value = '') => String(value).trim().toLowerCase();
 const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -147,7 +147,7 @@ router.get('/popular', async (req, res) => {
       { $sort: { score: -1 } },
       { $limit: 6 },
       { $project: {
-        password: 0, email: 0, phoneNumber: 0, lastActiveAt: 0,
+        password: 0, email: 0, phoneNumber: 0, lastActiveAt: 0, lastLogin: 0, lastLogoutAt: 0,
         resetPasswordToken: 0, resetPasswordExpires: 0,
         _posts: 0, _reviews: 0, _commentData: 0,
       }},
@@ -171,7 +171,7 @@ router.get('/id/:userId', async (req, res) => {
       return res.status(400).json({ error: 'Invalid user id' });
     }
     const user = await User.findById(userId).select(
-      '-password -resetPasswordToken -resetPasswordExpires'
+      '-password -resetPasswordToken -resetPasswordExpires -lastLogin -lastLogoutAt'
     );
     if (!user) return res.status(404).json({ error: 'User not found' });
     const profile = applyContactMask(user.toObject());
@@ -192,7 +192,7 @@ router.get('/:username', async (req, res) => {
     }
     const user = await User.findOne({
       username: { $regex: `^${escapeRegex(username)}$`, $options: 'i' },
-    }).select('-password -resetPasswordToken -resetPasswordExpires');
+    }).select('-password -resetPasswordToken -resetPasswordExpires -lastLogin -lastLogoutAt');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

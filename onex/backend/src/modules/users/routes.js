@@ -5,6 +5,7 @@ import multer from "multer";
 import bcrypt from "bcrypt";
 import streamifier from "streamifier";
 import cloudinary from "../../common/utils/cloudinary.js";
+import { uploadBackupCopy, deleteBackupCopy, backupStorageEnabled } from "../../common/utils/backupStorage.js";
 import User from "../../models/User.js";
 import Post from "../../models/Post.js";
 import Conversation from "../../models/Conversation.js";
@@ -420,6 +421,7 @@ const mediaUpload = multer({
 const serializeMedia = (m) => ({
   _id: String(m._id),
   url: m.url,
+  backupUrl: m.backupUrl || "",
   mediaType: m.mediaType,
   mimeType: m.mimeType,
   originalName: m.originalName,
@@ -432,14 +434,38 @@ const serializeMedia = (m) => ({
   createdAt: m.createdAt,
 });
 
-const uploadMediaToCloudinary = (buffer, resourceType) =>
+// Images only — videos are stored on Cloudflare R2 because Cloudinary's
+// moderation has been flagging/removing legitimate provider videos.
+const uploadImageToCloudinary = (buffer) =>
   new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { folder: "user_media", resource_type: resourceType },
-      (err, result) => (err ? reject(err) : resolve(result)),
+    let settled = false;
+    const finish = (fn, value) => {
+      if (settled) return;
+      settled = true;
+      fn(value);
+    };
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: "user_media", resource_type: "image", timeout: 120000 },
+      (err, result) => (err ? finish(reject, err) : finish(resolve, result)),
     );
-    streamifier.createReadStream(buffer).pipe(stream);
+    // Without these listeners a dropped connection mid-upload surfaces as an
+    // unhandled stream error, which takes the whole server process down.
+    uploadStream.on("error", (err) => finish(reject, err));
+    const source = streamifier.createReadStream(buffer);
+    source.on("error", (err) => finish(reject, err));
+    source.pipe(uploadStream);
   });
+
+const removeStoredMedia = (media) => {
+  if (media.storage === "r2") {
+    deleteBackupCopy(media.publicId);
+  } else {
+    cloudinary.uploader
+      .destroy(media.publicId, { resource_type: media.mediaType === "video" ? "video" : "image" })
+      .catch((err) => console.error("⚠️ Cloudinary media cleanup failed:", err?.message || err));
+  }
+  if (media.backupKey) deleteBackupCopy(media.backupKey);
+};
 
 const ensureMediaOwnerAccount = (req, res, next) => {
   if (req.user?.accountType === "client" && req.user?.role !== "admin") {
@@ -487,25 +513,74 @@ router.post(
         return res.status(409).json({ error: message, message });
       }
 
-      const result = await uploadMediaToCloudinary(file.buffer, isVideo ? "video" : "image");
-
-      const media = await UserMedia.create({
+      const base = {
         userId: req.user._id,
-        url: result.secure_url,
-        publicId: result.public_id,
         mediaType: isVideo ? "video" : "image",
         mimeType: file.mimetype,
         originalName: String(file.originalname || "").slice(0, 255),
-        sizeBytes: result.bytes || file.size,
-        width: result.width ?? null,
-        height: result.height ?? null,
-        duration: result.duration ?? null,
-        // Cloudinary renders a poster frame when a video URL is requested as .jpg.
-        thumbnailUrl: isVideo
-          ? cloudinary.url(result.public_id, { resource_type: "video", format: "jpg", secure: true })
-          : "",
         showOnProfile: String(req.body?.showOnProfile ?? "true") !== "false",
-      });
+      };
+
+      let media;
+      if (isVideo) {
+        if (!backupStorageEnabled) {
+          const message = "Video uploads are temporarily unavailable. Please try again later.";
+          return res.status(503).json({ error: message, message });
+        }
+        const stored = await uploadBackupCopy({
+          buffer: file.buffer,
+          folder: "user_media",
+          userId: req.user._id,
+          originalName: file.originalname,
+          contentType: file.mimetype || "video/mp4",
+        });
+        if (!stored) {
+          const message = `Could not upload ${file.originalname || "this video"}. Please try again.`;
+          return res.status(502).json({ error: message, message });
+        }
+        media = await UserMedia.create({
+          ...base,
+          url: stored.url,
+          publicId: stored.key,
+          storage: "r2",
+          sizeBytes: file.size,
+        });
+      } else {
+        let result = null;
+        try {
+          result = await uploadImageToCloudinary(file.buffer);
+        } catch (err) {
+          console.error("⚠️ Cloudinary image upload failed, storing on R2 instead:", err?.message || err);
+        }
+        const r2Copy = await uploadBackupCopy({
+          buffer: file.buffer,
+          folder: "user_media",
+          userId: req.user._id,
+          originalName: file.originalname,
+          contentType: file.mimetype,
+        });
+        if (!result && !r2Copy) {
+          const message = `Could not upload ${file.originalname || "this image"}. Please try again.`;
+          return res.status(502).json({ error: message, message });
+        }
+        media = await UserMedia.create(
+          result
+            ? {
+                ...base,
+                url: result.secure_url,
+                publicId: result.public_id,
+                storage: "cloudinary",
+                backupUrl: r2Copy?.url || "",
+                backupKey: r2Copy?.key || "",
+                sizeBytes: result.bytes || file.size,
+                width: result.width ?? null,
+                height: result.height ?? null,
+              }
+            : { ...base, url: r2Copy.url, publicId: r2Copy.key, storage: "r2", sizeBytes: file.size },
+        );
+      }
+      // Release the upload buffer promptly; Render instances have little memory.
+      file.buffer = null;
 
       res.status(201).json({ item: serializeMedia(media) });
     } catch (err) {
@@ -541,9 +616,7 @@ router.delete("/me/media/:mediaId", ensureMediaOwnerAccount, async (req, res) =>
     const media = await UserMedia.findOneAndDelete({ _id: req.params.mediaId, userId: req.user._id }).lean();
     if (!media) return res.status(404).json({ error: "Media not found", message: "Media not found" });
 
-    cloudinary.uploader
-      .destroy(media.publicId, { resource_type: media.mediaType === "video" ? "video" : "image" })
-      .catch((err) => console.error("⚠️ Cloudinary media cleanup failed:", err.message));
+    removeStoredMedia(media);
 
     res.json({ success: true });
   } catch (err) {
@@ -571,13 +644,9 @@ router.delete("/delete-account", async (req, res) => {
         Profile.deleteOne({ userId }),
       ]);
 
-    const ownedMedia = await UserMedia.find({ userId }).select("publicId mediaType").lean();
+    const ownedMedia = await UserMedia.find({ userId }).select("publicId mediaType storage backupKey").lean();
     await UserMedia.deleteMany({ userId });
-    for (const m of ownedMedia) {
-      cloudinary.uploader
-        .destroy(m.publicId, { resource_type: m.mediaType === "video" ? "video" : "image" })
-        .catch((err) => console.error("⚠️ Cloudinary media cleanup failed:", err.message));
-    }
+    ownedMedia.forEach(removeStoredMedia);
 
     // Remove references to this user from promo code assignment/redemption history.
     await Promise.all([

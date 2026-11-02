@@ -99,7 +99,7 @@ export default function ProviderMediaGallery({ userId }) {
                     onClick={() =>
                       isVideo
                         ? setActiveVideo(item)
-                        : setActiveImage({ url: item.url, alt: "Profile photo" })
+                        : setActiveImage({ url: item.url, backupUrl: item.backupUrl, alt: "Profile photo" })
                     }
                     aria-label={isVideo ? "Play video" : "View photo"}
                     className="relative block aspect-square w-full bg-gray-100 focus:outline-none focus:ring-2 focus:ring-pink-500"
@@ -110,9 +110,15 @@ export default function ProviderMediaGallery({ userId }) {
                         alt={isVideo ? "Video thumbnail" : "Profile photo"}
                         loading="lazy"
                         className="h-full w-full object-cover"
+                        onError={(e) => {
+                          if (!isVideo && item.backupUrl && e.currentTarget.src !== item.backupUrl) {
+                            e.currentTarget.src = item.backupUrl;
+                          }
+                        }}
                       />
                     ) : (
-                      <video src={item.url} preload="metadata" muted className="h-full w-full object-cover" />
+                      // "#t=0.1" makes mobile Safari paint the first frame as a preview.
+                      <video src={`${item.url}#t=0.1`} preload="metadata" muted playsInline className="h-full w-full object-cover" />
                     )}
                     {isVideo && (
                       <span className="absolute inset-0 flex items-center justify-center bg-black/20">

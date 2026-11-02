@@ -42,6 +42,8 @@ const env = {
   // 🗄️ Backup media storage (S3-compatible — e.g. Cloudflare R2) — optional.
   // Keeps a redundant copy of post images/videos in case Cloudinary ever
   // flags/removes an asset. All four must be set for backups to be enabled.
+  // Google Identity Services OAuth client ID (same value as VITE_GOOGLE_CLIENT_ID).
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   BACKUP_STORAGE_ENDPOINT: process.env.BACKUP_STORAGE_ENDPOINT,
   BACKUP_STORAGE_ACCESS_KEY_ID: process.env.BACKUP_STORAGE_ACCESS_KEY_ID,
   BACKUP_STORAGE_SECRET_ACCESS_KEY: process.env.BACKUP_STORAGE_SECRET_ACCESS_KEY,
