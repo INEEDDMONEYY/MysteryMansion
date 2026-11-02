@@ -26,3 +26,17 @@ BookmarkSchema.index({ userId: 1, targetType: 1, targetId: 1 }, { unique: true }
 export const ForumVote = mongoose.models.ForumVote || mongoose.model('ForumVote', VoteSchema);
 export const ForumBookmark =
   mongoose.models.ForumBookmark || mongoose.model('ForumBookmark', BookmarkSchema);
+
+const FollowSchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    threadId: { type: mongoose.Schema.Types.ObjectId, ref: 'ForumThread', required: true },
+    following: { type: Boolean, default: true },
+    notificationsEnabled: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+FollowSchema.index({ userId: 1, threadId: 1 }, { unique: true });
+FollowSchema.index({ threadId: 1, notificationsEnabled: 1 });
+
+export const ForumFollow = mongoose.models.ForumFollow || mongoose.model('ForumFollow', FollowSchema);

@@ -64,12 +64,12 @@ export default function ForumReplyList({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="divide-y divide-gray-200">
       {tree.map((reply) => (
         <ForumReply key={reply.id} reply={reply} canReply={canReply} {...shared}>
           {reply.children.length > 0 &&
             reply.children.map((child) => (
-              <ForumReply key={child.id} reply={child} canReply={canReply} isChild {...shared} />
+              <ForumReply key={child.id} reply={child} parentReply={reply} canReply={canReply} isChild {...shared} />
             ))}
         </ForumReply>
       ))}

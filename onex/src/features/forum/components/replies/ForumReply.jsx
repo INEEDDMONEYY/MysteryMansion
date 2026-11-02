@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { CornerDownRight } from "lucide-react";
+import ForumAuthor from "../ForumAuthor";
 
 import ForumReplyActions from "./ForumReplyActions";
 import ForumReplyForm from "./ForumReplyForm";
@@ -28,6 +31,7 @@ export default function ForumReply({
   canEditPosts = true,
   allowAttachments = true,
   isChild = false,
+  parentReply,
   onReply,
   onEdit,
   onDelete,
@@ -74,9 +78,7 @@ export default function ForumReply({
   return (
     <article
       id={`reply-${reply.id}`}
-      className={`rounded-2xl border bg-white p-4 shadow-sm sm:p-5 ${
-        reply.isSolution ? "border-emerald-300 ring-1 ring-emerald-200" : "border-gray-200"
-      } ${isChild ? "bg-gray-50/60" : ""}`}
+      className="py-5"
     >
       <div className="flex gap-3 sm:gap-4">
         {!deleted && (
@@ -94,9 +96,10 @@ export default function ForumReply({
 
         <div className="min-w-0 flex-1">
           <header className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-            <span className="text-sm font-bold text-gray-900">
-              {reply.author?.username || "Community Member"}
-            </span>
+            {isChild && (
+              <CornerDownRight size={20} className="shrink-0 text-gray-400" aria-hidden="true" />
+            )}
+            <ForumAuthor author={reply.author} />
 
             {reply.author?.role && (
               <span
@@ -120,6 +123,14 @@ export default function ForumReply({
               <span className="text-gray-400">(edited)</span>
             )}
           </header>
+          {parentReply && (
+            <p className="mt-2 text-xs text-gray-500">
+              In reply to{" "}
+              <Link to={`#reply-${parentReply.id}`} className="font-medium text-gray-600 hover:text-pink-600">
+                {parentReply.author?.username || "this member"}'s comment
+              </Link>
+            </p>
+          )}
 
           {mode === "edit" ? (
             <div className="mt-3">
@@ -186,7 +197,7 @@ export default function ForumReply({
       </div>
 
       {children && (
-        <div className="mt-4 space-y-3 border-l-2 border-gray-100 pl-3 sm:ml-12 sm:pl-5">
+        <div className="mt-2 pl-2 sm:ml-12 sm:pl-2">
           {children}
         </div>
       )}

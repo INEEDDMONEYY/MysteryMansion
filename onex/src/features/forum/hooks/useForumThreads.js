@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { UserContext } from "@/context/UserContext";
 
 import { getForumThreads } from "../services/forumThreadService";
 
@@ -22,11 +23,16 @@ const useForumThreads = ({
   query = "",
   limit = 20,
   autoLoad = true,
+  followed = false,
 } = {}) => {
-  const [state, setState] = useState(INITIAL_STATE);
+  const { user } = useContext(UserContext) || {};
+  const userId = user?._id;
+  const requestId = useRef(0);
+  const [state, setState] = useState(() => ({ ...INITIAL_STATE, loading: autoLoad }));
 
   const loadThreads = useCallback(
     async ({ page = 1, append = false } = {}) => {
+      const request = ++requestId.current;
       setState((current) => ({
         ...current,
         loading: !append,
@@ -42,7 +48,9 @@ const useForumThreads = ({
           query,
           page,
           limit,
+          followed,
         });
+        if (request !== requestId.current) return null;
 
         setState((current) => ({
           threads: append
@@ -56,6 +64,7 @@ const useForumThreads = ({
 
         return result;
       } catch (error) {
+        if (request !== requestId.current) return null;
         setState((current) => ({
           ...current,
           loading: false,
@@ -69,7 +78,7 @@ const useForumThreads = ({
         return null;
       }
     },
-    [categoryId, categorySlug, limit, query, sort]
+    [categoryId, categorySlug, limit, query, sort, followed]
   );
 
   const loadMore = useCallback(async () => {
@@ -96,7 +105,8 @@ const useForumThreads = ({
     if (!autoLoad) return;
 
     loadThreads({ page: 1, append: false });
-  }, [autoLoad, loadThreads]);
+    return () => { requestId.current += 1; };
+  }, [autoLoad, loadThreads, userId]);
 
   return {
     threads: state.threads,

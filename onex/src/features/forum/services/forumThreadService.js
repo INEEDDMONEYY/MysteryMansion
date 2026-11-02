@@ -1,5 +1,13 @@
 import { forumRequest, toRequestData } from "./forumApi";
 
+export const FORUM_FOLLOW_CHANGED = "forum-follow-changed";
+
+export const setForumThreadFollow = (threadId, settings) => forumRequest({
+  method: "put",
+  url: `/forum/threads/${encodeURIComponent(threadId)}/follow`,
+  data: settings,
+});
+
 export const getForumThreads = async ({
   categoryId = null,
   categorySlug = null,
@@ -7,6 +15,7 @@ export const getForumThreads = async ({
   query = "",
   page = 1,
   limit = 20,
+  followed = false,
 } = {}) => {
   const result = await forumRequest({
     method: "get",
@@ -18,6 +27,7 @@ export const getForumThreads = async ({
       sort,
       page,
       limit,
+      followed: followed || undefined,
     },
   });
 

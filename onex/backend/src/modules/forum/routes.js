@@ -7,7 +7,9 @@ import User from '../../models/User.js';
 import ForumCategory from '../../models/ForumCategory.js';
 import ForumThread from '../../models/ForumThread.js';
 import ForumReply from '../../models/ForumReply.js';
-import { ForumVote, ForumBookmark } from '../../models/ForumInteraction.js';
+import Notification from '../../models/Notification.js';
+import { getThreadFollowerSummaries, emptyFollowerSummary } from './forumFollowers.js';
+import { ForumVote, ForumBookmark, ForumFollow } from '../../models/ForumInteraction.js';
 import { authMiddleware } from '../../common/middleware/authMiddleware.js';
 import { enforceRestriction } from '../../common/middleware/restrictionMiddleware.js';
 import { attachmentUpload, saveAttachments } from '../../common/utils/attachmentUpload.js';
@@ -172,10 +174,15 @@ router.patch('/categories/:id', authMiddleware, async (req, res) => {
 
 // ── Threads ──────────────────────────────────────────────────────────────────
 
-router.get('/threads', async (req, res) => {
+router.get('/threads', optionalAuth, async (req, res) => {
   try {
     const { page, limit } = parsePaging(req.query, 20, 50);
     const filter = { archived: false };
+    if (req.query.followed === 'true') {
+      if (!req.user) return res.status(401).json({ error: 'Sign in to view followed threads.' });
+      const follows = await ForumFollow.find({ userId: req.user._id, following: true }).select('threadId').lean();
+      filter._id = { $in: follows.map((follow) => follow.threadId) };
+    }
 
     if (req.query.categoryId) {
       if (!isId(req.query.categoryId)) return res.json({ threads: [], pagination: { page, limit, total: 0, hasNextPage: false } });
@@ -205,8 +212,20 @@ router.get('/threads', async (req, res) => {
       ).lean(),
     ]);
 
+    const follows = req.user
+      ? await ForumFollow.find({ userId: req.user._id, threadId: { $in: threads.map((thread) => thread._id) } }).lean()
+      : [];
+    const followByThread = new Map(follows.map((follow) => [String(follow.threadId), follow]));
+    const followerSummaries = await getThreadFollowerSummaries(threads.map((thread) => thread._id));
     res.json({
-      threads: threads.map(serializeThread),
+      threads: threads.map((thread) => {
+        const follow = followByThread.get(String(thread._id));
+        return {
+          ...serializeThread(thread),
+          ...(followerSummaries.get(String(thread._id)) || emptyFollowerSummary()),
+          viewer: { userId: req.user ? String(req.user._id) : null, following: Boolean(follow?.following), notificationsEnabled: Boolean(follow?.notificationsEnabled) },
+        };
+      }),
       pagination: { page, limit, total, hasNextPage: page * limit < total },
     });
   } catch (err) {
@@ -224,19 +243,62 @@ router.get('/threads/:id', optionalAuth, async (req, res) => {
     ).lean();
     if (!thread) return res.status(404).json({ error: 'Thread not found' });
 
-    let viewer = { vote: 0, bookmarked: false };
+    let viewer = { vote: 0, bookmarked: false, following: false, notificationsEnabled: false };
     if (req.user) {
-      const [vote, bookmark] = await Promise.all([
+      const [vote, bookmark, follow] = await Promise.all([
         ForumVote.findOne({ userId: req.user._id, targetType: 'thread', targetId: thread._id }).lean(),
         ForumBookmark.exists({ userId: req.user._id, targetType: 'thread', targetId: thread._id }),
+        ForumFollow.findOne({ userId: req.user._id, threadId: thread._id }).lean(),
       ]);
-      viewer = { vote: vote?.value || 0, bookmarked: Boolean(bookmark) };
+      viewer = {
+        userId: String(req.user._id),
+        vote: vote?.value || 0,
+        bookmarked: Boolean(bookmark),
+        following: Boolean(follow?.following),
+        notificationsEnabled: Boolean(follow?.notificationsEnabled),
+      };
     }
 
-    res.json({ ...serializeThread(thread), viewer });
+    const summaries = await getThreadFollowerSummaries([thread._id]);
+    res.json({ ...serializeThread(thread), ...(summaries.get(String(thread._id)) || emptyFollowerSummary()), viewer });
   } catch (err) {
     console.error('❌ GET /forum/threads/:id:', err);
     res.status(500).json({ error: 'Failed to load thread' });
+  }
+});
+
+router.get('/threads/:id/followers', async (req, res) => {
+  try {
+    if (!isId(req.params.id)) return res.status(404).json({ error: 'Thread not found' });
+    const thread = await ForumThread.findOne({ _id: req.params.id, archived: false }).select('_id').lean();
+    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    const summaries = await getThreadFollowerSummaries([thread._id]);
+    res.json(summaries.get(String(thread._id)) || emptyFollowerSummary());
+  } catch (err) {
+    console.error('GET /forum/threads/:id/followers:', err);
+    res.status(500).json({ error: 'Failed to load thread followers' });
+  }
+});
+
+router.put('/threads/:id/follow', authMiddleware, blockSuspended, async (req, res) => {
+  try {
+    if (!isId(req.params.id)) return res.status(400).json({ error: 'Invalid thread ID.' });
+    const following = req.body?.following;
+    const notificationsEnabled = req.body?.notificationsEnabled;
+    if (typeof following !== 'boolean' || typeof notificationsEnabled !== 'boolean' ||
+        (!following && notificationsEnabled)) {
+      return res.status(400).json({ error: 'Choose valid follow and notification settings. Notifications require following the thread.' });
+    }
+    if (!await ForumThread.exists({ _id: req.params.id, archived: false })) {
+      return res.status(404).json({ error: 'Thread not found' });
+    }
+    const filter = { userId: req.user._id, threadId: req.params.id };
+    // Keep an explicit off preference so automatic author/reply alerts can also be muted.
+    await ForumFollow.updateOne(filter, { $set: { following, notificationsEnabled } }, { upsert: true });
+    res.json({ following, notificationsEnabled });
+  } catch (err) {
+    console.error('❌ PUT /forum/threads/:id/follow:', err);
+    res.status(500).json({ error: 'Failed to save thread follow settings' });
   }
 });
 
@@ -399,6 +461,7 @@ router.delete('/threads/:id', authMiddleware, async (req, res) => {
       ForumReply.deleteMany({ threadId: thread._id }),
       ForumVote.deleteMany({ $or: [{ targetType: 'thread', targetId: thread._id }, { targetType: 'reply', targetId: { $in: replyIds.map((r) => r._id) } }] }),
       ForumBookmark.deleteMany({ targetType: 'thread', targetId: thread._id }),
+      ForumFollow.deleteMany({ threadId: thread._id }),
       thread.deleteOne(),
     ]);
     removeStoredFiles(files);
@@ -523,21 +586,28 @@ router.post('/threads/:id/replies', authMiddleware, blockSuspended, enforceRestr
 
     // Thread author and the member being replied to, never the replier, never twice.
     const preview = content ? `${content.slice(0, 80)}${content.length > 80 ? '…' : ''}` : 'sent an image';
+    const preferences = await ForumFollow.find({ threadId: thread._id }).lean();
+    const muted = new Set(preferences.filter((follow) => !follow.notificationsEnabled).map((follow) => String(follow.userId)));
     const notified = new Set([String(req.user._id)]);
+    const notifications = [];
     const notifyReply = (recipientId, title) => {
-      if (!recipientId || notified.has(String(recipientId))) return;
+      if (!recipientId || notified.has(String(recipientId)) || muted.has(String(recipientId))) return;
       notified.add(String(recipientId));
-      createNotification({
+      notifications.push(createNotification({
         audience: 'user',
         type: 'forum_reply',
         title,
         message: `${req.user.username} replied in "${thread.title}": "${preview}"`,
         userId: recipientId,
         meta: { threadId: String(thread._id), replyId: String(reply._id) },
-      }).catch((err) => console.error('❌ forum reply notification:', err.message));
+      }).catch((err) => console.error('❌ forum reply notification:', err.message)));
     };
     notifyReply(parentAuthorId, 'New reply to your comment');
     notifyReply(thread.authorId, 'New reply to your discussion');
+    for (const follow of preferences) {
+      if (follow.following && follow.notificationsEnabled) notifyReply(follow.userId, 'New reply in a thread you follow');
+    }
+    await Promise.all(notifications);
 
     const populated = await ForumReply.findById(reply._id).populate('authorId', AUTHOR_SELECT).lean();
     res.status(201).json(serializeReply(populated, { solutionReplyId: thread.solutionReplyId }));
@@ -665,8 +735,12 @@ router.get('/bookmarks', authMiddleware, async (req, res) => {
       ForumThread.find({ _id: { $in: bookmarks.map((b) => b.targetId) }, archived: false })
     ).lean();
     const byId = new Map(threads.map((t) => [String(t._id), t]));
+    const summaries = await getThreadFollowerSummaries(threads.map((thread) => thread._id));
     res.json({
-      threads: bookmarks.map((b) => byId.get(String(b.targetId))).filter(Boolean).map(serializeThread),
+      threads: bookmarks.map((b) => byId.get(String(b.targetId))).filter(Boolean).map((thread) => ({
+        ...serializeThread(thread),
+        ...(summaries.get(String(thread._id)) || emptyFollowerSummary()),
+      })),
     });
   } catch (err) {
     console.error('❌ GET /forum/bookmarks:', err);
@@ -676,6 +750,63 @@ router.get('/bookmarks', authMiddleware, async (req, res) => {
 
 const ANALYTICS_DAYS = 14;
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Forum-only inbox: other account alerts must never be returned or marked read here.
+const forumNotificationFilter = (userId) => ({
+  audience: 'user',
+  userId,
+  type: 'forum_reply',
+});
+
+router.get('/me/notifications', authMiddleware, async (req, res) => {
+  try {
+    const { page, limit } = parsePaging(req.query, 20, 50);
+    const base = forumNotificationFilter(req.user._id);
+    const filter = req.query.unread === 'true' ? { ...base, read: false } : base;
+    const [notifications, total, unreadCount] = await Promise.all([
+      Notification.find(filter).sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      Notification.countDocuments(filter),
+      Notification.countDocuments({ ...base, read: false }),
+    ]);
+    res.json({
+      notifications,
+      unreadCount,
+      pagination: { page, limit, total, hasNextPage: page * limit < total },
+    });
+  } catch (err) {
+    console.error('❌ GET /forum/me/notifications:', err);
+    res.status(500).json({ error: 'Failed to load forum notifications' });
+  }
+});
+
+router.patch('/me/notifications/read-all', authMiddleware, async (req, res) => {
+  try {
+    await Notification.updateMany(
+      { ...forumNotificationFilter(req.user._id), read: false },
+      { $set: { read: true } }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('❌ PATCH /forum/me/notifications/read-all:', err);
+    res.status(500).json({ error: 'Failed to mark forum notifications read' });
+  }
+});
+
+router.patch('/me/notifications/:id/read', authMiddleware, async (req, res) => {
+  try {
+    if (!isId(req.params.id)) return res.status(400).json({ error: 'Invalid notification ID.' });
+    const notification = await Notification.findOneAndUpdate(
+      { ...forumNotificationFilter(req.user._id), _id: req.params.id },
+      { $set: { read: true } },
+      { new: true }
+    ).lean();
+    if (!notification) return res.status(404).json({ error: 'Forum notification not found' });
+    res.json({ success: true, notification });
+  } catch (err) {
+    console.error('❌ PATCH /forum/me/notifications/:id/read:', err);
+    res.status(500).json({ error: 'Failed to mark forum notification read' });
+  }
+});
 
 // Engagement the member's own threads and replies received from other people.
 router.get('/me/analytics', authMiddleware, async (req, res) => {

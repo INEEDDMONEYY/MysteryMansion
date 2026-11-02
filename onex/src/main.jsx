@@ -56,6 +56,10 @@ const ReviewsPage = lazy(() => import("@/features/reviews/pages/ReviewsPage"));
 const PlatformUpdates = lazy(() => import("@/features/updates/pages/PlatformUpdatesPage"));
 const FAQPage = lazy(() => import("@/features/admin/pages/FAQPage"));
 const ForumPage = lazy(() => import("@/features/forum/pages/ForumPage"));
+const ForumLayout = lazy(() => import("@/features/forum/components/ForumLayout"));
+const ForumCategoriesPage = lazy(() => import("@/features/forum/pages/ForumCategoriesPage"));
+const ForumActivityPage = lazy(() => import("@/features/forum/pages/ForumActivityPage"));
+const ForumFollowedPage = lazy(() => import("@/features/forum/pages/ForumFollowedPage"));
 const AllDiscussionsPage = lazy(() => import("@/features/forum/pages/AllDiscussionsPage"));
 const ForumCategoryPage = lazy(() => import("@/features/forum/pages/ForumCategoryPage"));
 const ForumThreadPage = lazy(() => import("@/features/forum/pages/ForumThreadPage"));
@@ -152,11 +156,22 @@ const router = createBrowserRouter([
       { path: "/milestones", element: <MilestonesPage /> },
       { path: "/platform-updates", element: <PlatformUpdates /> },
       { path: "/faq", element: <FAQPage /> },
-      { path: "/forum", element: <ForumPage /> },
-      { path: "/forum/discussions", element: <AllDiscussionsPage /> },
-      { path: "/forum/category/:slug", element: <ForumCategoryPage /> },
-      { path: "/forum/thread/:threadId", element: <ForumThreadPage /> },
-      { path: "/forum/create", element: <CreateThreadPage /> },
+      {
+        path: "/forum",
+        element: <ForumLayout />,
+        children: [
+          { index: true, element: <ForumPage /> },
+          { path: "discussions", element: <AllDiscussionsPage /> },
+          { path: "categories", element: <ForumCategoriesPage /> },
+          { path: "engagement", element: <ForumActivityPage section="engagement" /> },
+          { path: "notifications", element: <ForumActivityPage section="notifications" /> },
+          { path: "followed", element: <ForumFollowedPage /> },
+          { path: "messages", element: <Navigate to="/forum/followed" replace /> },
+          { path: "category/:slug", element: <ForumCategoryPage /> },
+          { path: "thread/:threadId", element: <ForumThreadPage /> },
+          { path: "create", element: <CreateThreadPage /> },
+        ],
+      },
       { path: "/contact", element: <ContactPage /> },
       { path: "/terms-policy", element: <TermsOfUsePage /> },
       { path: "/privacy-policy", element: <PrivacyPolicy /> },

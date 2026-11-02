@@ -24,7 +24,7 @@ export default function ForumReplyForm({
 
   if (lockedMessage) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 text-sm text-gray-600">
+      <div className="py-4 text-sm text-gray-600">
         {lockedMessage}
       </div>
     );
@@ -32,7 +32,7 @@ export default function ForumReplyForm({
 
   if (!signedIn) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 text-sm text-gray-600">
+      <div className="py-4 text-sm text-gray-600">
         <Link to="/signin" className="font-semibold text-pink-600 underline underline-offset-4">
           Sign in
         </Link>{" "}
@@ -77,7 +77,7 @@ export default function ForumReplyForm({
         autoFocus={autoFocus}
         disabled={submitting}
         placeholder={placeholder}
-        className="w-full resize-y rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm leading-6 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 disabled:opacity-60"
+        className="w-full resize-y rounded-xl border border-gray-200 bg-transparent px-4 py-3 text-sm leading-6 text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 disabled:opacity-60"
       />
 
       {allowAttachments && (

@@ -5,6 +5,9 @@ import { CheckCircle2, Eye, LockKeyhole, Pencil, Pin, Rocket, Trash2 } from "luc
 import ForumVoteButton from "./interactions/ForumVoteButton";
 import ForumBookmarkButton from "./interactions/ForumBookmarkButton";
 import ForumBorderFrame from "./ForumBorderFrame";
+import ForumFollowControls from "./interactions/ForumFollowControls";
+import ForumAuthor from "./ForumAuthor";
+import ForumFollowers from "./ForumFollowers";
 import AttachmentGallery from "@/shared/components/attachments/AttachmentGallery";
 
 import { formatForumCount, formatForumDate } from "../utils/forumUtils";
@@ -17,7 +20,8 @@ const actionClass =
   "inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-semibold text-gray-600 transition hover:border-pink-300 hover:text-pink-600 disabled:cursor-not-allowed disabled:opacity-50";
 
 // Shown instead of a feature button when the member's plan does not include it.
-function PerkLocked({ icon: Icon, label }) {
+function PerkLocked(props) {
+  const { icon: Icon, label } = props;
   return (
     <Link
       to="/membership"
@@ -85,7 +89,7 @@ export default function ForumPostCard({
 
   return (
     <ForumBorderFrame color={thread.borderColor}>
-    <article className={`rounded-2xl border bg-white p-5 shadow-sm sm:p-8 ${thread.borderColor ? "border-transparent" : "border-gray-200"}`}>
+    <article className={thread.borderColor ? "rounded-2xl bg-gray-50 p-4 sm:p-5" : "py-5"}>
       <div className="flex gap-4 sm:gap-6">
         <ForumVoteButton
           targetType="thread"
@@ -186,9 +190,7 @@ export default function ForumPostCard({
               </h1>
 
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                <span>
-                  By <span className="font-semibold text-gray-800">{thread.author?.username}</span>
-                </span>
+                <ForumAuthor author={thread.author} />
                 <span aria-hidden="true">·</span>
                 <time dateTime={thread.createdAt}>{formatForumDate(thread.createdAt)}</time>
                 <span aria-hidden="true">·</span>
@@ -203,6 +205,9 @@ export default function ForumPostCard({
               </p>
 
               <AttachmentGallery attachments={thread.attachments} className="mt-5" />
+              <div className="mt-5">
+                <ForumFollowControls thread={thread} />
+              </div>
 
               {thread.tags?.length > 0 && (
                 <div className="mt-6 flex flex-wrap gap-2">
@@ -302,6 +307,7 @@ export default function ForumPostCard({
               )}
             </div>
           )}
+          <ForumFollowers key={thread.id} thread={thread} />
         </div>
       </div>
     </article>

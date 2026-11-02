@@ -16,6 +16,7 @@ import PromoCode from "../../models/PromoCode.js";
 import Comment from "../../models/Comment.js";
 import AnalyticsEvent from "../../models/AnalyticsEvent.js";
 import UserMedia from "../../models/UserMedia.js";
+import { ForumFollow } from "../../models/ForumInteraction.js";
 import { getLikedPosts } from "../posts/controllers/postLikeController.js";
 import { enforceRestriction } from "../../common/middleware/restrictionMiddleware.js";
 import { authMiddleware } from "../../common/middleware/authMiddleware.js";
@@ -642,6 +643,7 @@ router.delete("/delete-account", async (req, res) => {
         Conversation.deleteMany({ participants: userId }),
         Review.deleteMany({ $or: [{ authorUserId: userId }, { targetUserId: userId }] }),
         Profile.deleteOne({ userId }),
+        ForumFollow.deleteMany({ userId }),
       ]);
 
     const ownedMedia = await UserMedia.find({ userId }).select("publicId mediaType storage backupKey").lean();

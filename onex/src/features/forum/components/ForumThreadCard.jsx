@@ -10,6 +10,9 @@ import {
 } from "lucide-react";
 
 import ForumBorderFrame from "./ForumBorderFrame";
+import ForumFollowControls from "./interactions/ForumFollowControls";
+import ForumAuthor from "./ForumAuthor";
+import ForumFollowers from "./ForumFollowers";
 
 const formatDate = (value) => {
   if (!value) return "Recently";
@@ -187,12 +190,7 @@ export default function ForumThreadCard({ thread }) {
           )}
 
           <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-gray-100 pt-4 text-xs text-gray-500">
-            <span>
-              By{" "}
-              <span className="font-semibold text-gray-700">
-                {authorName}
-              </span>
-            </span>
+            <ForumAuthor author={thread.author} fallbackName={authorName} />
 
             <span aria-hidden="true">·</span>
 
@@ -207,6 +205,10 @@ export default function ForumThreadCard({ thread }) {
               {formatCount(viewCount)} views
             </span>
           </div>
+          <div className="mt-4">
+            <ForumFollowControls thread={thread} />
+          </div>
+          <ForumFollowers key={threadId} thread={thread} />
         </div>
       </div>
     </article>
