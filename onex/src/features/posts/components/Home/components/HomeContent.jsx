@@ -13,6 +13,7 @@ import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import PostCard from "@/features/posts/components/PostCard";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import { toNearParams } from "@/features/posts/utils/postLocation";
+import { isPostBoosted } from "@/features/posts/utils/postBoost";
 import { setLocationSEO, setPublicPageSEO } from "@/shared/utils/seo";
 import api from "@/shared/utils/api";
 import { useServerReady } from "@/context/ServerReadyContext";
@@ -85,6 +86,12 @@ const formatUploadDateLabel = (createdAt) => {
     year: "numeric",
   });
 };
+
+// Boosted posts are pinned above the dated groups by the API.
+const getFeedGroupLabel = (post) =>
+  isPostBoosted(post)
+    ? "Boosted posts"
+    : formatUploadDateLabel(post?.createdAt);
 
 function OnboardingGuide({ steps, onFinish }) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -811,16 +818,12 @@ export default function HomeContent({
     filteredPosts.flatMap(
       (post, index) => {
         const currentLabel =
-          formatUploadDateLabel(
-            post?.createdAt
-          );
+          getFeedGroupLabel(post);
 
         const previousLabel =
           index > 0
-            ? formatUploadDateLabel(
-                filteredPosts[
-                  index - 1
-                ]?.createdAt
+            ? getFeedGroupLabel(
+                filteredPosts[index - 1]
               )
             : "";
 

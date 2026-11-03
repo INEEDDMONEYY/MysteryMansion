@@ -54,6 +54,14 @@ const env = {
 
   // ✉️ Email (Unosend)
   UNOSEND_API_KEY: process.env.UNOSEND_API_KEY,
+  // ✉️ Backup email (Mailgun) — used automatically when Unosend fails.
+  // MAILGUN_DOMAIN defaults to the From address domain; set MAILGUN_REGION=eu
+  // for EU-hosted Mailgun domains.
+  MAILGUN_API_KEY: process.env.MAILGUN_API_KEY,
+  MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN,
+  MAILGUN_BASE_URL: (process.env.MAILGUN_BASE_URL
+    || (String(process.env.MAILGUN_REGION).toLowerCase() === "eu" ? "https://api.eu.mailgun.net" : "https://api.mailgun.net")
+  ).replace(/\/+$/, ""),
 
   // 📁 Uploads
   UPLOAD_PATH: path.join(__dirname, "../uploads"),

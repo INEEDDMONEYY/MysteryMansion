@@ -1,9 +1,10 @@
-// Unosend transactional email utility — uses native fetch (Node 18+)
+// Transactional email utility — Unosend primary, Mailgun backup (native fetch, Node 18+)
 import env from '../../config/env.js';
 import AdminSettings from '../../models/AdminSettings.js';
 import { isEmailCategoryAllowed } from './notificationPreferences.js';
 
 const UNOSEND_API_URL = 'https://api.unosend.co/v1/emails';
+const PROVIDER_TIMEOUT_MS = 10_000;
 export const FROM_ADDRESS = 'Mystery Mansion <no-reply@mysterymansion.app>';
 
 /**
@@ -46,6 +47,25 @@ export async function sendEmail({ from = FROM_ADDRESS, to, subject, html, catego
     to = Array.isArray(to) ? allowed : allowed[0];
   }
 
+  const message = { from, to: Array.isArray(to) ? to : [to], subject, html };
+  // EMAIL_FORCE_PROVIDER=mailgun skips Unosend (used to test the backup path).
+  const forced = (process.env.EMAIL_FORCE_PROVIDER || '').toLowerCase();
+
+  if (forced !== 'mailgun') {
+    try {
+      return await sendViaUnosend(message);
+    } catch (unosendErr) {
+      if (!isMailgunConfigured()) throw unosendErr;
+      console.warn(`[Email] Unosend failed, falling back to Mailgun: ${unosendErr.message}`);
+    }
+  }
+
+  const result = await sendViaMailgun(message);
+  console.log(`[Email] Sent via Mailgun: "${subject}" (${result.id})`);
+  return result;
+}
+
+async function sendViaUnosend({ from, to, subject, html }) {
   const apiKey = env.UNOSEND_API_KEY;
   if (!apiKey) throw new Error('UNOSEND_API_KEY is not configured');
 
@@ -55,18 +75,54 @@ export async function sendEmail({ from = FROM_ADDRESS, to, subject, html, catego
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      from,
-      to: Array.isArray(to) ? to : [to],
-      subject,
-      html,
-    }),
+    body: JSON.stringify({ from, to, subject, html }),
+    signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
   });
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`Unosend API error ${response.status}: ${body}`);
+    throw new Error(`Unosend API error ${response.status}: ${body.slice(0, 300)}`);
   }
 
-  return response.json();
+  return { provider: 'unosend', ...(await response.json()) };
+}
+
+function getMailgunDomain(from = FROM_ADDRESS) {
+  if (env.MAILGUN_DOMAIN) return env.MAILGUN_DOMAIN;
+  const match = String(from).match(/@([^>\s]+)/);
+  return match ? match[1] : '';
+}
+
+export function isMailgunConfigured() {
+  return Boolean(env.MAILGUN_API_KEY && getMailgunDomain());
+}
+
+/**
+ * Send through the Mailgun Messages API (POST /v3/{domain}/messages,
+ * HTTP Basic auth "api:<key>", multipart form fields).
+ */
+export async function sendViaMailgun({ from = FROM_ADDRESS, to, subject, html }) {
+  const apiKey = env.MAILGUN_API_KEY;
+  const domain = getMailgunDomain(from);
+  if (!apiKey || !domain) throw new Error('Mailgun is not configured (MAILGUN_API_KEY / MAILGUN_DOMAIN)');
+
+  const form = new FormData();
+  form.append('from', from);
+  for (const address of Array.isArray(to) ? to : [to]) form.append('to', address);
+  form.append('subject', subject);
+  form.append('html', html);
+
+  const response = await fetch(`${env.MAILGUN_BASE_URL}/v3/${encodeURIComponent(domain)}/messages`, {
+    method: 'POST',
+    headers: { Authorization: `Basic ${Buffer.from(`api:${apiKey}`).toString('base64')}` },
+    body: form,
+    signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Mailgun API error ${response.status}: ${body.slice(0, 300)}`);
+  }
+
+  return { provider: 'mailgun', ...(await response.json()) };
 }

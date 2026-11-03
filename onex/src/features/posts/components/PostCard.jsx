@@ -16,7 +16,9 @@ import { getPostCategories } from "../services/postCategories";
 import FlagButton from "@/features/flagging/components/FlagButton";
 import { FLAG_TARGET_TYPES } from "@/features/flagging/utils/flagTargets";
 import ProfilePostCard from "./ProfilePostCard";
+import BoostedBadge from "./BoostedBadge";
 import { formatLocation } from "../utils/postLocation";
+import { isPostBoosted } from "../utils/postBoost";
 
 const getPostedAgoLabel = (createdAt) => {
   if (!createdAt) {
@@ -328,10 +330,13 @@ export default function PostCard({
     }
   };
 
+  const isBoosted = isPostBoosted(post);
+
   if (post.postType === "profile") {
     return (
       <ProfilePostCard
         post={post}
+        isBoosted={isBoosted}
         showBlueBadge={showBlueBadge}
         showPinkBadge={showPinkBadge}
         isOwner={isOwner}
@@ -575,6 +580,8 @@ export default function PostCard({
                   </div>
                 )}
             </div>
+
+            {isBoosted && <BoostedBadge />}
           </div>
 
           <div className="mb-1 flex items-center gap-2">

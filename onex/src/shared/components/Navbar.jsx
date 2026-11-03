@@ -18,7 +18,7 @@ import {
   BarChart3,
   HandCoins,
   ScrollText,
-  Headset,
+  Search,
   Rocket,
   WalletCards,
 } from "lucide-react";
@@ -257,10 +257,10 @@ export default function Navbar() {
         to: "/forum",
       },
       FEATURE_FLAGS.ENABLE_PROMOTE_ACCOUNT_NAV && {
-        key: "membership",
-        label: "Membership",
-        icon: WalletCards,
-        to: "/membership",
+        key: "locations",
+        label: "Locations",
+        icon: Search,
+        to: "/locations",
       },
       {
         key: "profile",
@@ -327,11 +327,11 @@ export default function Navbar() {
         {/* FEATURE FLAG APPLIED HERE */}
         {FEATURE_FLAGS.ENABLE_PROMOTE_ACCOUNT_NAV && (
           <Link
-            to="/promote"
+            to="/locations"
             className="flex items-center gap-1 hover:text-pink-400"
           >
-            <Rocket size={18} />
-            Promote Account
+            <Search size={18} />
+            Browse By Location
           </Link>
         )}
 

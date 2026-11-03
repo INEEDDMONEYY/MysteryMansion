@@ -19,6 +19,7 @@ import { uploadBackupCopy } from '../../../common/utils/backupStorage.js';
 import { awardCredits } from '../../credits/creditEarnService.js';
 import { consumeBoost, notifyBoostApplied } from '../../membership/membershipService.js';
 import { BOOST_DURATION_MS } from '../../membership/membershipCatalog.js';
+import { orderBoostedFirst } from '../postBoost.js';
 import { detectMediaKind } from '../mediaKind.js';
 
 // Maps the account-level gender (set on the user's profile) to the post-level
@@ -281,11 +282,11 @@ export async function createPost(req, res) {
 }
 
 // ---------------- Profile posts ----------------
-// One profile post per member: posting again updates its categories and
-// location rather than creating duplicates. Avatar, prices and bio are read
-// live from the author's profile when rendered, so they never go stale.
+// Each "post profile" creates a new profile post, so members can list their
+// profile in several categories or locations; earlier ones are kept. Avatar,
+// prices and bio are read live from the author's profile when rendered.
 async function saveProfilePost(req, res, { categories, location, gender, hasActivePromo, promoExpiry }) {
-  const fields = {
+  const saved = await new Post({
     title: `${req.user.username || 'Member'}'s profile`,
     description: String(req.user.bio || '').trim(),
     city: location.city,
@@ -297,29 +298,18 @@ async function saveProfilePost(req, res, { categories, location, gender, hasActi
     isPromo: hasActivePromo,
     promoExpiresAt: hasActivePromo ? promoExpiry : null,
     badgeType: req.user.badgeType || '',
-  };
+    userId: req.user._id,
+    postType: 'profile',
+  }).save();
 
-  const existing = await Post.findOne({ userId: req.user._id, postType: 'profile' });
-  let postId;
-  let created = false;
+  awardCredits({ userId: req.user._id, eventKey: 'create_post', refId: String(saved._id) });
+  await User.findByIdAndUpdate(req.user._id, {
+    lastPostAt: saved.createdAt,
+    lastInactivityEmailDays: 0,
+  }).catch((err) => console.error('❌ Failed to update lastPostAt:', err.message));
 
-  if (existing) {
-    existing.set(fields);
-    await existing.save();
-    postId = existing._id;
-  } else {
-    const saved = await new Post({ ...fields, userId: req.user._id, postType: 'profile' }).save();
-    postId = saved._id;
-    created = true;
-    awardCredits({ userId: req.user._id, eventKey: 'create_post', refId: String(saved._id) });
-    await User.findByIdAndUpdate(req.user._id, {
-      lastPostAt: saved.createdAt,
-      lastInactivityEmailDays: 0,
-    }).catch((err) => console.error('❌ Failed to update lastPostAt:', err.message));
-  }
-
-  const populated = await Post.findById(postId).populate({ path: 'userId', select: AUTHOR_LIST_FIELDS });
-  return res.status(created ? 201 : 200).json({ ...populated.toObject(), updated: !created });
+  const populated = await Post.findById(saved._id).populate({ path: 'userId', select: AUTHOR_LIST_FIELDS });
+  return res.status(201).json(populated.toObject());
 }
 
 // ---------------- Resolve the poster's location ----------------
@@ -449,7 +439,7 @@ export async function getPosts(req, res) {
       posts = [...local, ...rest];
     }
 
-    res.json(posts);
+    res.json(orderBoostedFirst(posts));
   } catch (err) {
     console.error('❌ [getPosts] Error:', err);
     res.status(500).json({ error: 'Failed to fetch posts', details: err.message });

@@ -5,6 +5,7 @@ import FlagButton from "@/features/flagging/components/FlagButton";
 import { FLAG_TARGET_TYPES } from "@/features/flagging/utils/flagTargets";
 import { getPostCategories } from "../services/postCategories";
 import { formatLocation, getPriceBadges } from "../utils/postLocation";
+import BoostedBadge from "./BoostedBadge";
 
 /**
  * Card for "profile" posts: the author's avatar, location and prices as
@@ -20,6 +21,7 @@ export default function ProfilePostCard({
   isDeleting = false,
   onDelete,
   preview = false,
+  isBoosted = false,
 }) {
   const author = authorOverride || post?.userId || {};
   const username = author.username || "Unknown";
@@ -125,6 +127,7 @@ export default function ProfilePostCard({
         <span className="absolute left-2 top-2 rounded-full bg-black/80 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
           Profile
         </span>
+        {isBoosted && <BoostedBadge className="absolute right-2 top-2 z-10" />}
 
         {preview || !profileHref ? (
           body

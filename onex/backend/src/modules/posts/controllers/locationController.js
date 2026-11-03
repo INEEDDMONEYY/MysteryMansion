@@ -8,6 +8,7 @@ import {
   toSlug,
 } from '../../../common/utils/locationIndex.js';
 import { AUTHOR_LIST_FIELDS } from './postController.js';
+import { orderBoostedFirst } from '../postBoost.js';
 
 const SITE_URL = (process.env.SITE_URL || 'https://mysterymansion.app').replace(/\/+$/, '');
 const MAX_LOCATION_POSTS = 120;
@@ -68,6 +69,8 @@ export async function getLocation(req, res) {
     const entry = await resolveLocationSlug(req.params.slug);
     if (!entry) return res.status(404).json({ error: 'Location not found' });
 
+    // Sorting on boostedUntil keeps live boosts inside the limit; the final
+    // order (live boosts, then newest) is applied below.
     const posts = await Post.find({ _id: { $in: entry.postIds } })
       .sort({ boostedUntil: -1, createdAt: -1 })
       .limit(MAX_LOCATION_POSTS)
@@ -75,7 +78,8 @@ export async function getLocation(req, res) {
       .lean();
 
     // Hide listings from suspended or deleted accounts.
-    const visiblePosts = posts.filter(
+    posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const visiblePosts = orderBoostedFirst(posts).filter(
       (post) => post.userId && typeof post.userId === 'object' && post.userId.status !== 'suspended'
     );
     visiblePosts.forEach((post) => {

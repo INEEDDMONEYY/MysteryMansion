@@ -7,6 +7,7 @@
  *   node scripts/testEmail.js                             # welcome-provider → test inbox
  *   node scripts/testEmail.js someonetothinkabout@gmail.com milestone
  *   node scripts/testEmail.js all                         # sends every type to the test inbox
+ *   node scripts/testEmail.js milestone --mailgun         # send through the Mailgun backup only
  *
  * Types:
  *   welcome-provider | welcome-client | verify | reset | deletion | update
@@ -43,7 +44,9 @@ import { sendContactInquiryEmail } from '../src/common/utils/sendContactInquiryE
 // All test emails go to the verified test inbox by default.
 const TEST_INBOX = 'someonetothinkabout@gmail.com';
 
-let [, , arg1, arg2] = process.argv;
+const cliArgs = process.argv.slice(2);
+if (cliArgs.includes('--mailgun')) process.env.EMAIL_FORCE_PROVIDER = 'mailgun';
+let [arg1, arg2] = cliArgs.filter((a) => a !== '--mailgun');
 
 // Allow `node scripts/testEmail.js milestone` (type only) or `node scripts/testEmail.js all`.
 let to = TEST_INBOX;

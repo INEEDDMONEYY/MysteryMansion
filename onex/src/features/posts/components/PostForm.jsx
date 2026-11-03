@@ -290,31 +290,19 @@ export default function PostForm({ onSuccess, embedded = false }) {
 
       const { data } = await api.post("/posts", fd);
 
-      setToast({
-        type: "success",
-        msg: isProfile
-          ? data?.updated
-            ? "Your profile post was updated."
-            : "Your profile is now posted!"
-          : "Post created successfully!",
-      });
-      if (onSuccess) onSuccess();
+      // Global toast so the confirmation survives the redirect.
+      window.dispatchEvent(
+        new CustomEvent("app-toast", {
+          detail: {
+            type: "success",
+            message: isProfile ? "Your profile is now posted!" : "Post created successfully!",
+          },
+        })
+      );
+      if (onSuccess) onSuccess(data);
 
-      const primaryCategory = effectiveCategories[0];
       resetForm();
-
-      const profileOwnerId = user?._id || user?.id || data?.post?.userId?._id || data?.userId?._id;
-      if (isProfile && profileOwnerId) {
-        setTimeout(() => navigate(`/user/${profileOwnerId}`), 1200);
-      } else if (!embedded) {
-        setTimeout(() => {
-          navigate(
-            primaryCategory && primaryCategory.toLowerCase() !== "uncategorized"
-              ? `/category/${primaryCategory}`
-              : "/home"
-          );
-        }, 1200);
-      }
+      navigate("/", { replace: true });
     } catch (err) {
       console.error("[PostForm] Error:", err.response?.data || err.message);
 
@@ -427,7 +415,7 @@ export default function PostForm({ onSuccess, embedded = false }) {
           <div className="space-y-3">
             <p className="text-sm text-gray-600">
               Your profile card shows your profile picture, location and prices. It stays up to date
-              with your profile, and posting again just updates its categories and location.
+              with your profile. Each time you post it, a new card is added, and your earlier ones stay up.
             </p>
             <div className="mx-auto w-full max-w-[240px]">
               <ProfilePostCard
