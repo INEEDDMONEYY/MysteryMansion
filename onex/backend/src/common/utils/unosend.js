@@ -1,4 +1,4 @@
-// Transactional email utility — Unosend primary, Mailgun backup (native fetch, Node 18+)
+// Shared transactional email utility (native fetch, Node 18+).
 import env from '../../config/env.js';
 import AdminSettings from '../../models/AdminSettings.js';
 import { isEmailCategoryAllowed } from './notificationPreferences.js';
@@ -8,7 +8,7 @@ const PROVIDER_TIMEOUT_MS = 10_000;
 export const FROM_ADDRESS = 'Mystery Mansion <no-reply@mysterymansion.app>';
 
 /**
- * Send a transactional email via the Unosend REST API.
+ * Send a transactional email via Cloudflare when configured.
  * Respects the emailEnabled toggle in AdminSettings — if disabled, the email is
  * silently skipped and { skipped: true } is returned instead of throwing.
  * Optional mail passes a `category` (see notificationPreferences.js); it is
@@ -48,8 +48,15 @@ export async function sendEmail({ from = FROM_ADDRESS, to, subject, html, catego
   }
 
   const message = { from, to: Array.isArray(to) ? to : [to], subject, html };
-  // EMAIL_FORCE_PROVIDER=mailgun skips Unosend (used to test the backup path).
   const forced = (process.env.EMAIL_FORCE_PROVIDER || '').toLowerCase();
+  if (forced && !['cloudflare', 'unosend', 'mailgun'].includes(forced)) {
+    throw new Error(`Unknown email provider: ${forced}`);
+  }
+  if (forced === 'cloudflare' || (!forced && env.CLOUDFLARE_API_TOKEN)) {
+    const result = await sendViaCloudflare(message);
+    console.log(`[Email] Cloudflare accepted "${subject}": delivered=${result.delivered.length}, queued=${result.queued.length}`);
+    return result;
+  }
 
   if (forced !== 'mailgun') {
     try {
@@ -63,6 +70,44 @@ export async function sendEmail({ from = FROM_ADDRESS, to, subject, html, catego
   const result = await sendViaMailgun(message);
   console.log(`[Email] Sent via Mailgun: "${subject}" (${result.id})`);
   return result;
+}
+
+async function sendViaCloudflare({ from, to, subject, html }) {
+  if (!env.CLOUDFLARE_API_TOKEN || !/^[a-f0-9]{32}$/i.test(env.CLOUDFLARE_ACCOUNT_ID || '')) {
+    throw new Error('Cloudflare email requires CLOUDFLARE_API_TOKEN and a valid CLOUDFLARE_ACCOUNT_ID');
+  }
+  const namedFrom = from.match(/^\s*(.*?)\s*<([^<>]+)>\s*$/);
+  const sender = namedFrom
+    ? { address: namedFrom[2], name: namedFrom[1] }
+    : from;
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/email/sending/send`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ from: sender, to, subject, html }),
+      signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+    }
+  );
+  const body = await response.json();
+  if (!response.ok || body.success !== true) {
+    const errors = (body.errors || []).map(({ code, message }) => `${code}: ${message}`).join('; ');
+    throw new Error(`Cloudflare Email API error ${response.status}: ${errors || 'Unsuccessful response'}`);
+  }
+  const result = body.result;
+  if (!result || !['delivered', 'queued', 'permanent_bounces'].every((key) => Array.isArray(result[key]))) {
+    throw new Error('Cloudflare Email API returned an invalid delivery result');
+  }
+  if (result.permanent_bounces.length) {
+    throw new Error(`Cloudflare Email reported ${result.permanent_bounces.length} permanent bounce(s)`);
+  }
+  if (to.some((address) => ![...result.delivered, ...result.queued].includes(address))) {
+    throw new Error('Cloudflare Email did not accept all recipients');
+  }
+  return { ...result, provider: 'cloudflare' };
 }
 
 async function sendViaUnosend({ from, to, subject, html }) {

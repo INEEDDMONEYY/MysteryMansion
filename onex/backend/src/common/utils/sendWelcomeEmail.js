@@ -19,6 +19,9 @@ async function sendWelcomeEmail({ to, username, accountType = 'provider' }) {
         <li>Create your first post to start getting visibility</li>
         <li>Set your availability and pricing in your dashboard</li>
         <li>Keep your listing fresh with regular updates</li>
+        <li>Upload media to showcase on your profile</li>
+        <li>Explore the forum and engage with the community</li>
+        <li>Earn platform credits for your activities</li>
       </ul>
     `)}
     <p style="color:#888;font-size:13px;">The platform is actively monitored for safety. If you ever need help, support is always available.</p>
@@ -36,6 +39,9 @@ async function sendWelcomeEmail({ to, username, accountType = 'provider' }) {
         <li>Like providers you love and revisit them anytime</li>
         <li>Leave reviews to help the community</li>
         <li>Message providers directly from the platform</li>
+        <li>Explore the forum and engage with the community</li>
+        <li>Earn platform credits for your activities</li>
+        <li>Spend your platform credits on premium features</li>
       </ul>
     `)}
     ${darkCard(`

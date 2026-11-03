@@ -1,5 +1,5 @@
 /**
- * Test script — sends redesigned emails via Unosend.
+ * Test script — sends emails through the configured provider (Cloudflare primary).
  * All test emails default to the verified test inbox unless an address is given.
  *
  * Usage:
@@ -8,6 +8,7 @@
  *   node scripts/testEmail.js someonetothinkabout@gmail.com milestone
  *   node scripts/testEmail.js all                         # sends every type to the test inbox
  *   node scripts/testEmail.js milestone --mailgun         # send through the Mailgun backup only
+ *   node scripts/testEmail.js welcome-provider --cloudflare # Cloudflare only
  *
  * Types:
  *   welcome-provider | welcome-client | verify | reset | deletion | update
@@ -46,7 +47,8 @@ const TEST_INBOX = 'someonetothinkabout@gmail.com';
 
 const cliArgs = process.argv.slice(2);
 if (cliArgs.includes('--mailgun')) process.env.EMAIL_FORCE_PROVIDER = 'mailgun';
-let [arg1, arg2] = cliArgs.filter((a) => a !== '--mailgun');
+if (cliArgs.includes('--cloudflare')) process.env.EMAIL_FORCE_PROVIDER = 'cloudflare';
+let [arg1, arg2] = cliArgs.filter((a) => !['--mailgun', '--cloudflare'].includes(a));
 
 // Allow `node scripts/testEmail.js milestone` (type only) or `node scripts/testEmail.js all`.
 let to = TEST_INBOX;

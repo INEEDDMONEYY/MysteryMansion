@@ -13,7 +13,6 @@ const requiredVars = [
   "CLOUDINARY_CLOUD_NAME",
   "CLOUDINARY_API_KEY",
   "CLOUDINARY_API_SECRET",
-  "UNOSEND_API_KEY",
 ];
 
 requiredVars.forEach((key) => {
@@ -54,6 +53,8 @@ const env = {
 
   // ✉️ Email (Unosend)
   UNOSEND_API_KEY: process.env.UNOSEND_API_KEY,
+  CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+  CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
   // ✉️ Backup email (Mailgun) — used automatically when Unosend fails.
   // MAILGUN_DOMAIN defaults to the From address domain; set MAILGUN_REGION=eu
   // for EU-hosted Mailgun domains.

@@ -6,6 +6,7 @@ import { sendEmail } from '../src/common/utils/unosend.js';
 const message = { to: 'someonetothinkabout@gmail.com', subject: 'Hello', html: '<p>Hi</p>' };
 const realFetch = global.fetch;
 const saved = {};
+const previousForced = process.env.EMAIL_FORCE_PROVIDER;
 
 beforeAll(() => {
   jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -13,7 +14,7 @@ beforeAll(() => {
   jest.spyOn(AdminSettings, 'findOne').mockReturnValue({
     select: () => ({ lean: async () => null }),
   });
-  for (const key of ['UNOSEND_API_KEY', 'MAILGUN_API_KEY', 'MAILGUN_DOMAIN', 'MAILGUN_BASE_URL']) saved[key] = env[key];
+  for (const key of ['UNOSEND_API_KEY', 'MAILGUN_API_KEY', 'MAILGUN_DOMAIN', 'MAILGUN_BASE_URL', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID']) saved[key] = env[key];
 });
 
 beforeEach(() => {
@@ -22,6 +23,8 @@ beforeEach(() => {
     MAILGUN_API_KEY: 'mg-test',
     MAILGUN_DOMAIN: 'mysterymansion.app',
     MAILGUN_BASE_URL: 'https://api.mailgun.net',
+    CLOUDFLARE_API_TOKEN: undefined,
+    CLOUDFLARE_ACCOUNT_ID: 'a'.repeat(32),
   });
   delete process.env.EMAIL_FORCE_PROVIDER;
 });
@@ -29,6 +32,8 @@ beforeEach(() => {
 afterAll(() => {
   global.fetch = realFetch;
   Object.assign(env, saved);
+  if (previousForced === undefined) delete process.env.EMAIL_FORCE_PROVIDER;
+  else process.env.EMAIL_FORCE_PROVIDER = previousForced;
   jest.restoreAllMocks();
 });
 
@@ -77,4 +82,46 @@ test('EMAIL_FORCE_PROVIDER=mailgun skips Unosend', async () => {
   global.fetch = jest.fn(async () => json(200, { id: 'mg_3' }));
   await expect(sendEmail(message)).resolves.toMatchObject({ provider: 'mailgun' });
   expect(String(global.fetch.mock.calls[0][0])).toContain('mailgun');
+});
+
+test.each(['delivered', 'queued'])('Cloudflare accepts %s recipients and preserves the message', async (status) => {
+  env.CLOUDFLARE_API_TOKEN = 'cf-test';
+  const result = { delivered: [], queued: [], permanent_bounces: [], [status]: [message.to] };
+  global.fetch = jest.fn(async () => json(200, { success: true, result }));
+  await expect(sendEmail(message)).resolves.toMatchObject({ provider: 'cloudflare', ...result });
+  expect(global.fetch).toHaveBeenCalledTimes(1);
+  const [url, init] = global.fetch.mock.calls[0];
+  expect(url).toBe(`https://api.cloudflare.com/client/v4/accounts/${'a'.repeat(32)}/email/sending/send`);
+  expect(init.headers.Authorization).toBe('Bearer cf-test');
+  expect(JSON.parse(init.body)).toEqual({
+    from: { address: 'no-reply@mysterymansion.app', name: 'Mystery Mansion' },
+    to: [message.to], subject: message.subject, html: message.html,
+  });
+});
+
+test('Cloudflare API failures surface without falling back to another provider', async () => {
+  env.CLOUDFLARE_API_TOKEN = 'cf-test';
+  global.fetch = jest.fn(async () => json(403, {
+    success: false, errors: [{ code: 10105, message: 'not_entitled' }],
+  }));
+  await expect(sendEmail(message)).rejects.toThrow('Cloudflare Email API error 403: 10105: not_entitled');
+  expect(global.fetch).toHaveBeenCalledTimes(1);
+});
+
+test.each([
+  { delivered: [], queued: [], permanent_bounces: [message.to] },
+  { delivered: [], queued: [], permanent_bounces: [] },
+  {},
+])('Cloudflare does not treat rejected or malformed delivery results as success', async (result) => {
+  env.CLOUDFLARE_API_TOKEN = 'cf-test';
+  global.fetch = jest.fn(async () => json(200, { success: true, result }));
+  await expect(sendEmail(message)).rejects.toThrow('Cloudflare Email');
+});
+
+test('Cloudflare requires an account ID before sending', async () => {
+  env.CLOUDFLARE_API_TOKEN = 'cf-test';
+  env.CLOUDFLARE_ACCOUNT_ID = undefined;
+  global.fetch = jest.fn();
+  await expect(sendEmail(message)).rejects.toThrow('CLOUDFLARE_ACCOUNT_ID');
+  expect(global.fetch).not.toHaveBeenCalled();
 });

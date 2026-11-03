@@ -2,6 +2,22 @@
 
 This folder handles all backend logic.
 
+## Transactional email
+
+Set `CLOUDFLARE_API_TOKEN` (with Email Sending permission) and
+`CLOUDFLARE_ACCOUNT_ID` in the backend environment. Cloudflare becomes the
+primary sender for every email template; existing admin and recipient
+preferences still apply. The sending domain must be enabled in Cloudflare
+Email Sending, not just Email Routing. Arbitrary-recipient sending requires
+Workers Paid; verified destination addresses can be used on the free plan.
+
+Run `node scripts/testEmail.js welcome-provider --cloudflare` from this folder
+to send to the default test inbox. Delivered and queued recipients are reported
+separately; permanent bounces and API failures throw rather than report success.
+Cloudflare failures are not retried through the legacy providers, avoiding
+duplicate sends after an ambiguous timeout. Without a Cloudflare token, the
+legacy Unosend/Mailgun path remains available.
+
 ## Forum thread follows
 
 - `GET /api/forum/threads?followed=true` lists the signed-in member's followed,

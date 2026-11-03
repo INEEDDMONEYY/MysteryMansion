@@ -23,7 +23,11 @@ export const EVENT_DEFINITIONS = [
   { key: 'referral_signup', label: 'Referral signs up', description: 'Someone creates an account with your referral link.', credits: 25, roles: ['provider'], limitPerDay: 0 },
   { key: 'post_twice', label: 'Publish a post twice', description: 'Post twice times a day', credits: 25, roles: ['provider'], limitPerDay: 2 },
   { key: 'promote_account', label: 'Promote account', description: 'Promote your account.', credits: 40, roles: ['provider'], limitPerDay: 1 },
-  
+  { key: 'post_account', label: 'Post account', description: 'Post your account.', credits: 10, roles: ['provider'], limitPerDay: 1 },
+  { key: 'boost_account', label: 'Boost account', description: 'Boost your account.', credits: 10, roles: ['provider'], limitPerDay: 1 },
+  { key: 'boost_forum_post', label: 'Boost forum post', description: 'Boost your forum post.', credits: 10, roles: ['provider', 'client'], limitPerDay: 1 },
+  { key: 'purchase_membership', label: 'Purchase membership', description: 'Purchase a membership.', credits: 40, roles: ['provider', 'client'], limitPerDay: 1 },
+  { key: 'follow_2_forum_threads', label: 'Follow 2 forum threads', description: 'Follow two forum threads.', credits: 20, roles: ['provider', 'client'], limitPerDay: 1 },
 ];
 
 // Events that application code currently triggers.
@@ -38,6 +42,11 @@ export const HOOKED_KEYS = new Set([
   'referral_signup',
   'post_twice',
   'promote_account',
+  'post_account',
+  'boost_account',
+  'boost_forum_post',
+  'purchase_membership',
+  'follow_2_forum_threads',
 ]);
 
 // Daily earn limits reset at midnight Mountain time (MDT in summer), wherever the member is.
