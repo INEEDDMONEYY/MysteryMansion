@@ -17,6 +17,7 @@ import { createNotification } from '../../notifications/notificationController.j
 import { sendAccountActivityEmail } from '../../../common/utils/sendAccountActivityEmail.js';
 import { uploadBackupCopy } from '../../../common/utils/backupStorage.js';
 import { awardCredits } from '../../credits/creditEarnService.js';
+import { syncRpInBackground } from '../../progression/rpEngine.js';
 import { consumeBoost, notifyBoostApplied } from '../../membership/membershipService.js';
 import { BOOST_DURATION_MS } from '../../membership/membershipCatalog.js';
 import { orderBoostedFirst } from '../postBoost.js';
@@ -242,6 +243,7 @@ export async function createPost(req, res) {
     const savedPost = await newPost.save();
 
     awardCredits({ userId: req.user._id, eventKey: 'create_post', refId: String(savedPost._id) });
+    syncRpInBackground(req.user._id);
 
     // Reset inactivity tracking now that the user has posted again.
     await User.findByIdAndUpdate(req.user._id, {
@@ -303,6 +305,7 @@ async function saveProfilePost(req, res, { categories, location, gender, hasActi
   }).save();
 
   awardCredits({ userId: req.user._id, eventKey: 'create_post', refId: String(saved._id) });
+  syncRpInBackground(req.user._id);
   await User.findByIdAndUpdate(req.user._id, {
     lastPostAt: saved.createdAt,
     lastInactivityEmailDays: 0,

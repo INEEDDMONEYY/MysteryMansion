@@ -55,6 +55,14 @@ const TOAST_TYPES = {
     target: "thread",
     ms: 9000,
   },
+  forum_mention: {
+    icon: MessageSquare, label: "Forum mention", accent: "text-violet-400",
+    ring: "bg-violet-500/15", cta: "View discussion", target: "thread", ms: 9000,
+  },
+  forum_category: {
+    icon: MessageSquare, label: "Followed category", accent: "text-sky-400",
+    ring: "bg-sky-500/15", cta: "View discussion", target: "thread", ms: 9000,
+  },
   new_comment: {
     icon: MessageCircle,
     label: "New comment",

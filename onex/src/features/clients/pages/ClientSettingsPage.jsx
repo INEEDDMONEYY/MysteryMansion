@@ -7,11 +7,7 @@ import {
   Trophy,
   Crown,
   ShieldAlert,
-  AtSign,
   MessagesSquare,
-  Bookmark,
-  FolderHeart,
-  Bell,
   Save,
   Info,
   Settings2,
@@ -21,6 +17,8 @@ import {
   fetchNotificationPreferences,
   saveNotificationPreferences,
 } from "@/features/users/services/notificationPreferencesService";
+import ForumSettingsPanel from "@/features/forum/components/ForumSettingsPanel";
+import { DEFAULT_FORUM_SETTINGS, saveForumSettings } from "@/features/forum/services/forumSettingsService";
 
 // Mirrors the backend defaults (everything on until the member opts out).
 const DEFAULT_NOTIFICATION_PREFERENCES = {
@@ -32,14 +30,6 @@ const DEFAULT_NOTIFICATION_PREFERENCES = {
   accountFlaggingEmails: true,
 };
 
-const DEFAULT_FORUM_SETTINGS = {
-  discussionReplies: true,
-  mentions: true,
-  followedDiscussionNotifications: true,
-  followedCategoryNotifications: false,
-  autoFollowDiscussions: true,
-  digestFrequency: "weekly",
-};
 
 const emailPreferenceOptions = [
   {
@@ -86,43 +76,6 @@ const emailPreferenceOptions = [
   },
 ];
 
-const forumPreferenceOptions = [
-  {
-    key: "discussionReplies",
-    label: "Replies to My Discussions",
-    description:
-      "Get notified when someone replies to a discussion you started.",
-    icon: MessagesSquare,
-  },
-  {
-    key: "mentions",
-    label: "Mentions",
-    description:
-      "Get notified when another member mentions you in a forum discussion or reply.",
-    icon: AtSign,
-  },
-  {
-    key: "followedDiscussionNotifications",
-    label: "Followed Discussions",
-    description:
-      "Receive notifications when new replies are posted in discussions you follow.",
-    icon: Bookmark,
-  },
-  {
-    key: "followedCategoryNotifications",
-    label: "Followed Categories",
-    description:
-      "Receive notifications about new discussions in forum categories you follow.",
-    icon: FolderHeart,
-  },
-  {
-    key: "autoFollowDiscussions",
-    label: "Automatically Follow Discussions",
-    description:
-      "Automatically follow discussions you create or participate in.",
-    icon: Bell,
-  },
-];
 
 function Toggle({ checked, onChange, label }) {
   return (
@@ -222,23 +175,16 @@ export default function ClientSettingsPage({
   initialNotificationPreferences = DEFAULT_NOTIFICATION_PREFERENCES,
   initialForumSettings = DEFAULT_FORUM_SETTINGS,
   onSaveNotificationPreferences = saveNotificationPreferences,
-  onSaveForumSettings,
+  onSaveForumSettings = saveForumSettings,
 }) {
   const [emailPreferences, setEmailPreferences] = useState(() => ({
     ...DEFAULT_NOTIFICATION_PREFERENCES,
     ...initialNotificationPreferences,
   }));
 
-  const [forumSettings, setForumSettings] = useState(() => ({
-    ...DEFAULT_FORUM_SETTINGS,
-    ...initialForumSettings,
-  }));
-
   const [emailSaving, setEmailSaving] = useState(false);
-  const [forumSaving, setForumSaving] = useState(false);
 
   const [emailMessage, setEmailMessage] = useState("");
-  const [forumMessage, setForumMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -265,14 +211,6 @@ export default function ClientSettingsPage({
     setEmailMessage("");
   };
 
-  const updateForumSetting = (key) => {
-    setForumSettings((current) => ({
-      ...current,
-      [key]: !current[key],
-    }));
-
-    setForumMessage("");
-  };
 
   const handleSaveEmailPreferences = async () => {
     if (!onSaveNotificationPreferences) {
@@ -298,29 +236,6 @@ export default function ClientSettingsPage({
     }
   };
 
-  const handleSaveForumSettings = async () => {
-    if (!onSaveForumSettings) {
-      setForumMessage(
-        "Forum preferences are not connected to a save handler yet."
-      );
-      return;
-    }
-
-    try {
-      setForumSaving(true);
-      setForumMessage("");
-
-      await onSaveForumSettings(forumSettings);
-
-      setForumMessage("Your forum settings have been saved.");
-    } catch (error) {
-      setForumMessage(
-        error?.message || "Unable to save your forum settings."
-      );
-    } finally {
-      setForumSaving(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-100 px-4 py-6 text-gray-900 sm:px-6 lg:px-8">
@@ -339,7 +254,7 @@ export default function ClientSettingsPage({
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-black">
-            Client Settings
+           Settings
           </h1>
 
           <p className="max-w-2xl text-sm leading-relaxed text-gray-500 sm:text-base">
@@ -392,67 +307,15 @@ export default function ClientSettingsPage({
           </div>
         </SettingsCard>
 
+        <div id="forum-settings" className="scroll-mt-24">
         <SettingsCard
           title="Forum Settings"
           description="Control your forum notifications and discussion preferences."
           icon={MessagesSquare}
         >
-          {forumPreferenceOptions.map((option) => (
-            <PreferenceRow
-              key={option.key}
-              option={option}
-              checked={Boolean(forumSettings[option.key])}
-              onChange={() => updateForumSetting(option.key)}
-            />
-          ))}
-
-          <div className="border-t border-gray-100 py-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h3 className="font-semibold text-gray-900">
-                  Forum Email Digest
-                </h3>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Choose how often you receive a summary of forum activity.
-                </p>
-              </div>
-
-              <select
-                value={forumSettings.digestFrequency}
-                onChange={(event) => {
-                  setForumSettings((current) => ({
-                    ...current,
-                    digestFrequency: event.target.value,
-                  }));
-
-                  setForumMessage("");
-                }}
-                className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200 sm:w-48"
-              >
-                <option value="off">Off</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3 border-t border-gray-100 py-5 sm:flex-row sm:items-center sm:justify-between">
-            <p
-              className="text-sm text-gray-500"
-              aria-live="polite"
-            >
-              {forumMessage}
-            </p>
-
-            <SaveButton
-              saving={forumSaving}
-              onClick={handleSaveForumSettings}
-            >
-              Save Forum Settings
-            </SaveButton>
-          </div>
+          <ForumSettingsPanel initialSettings={initialForumSettings} onSave={onSaveForumSettings} />
         </SettingsCard>
+        </div>
 
         <div className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4">
           <CheckCircle2

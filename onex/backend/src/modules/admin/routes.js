@@ -23,6 +23,7 @@ router.get("/", getSettings);
 router.put("/", updateSettings);
 router.put("/settings", updateSettings);   // alias — some clients call /admin/settings
 router.put("/credentials", updateAdminCredentials);
+router.put("/settings/credentials", updateAdminCredentials);   // alias — AdminCredentialsSettings calls this path
 
 /* --- Email Users --- */
 router.post("/email-users", emailUsers);

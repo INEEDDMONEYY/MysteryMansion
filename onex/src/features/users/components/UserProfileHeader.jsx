@@ -27,6 +27,9 @@ import {
   useContactReveal,
 } from "@/shared/components/Contact/ContactReveal";
 import { FLAG_TARGET_TYPES } from "@/features/flagging/utils/flagTargets";
+import ProfileFollowButton from "./profile-shared/ProfileFollowButton";
+import { fetchProgression } from "@/features/users/services/progressionService";
+import { PROGRESSION_COLORS, progressionRingBackground } from "@/features/users/utils/progressionColors";
 
 // Stable reference — not connected to real criterion data yet, so the score
 // preview always reflects a fresh/unranked account until the backend lands.
@@ -45,6 +48,39 @@ export default function UserProfileHeader({
     propUser?.id ||
     propUserId ||
     null;
+
+  const [progression, setProgression] = useState(null);
+  const [ringPickerOpen, setRingPickerOpen] = useState(false);
+  const [ringSaving, setRingSaving] = useState(false);
+  const [ringError, setRingError] = useState("");
+  const unlockedRingColors = membership?.perks?.progressionColors ?? [];
+
+  async function chooseRingColor(colorId) {
+    if (ringSaving) return;
+    setRingSaving(true);
+    setRingError("");
+    try {
+      await api.patch("/membership/progression-color", { colorId });
+      setProgression((prev) => (prev ? { ...prev, progressionColor: colorId || null } : prev));
+      setRingPickerOpen(false);
+    } catch (err) {
+      setRingError(err?.response?.data?.error || "Could not save ring color.");
+    } finally {
+      setRingSaving(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!displayUserId) return undefined;
+    const controller = new AbortController();
+    fetchProgression(displayUserId, controller.signal)
+      .then(setProgression)
+      .catch((err) => {
+        if (err?.name === "CanceledError" || err?.name === "AbortError") return;
+        setProgression(null);
+      });
+    return () => controller.abort();
+  }, [displayUserId]);
 
   const [user, setUser] = useState({
     username: "",
@@ -612,6 +648,21 @@ export default function UserProfileHeader({
   // PAGE
   // ─────────────────────────────────────────────────────────────
 
+  const avatarContent = user.profilePic ? (
+    <img
+      src={user.profilePic}
+      alt={
+        user.username ||
+        "Profile"
+      }
+      className="h-28 w-28 rounded-full border-4 border-black object-cover shadow-2xl sm:h-36 sm:w-36 lg:h-44 lg:w-44"
+    />
+  ) : (
+    <div className="flex h-28 w-28 items-center justify-center rounded-full border-4 border-black bg-gray-700 text-sm font-medium text-gray-300 shadow-2xl sm:h-36 sm:w-36 lg:h-44 lg:w-44">
+      No Photo
+    </div>
+  );
+
   return (
     <div className="w-full">
 
@@ -680,29 +731,110 @@ export default function UserProfileHeader({
 
             <div className="absolute -top-16 left-4 sm:-top-20 sm:left-6 lg:-top-24 lg:left-8">
 
-              <div className="relative">
+              <div
+                className="relative rounded-full p-1 shadow-2xl"
+                style={{
+                  background: progressionRingBackground(progression?.progressionColor, progression?.levelProgress ?? 0),
+                }}
+                role="progressbar"
+                aria-label={`Progress to next level: ${Math.round((progression?.levelProgress ?? 0) * 100)}%`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round((progression?.levelProgress ?? 0) * 100)}
+              >
 
-                {user.profilePic ? (
-                  <img
-                    src={user.profilePic}
-                    alt={
-                      user.username ||
-                      "Profile"
-                    }
-                    className="h-28 w-28 rounded-full border-4 border-black object-cover shadow-2xl sm:h-36 sm:w-36 lg:h-44 lg:w-44"
-                  />
+                {isOwner ? (
+                  <button
+                    type="button"
+                    onClick={() => setRingPickerOpen((open) => !open)}
+                    className="cursor-pointer rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+                    aria-label="Change progression ring color"
+                    aria-expanded={ringPickerOpen}
+                    title="Change progression ring color"
+                  >
+                    {avatarContent}
+                  </button>
                 ) : (
-                  <div className="flex h-28 w-28 items-center justify-center rounded-full border-4 border-black bg-gray-700 text-sm font-medium text-gray-300 shadow-2xl sm:h-36 sm:w-36 lg:h-44 lg:w-44">
-                    No Photo
-                  </div>
+                  avatarContent
                 )}
 
-                <div className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-black bg-pink-500 sm:h-7 sm:w-7">
-                  <UserRound
-                    size={13}
-                    className="text-white"
-                  />
+                <div className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-violet-600 text-xs font-bold text-white sm:h-9 sm:w-9"
+                  aria-label={`Level ${progression?.level ?? 1} of ${progression?.maxLevel ?? 50}`}
+                  title={`Level ${progression?.level ?? 1} / ${progression?.maxLevel ?? 50} — ${(progression?.rp ?? 0).toLocaleString()} RP`}>
+                  {progression?.level ?? 1}
                 </div>
+
+                {isOwner && ringPickerOpen && (
+                  <div
+                    role="dialog"
+                    aria-label="Progression ring color"
+                    className="absolute left-0 top-full z-50 mt-3 w-72 max-w-[85vw] rounded-xl border border-gray-700 bg-gray-900 p-4 text-left shadow-2xl"
+                  >
+                    <div className="mb-3 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-white">Progression ring color</h3>
+                      <button
+                        type="button"
+                        onClick={() => setRingPickerOpen(false)}
+                        className="text-xs text-gray-400 hover:text-white"
+                      >
+                        Close
+                      </button>
+                    </div>
+
+                    {["solid", "gradient"].map((kind) => (
+                      <div key={kind} className="mb-3">
+                        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+                          {kind === "solid" ? "Solid" : "Gradient"}
+                        </p>
+                        <div className="grid grid-cols-4 gap-3">
+                          {PROGRESSION_COLORS.filter((color) => color.kind === kind).map((color) => {
+                            const unlocked = unlockedRingColors.includes(color.id);
+                            const selected = progression?.progressionColor === color.id;
+                            const background = color.stops.length > 1
+                              ? `linear-gradient(135deg, ${color.stops.join(", ")})`
+                              : color.stops[0];
+                            return (
+                              <button
+                                key={color.id}
+                                type="button"
+                                disabled={ringSaving || !unlocked}
+                                onClick={() => chooseRingColor(color.id)}
+                                aria-label={unlocked ? color.label : `${color.label} (membership upgrade required)`}
+                                aria-pressed={selected}
+                                title={unlocked ? color.label : `${color.label} — upgrade your membership to unlock`}
+                                className={`flex flex-col items-center gap-1 rounded-lg p-1 text-[10px] text-gray-300 ${
+                                  unlocked ? "cursor-pointer hover:bg-gray-800" : "cursor-not-allowed opacity-40"
+                                }`}
+                              >
+                                <span
+                                  className={`h-9 w-9 rounded-full border-2 ${selected ? "border-white" : "border-black"}`}
+                                  style={{ background }}
+                                />
+                                <span className="truncate">{color.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      disabled={ringSaving}
+                      onClick={() => chooseRingColor("")}
+                      className="mt-1 w-full rounded-lg border border-gray-700 px-3 py-2 text-xs font-medium text-gray-200 hover:bg-gray-800 disabled:opacity-50"
+                    >
+                      Use default purple
+                    </button>
+
+                    {unlockedRingColors.length < PROGRESSION_COLORS.length && (
+                      <p className="mt-3 text-xs text-gray-400">
+                        Locked colors unlock with a membership upgrade.
+                      </p>
+                    )}
+                    {ringError && <p className="mt-2 text-xs text-red-400">{ringError}</p>}
+                  </div>
+                )}
 
               </div>
             </div>
@@ -723,6 +855,9 @@ export default function UserProfileHeader({
                     {user.username ||
                       "Unnamed User"}
                   </h1>
+                  <span className="rounded-full bg-violet-500/20 px-2 py-1 text-xs font-semibold text-violet-200" title={`Maximum level: ${progression?.maxLevel ?? 50}`}>
+                    Level {progression?.level ?? 1}
+                  </span>
 
                   {/* ADMIN BADGES */}
 
@@ -829,6 +964,8 @@ export default function UserProfileHeader({
 
                 {/* SHARE PROFILE */}
 
+                <div className="flex flex-wrap items-start gap-2">
+                  <ProfileFollowButton key={`${displayUserId}:${ctxUser?._id || ctxUser?.id || ""}`} userId={displayUserId} />
                 <div className="relative shrink-0" ref={shareRef}>
                   <button
                     type="button"
@@ -845,7 +982,7 @@ export default function UserProfileHeader({
                   </button>
 
                   {shareMenuOpen && (
-                    <div className="absolute right-0 top-full z-40 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-white/10 bg-gray-950 p-4 shadow-2xl">
+                    <div className="fixed left-1/2 top-1/2 z-40 w-72 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/10 bg-gray-950 p-4 shadow-2xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:translate-x-0 sm:translate-y-0">
                       <div className="mb-3">
                         <h3 className="text-sm font-semibold text-white">
                           Share Profile
@@ -962,6 +1099,7 @@ export default function UserProfileHeader({
                       </div>
                     </div>
                   )}
+                </div>
                 </div>
 
               </div>

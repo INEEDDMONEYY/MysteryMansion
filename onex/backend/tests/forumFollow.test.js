@@ -8,7 +8,9 @@ import User from '../src/models/User.js';
 import ForumThread from '../src/models/ForumThread.js';
 import ForumCategory from '../src/models/ForumCategory.js';
 import ForumReply from '../src/models/ForumReply.js';
-import { ForumFollow, ForumVote, ForumBookmark } from '../src/models/ForumInteraction.js';
+import { ForumFollow, ForumVote, ForumBookmark, ForumCategoryFollow } from '../src/models/ForumInteraction.js';
+import { collectForumDigest, processForumDigests, sendForumDigestEmail } from '../src/modules/forum/forumDigest.js';
+import env from '../src/config/env.js';
 import Notification from '../src/models/Notification.js';
 import forumRoutes from '../src/modules/forum/routes.js';
 
@@ -33,6 +35,198 @@ const reply = (user, parentReplyId) =>
 const recipients = async () => (await Notification.find({ type: 'forum_reply' }).lean())
   .map((notification) => String(notification.userId)).sort();
 
+test('forum settings are private, validated and shared by client and provider accounts', async () => {
+  expect((await request(app).get('/api/forum/me/settings')).status).toBe(401);
+  await User.updateOne({ _id: users[1]._id }, { $set: { accountType: 'client' } });
+  for (const user of users.slice(0, 2)) {
+    const loaded = await request(app).get('/api/forum/me/settings').set('Authorization', auth(user));
+    expect(loaded.body.settings).toMatchObject({ mentions: true, digestFrequency: 'weekly' });
+    const saved = await request(app).patch('/api/forum/me/settings').set('Authorization', auth(user))
+      .send({ mentions: false, digestFrequency: 'daily' });
+    expect(saved.body.settings).toMatchObject({ mentions: false, digestFrequency: 'daily' });
+  }
+  for (const body of [{ mentions: 'false' }, { digestFrequency: 'monthly' }, { role: 'admin' }, {}, { constructor: true }]) {
+    expect((await request(app).patch('/api/forum/me/settings').set('Authorization', auth(users[0])).send(body)).status).toBe(400);
+  }
+  const publicUser = await User.findById(users[0]._id).lean();
+  expect(publicUser.forumSettings).toBeUndefined();
+  expect(publicUser.forumDigest).toBeUndefined();
+});
+
+test('reply and followed-discussion preferences suppress alerts, mentions respect their own preference', async () => {
+  await User.updateOne({ _id: users[0]._id }, { $set: { 'forumSettings.discussionReplies': false } });
+  await User.updateOne({ _id: users[1]._id }, { $set: { 'forumSettings.followedDiscussionNotifications': false } });
+  await settings(users[1], true, true);
+  await reply(users[3]);
+  expect(await recipients()).toEqual([]);
+  const mentioned = await request(app).post(`/api/forum/threads/${thread._id}/replies`)
+    .set('Authorization', auth(users[3])).send({ content: '@author please take a look. @reader too!' });
+  expect(mentioned.status).toBe(201);
+  expect(await Notification.countDocuments({ type: 'forum_mention' })).toBe(2);
+  await User.updateMany({}, { $set: { 'forumSettings.mentions': false } });
+  await request(app).post(`/api/forum/threads/${thread._id}/replies`)
+    .set('Authorization', auth(users[3])).send({ content: '@author please take a look.' });
+  expect(await Notification.countDocuments({ type: 'forum_mention' })).toBe(2);
+});
+
+test('auto-follow creates follows on participation, preserves explicit unfollow, and can be disabled', async () => {
+  await reply(users[3]);
+  expect(await ForumFollow.findOne({ userId: users[3]._id, threadId: thread._id }).lean())
+    .toMatchObject({ following: true, notificationsEnabled: true });
+  await settings(users[3], false, false);
+  await reply(users[3]);
+  expect(await ForumFollow.findOne({ userId: users[3]._id, threadId: thread._id }).lean())
+    .toMatchObject({ following: false, notificationsEnabled: false });
+  await User.updateOne({ _id: users[1]._id }, { $set: { 'forumSettings.autoFollowDiscussions': false } });
+  await reply(users[1]);
+  expect(await ForumFollow.countDocuments({ userId: users[1]._id })).toBe(0);
+});
+
+test('mentions match full usernames including spaces and punctuation, not emails or partial names', async () => {
+  await User.updateOne({ _id: users[1]._id }, { $set: { username: 'Reader.Name' } });
+  await User.updateOne({ _id: users[2]._id }, { $set: { username: 'Two Words' } });
+  const response = await request(app).post(`/api/forum/threads/${thread._id}/replies`)
+    .set('Authorization', auth(users[3]))
+    .send({ content: '@Reader.Name please check. @Two Words thanks. foo@author.test @otherperson' });
+  expect(response.status).toBe(201);
+  const alerts = await Notification.find({ type: 'forum_mention' }).lean();
+  expect(alerts.map((alert) => String(alert.userId)).sort())
+    .toEqual([String(users[1]._id), String(users[2]._id)].sort());
+});
+
+test('category following persists and new-discussion alerts honor settings and mentions', async () => {
+  const categoryId = String(thread.categoryId);
+  const follow = (following) => request(app).put(`/api/forum/categories/${categoryId}/follow`)
+    .set('Authorization', auth(users[1])).send({ following });
+  expect((await follow(true)).status).toBe(200);
+  expect((await follow(true)).status).toBe(200);
+  expect(await ForumCategoryFollow.countDocuments({ userId: users[1]._id })).toBe(1);
+  const list = await request(app).get('/api/forum/me/followed-categories').set('Authorization', auth(users[1]));
+  expect(list.body.categoryIds).toEqual([categoryId]);
+  const create = (content) => request(app).post('/api/forum/threads').set('Authorization', auth(users[0]))
+    .send({ categoryId, title: 'New discussion', content });
+  expect((await create('Some content for the discussion.')).status).toBe(201);
+  expect(await Notification.countDocuments({ type: 'forum_category' })).toBe(0);
+  await User.updateOne({ _id: users[1]._id }, { $set: { 'forumSettings.followedCategoryNotifications': true } });
+  expect((await create('Another discussion to follow.')).status).toBe(201);
+  expect(await Notification.countDocuments({ type: 'forum_category', userId: users[1]._id })).toBe(1);
+  expect((await create('@reader this is a mention in a new discussion.')).status).toBe(201);
+  expect(await Notification.countDocuments({ type: 'forum_mention', userId: users[1]._id })).toBe(1);
+  const inbox = await request(app).get('/api/forum/me/notifications').set('Authorization', auth(users[1]));
+  expect(inbox.body.notifications).toHaveLength(2);
+  expect(await ForumFollow.countDocuments({ userId: users[0]._id })).toBe(3);
+  expect((await follow(false)).status).toBe(200);
+  expect(await ForumCategoryFollow.countDocuments({ userId: users[1]._id })).toBe(0);
+});
+
+async function prepareDigest(frequency = 'daily') {
+  const now = new Date();
+  await User.updateMany({}, { $set: { 'forumSettings.digestFrequency': 'off' } });
+  await User.updateOne({ _id: users[1]._id }, { $set: {
+    'forumSettings.digestFrequency': frequency,
+    'forumDigest.through': new Date(+now - 8 * 86400000),
+  } });
+  await settings(users[1], true, false); // Digest is independent of the in-app bell.
+  await reply(users[3]);
+  return new Date(+now + 1000);
+}
+
+test.each(['daily', 'weekly'])('%s digest sends new followed activity once and survives subsequent runs', async (frequency) => {
+  const now = await prepareDigest(frequency);
+  const send = jest.fn(async () => ({ provider: 'cloudflare', queued: [users[1].email] }));
+  await Promise.all([processForumDigests({ now, send }), processForumDigests({ now, send })]);
+  expect(send).toHaveBeenCalledTimes(1);
+  expect(send.mock.calls[0][0]).toMatchObject({
+    to: users[1].email, frequency,
+    items: [expect.objectContaining({ id: String(thread._id), replyCount: 1 })],
+  });
+  await processForumDigests({ now: new Date(+now + 1000), send });
+  expect(send).toHaveBeenCalledTimes(1);
+  expect((await User.findById(users[1]._id).select('+forumDigest').lean()).forumDigest.through).toEqual(now);
+});
+
+test('digest includes category discussions, excludes archived/deleted/self activity and does not send empty digests', async () => {
+  const now = await prepareDigest();
+  await ForumCategoryFollow.create({ userId: users[1]._id, categoryId: thread.categoryId });
+  const created = await ForumThread.create({
+    authorId: users[0]._id, categoryId: thread.categoryId, title: 'Category activity', content: 'New discussion content',
+  });
+  const since = new Date(+now - 86400000);
+  let items = await collectForumDigest(users[1]._id, since, new Date(+now + 5000));
+  expect(items.map((item) => item.id)).toContain(String(created._id));
+  await ForumThread.updateMany({}, { $set: { archived: true } });
+  items = await collectForumDigest(users[1]._id, since, new Date(+now + 5000));
+  expect(items).toEqual([]);
+  const send = jest.fn();
+  await processForumDigests({ now, send });
+  expect(send).not.toHaveBeenCalled();
+});
+
+test('digest failures and admin skips retain the watermark and defer retries', async () => {
+  const now = await prepareDigest();
+  const previous = (await User.findById(users[1]._id).select('+forumDigest').lean()).forumDigest.through;
+  const send = jest.fn(async () => ({ skipped: true }));
+  await processForumDigests({ now, send });
+  const user = await User.findById(users[1]._id).select('+forumDigest').lean();
+  expect(user.forumDigest.through).toEqual(previous);
+  expect(user.forumDigest.nextAttemptAt).toEqual(new Date(+now + 3600000));
+  await processForumDigests({ now, send });
+  expect(send).toHaveBeenCalledTimes(1);
+});
+
+test('digest opt-outs and provider failures never advance the delivery watermark', async () => {
+  const now = await prepareDigest();
+  const through = (await User.findById(users[1]._id).select('+forumDigest').lean()).forumDigest.through;
+  const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+  try {
+    const send = jest.fn(async () => { throw new Error('Email provider failed'); });
+    await processForumDigests({ now, send });
+    expect(send).toHaveBeenCalledTimes(1);
+    const user = await User.findById(users[1]._id).select('+forumDigest').lean();
+    expect(user.forumDigest.through).toEqual(through);
+    expect(error).toHaveBeenCalledWith(expect.stringContaining('Forum digest failed'), 'Email provider failed');
+    await User.updateOne({ _id: users[1]._id }, { $set: { 'forumSettings.digestFrequency': 'off' } });
+    await processForumDigests({ now: new Date(+now + 7200000), send });
+    expect(send).toHaveBeenCalledTimes(1);
+  } finally { error.mockRestore(); }
+});
+
+test('digest email uses shared Cloudflare sender and escapes user-controlled titles', async () => {
+  const fetch = global.fetch;
+  const token = env.CLOUDFLARE_API_TOKEN;
+  const account = env.CLOUDFLARE_ACCOUNT_ID;
+  const forced = process.env.EMAIL_FORCE_PROVIDER;
+  try {
+    env.CLOUDFLARE_API_TOKEN = 'test-token';
+    env.CLOUDFLARE_ACCOUNT_ID = 'a'.repeat(32);
+    delete process.env.EMAIL_FORCE_PROVIDER;
+    global.fetch = jest.fn(async () => ({
+      ok: true, status: 200, json: async () => ({ success: true, result: {
+        delivered: [], queued: [users[1].email], permanent_bounces: [],
+      } }),
+    }));
+    // The shared admin switch is checked without accessing production data.
+    const AdminSettings = (await import('../src/models/AdminSettings.js')).default;
+    const spy = jest.spyOn(AdminSettings, 'findOne').mockReturnValue({ select: () => ({ lean: async () => null }) });
+    try {
+      await sendForumDigestEmail({
+        to: users[1].email, username: '<reader>', frequency: 'weekly', settingsPath: '/client/settings',
+        items: [{ id: String(thread._id), title: '<script>test</script>', replyCount: 2, newDiscussion: false }],
+      });
+      const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+      expect(body.html).toContain('&lt;script&gt;test&lt;/script&gt;');
+      expect(body.html).toContain('/client/settings#forum-settings');
+      expect(body.html).not.toContain('<script>test</script>');
+    } finally { spy.mockRestore(); }
+  } finally {
+    global.fetch = fetch;
+    env.CLOUDFLARE_API_TOKEN = token;
+    env.CLOUDFLARE_ACCOUNT_ID = account;
+    if (forced === undefined) delete process.env.EMAIL_FORCE_PROVIDER;
+    else process.env.EMAIL_FORCE_PROVIDER = forced;
+  }
+});
+
 beforeAll(async () => {
   process.env.JWT_SECRET = secret;
   log = jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -52,12 +246,12 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await Promise.all([User, ForumThread, ForumCategory, ForumReply, ForumFollow, ForumVote, ForumBookmark, Notification]
+  await Promise.all([User, ForumThread, ForumCategory, ForumReply, ForumFollow, ForumCategoryFollow, ForumVote, ForumBookmark, Notification]
     .map((model) => model.deleteMany({})));
   users = await User.create(['author', 'reader', 'muted', 'replier', 'other'].map((username) => ({
     username, password: 'test-password', email: `${username}@example.test`,
   })));
-  const category = await ForumCategory.create({ name: 'Test category', slug: 'test-category' });
+  const category = await ForumCategory.create({ name: 'Test category', slug: 'test-category', status: 'approved' });
   thread = await ForumThread.create({
     authorId: users[0]._id, categoryId: category._id,
     title: 'Follow this thread', content: 'A discussion used to verify thread follows.',

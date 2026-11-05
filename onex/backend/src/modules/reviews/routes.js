@@ -7,6 +7,7 @@ import { authMiddleware } from '../../common/middleware/authMiddleware.js';
 import { createNotification } from '../notifications/notificationController.js';
 import { sendAccountActivityEmail } from '../../common/utils/sendAccountActivityEmail.js';
 import { awardCredits } from '../credits/creditEarnService.js';
+import { syncRpInBackground } from '../progression/rpEngine.js';
 
 const router = express.Router();
 
@@ -78,7 +79,9 @@ router.post('/:targetUserId', authMiddleware, async (req, res) => {
     // Notify the reviewed user (skip self-reviews)
     if (String(targetUserId) !== String(req.user._id)) {
       awardCredits({ userId: req.user._id, eventKey: 'leave_review', refId: String(review._id) });
+      syncRpInBackground(req.user._id);
       awardCredits({ userId: targetUserId, eventKey: 'receive_review', refId: String(review._id) });
+      syncRpInBackground(targetUserId);
 
       const authorName = populatedReview.authorUserId?.username || 'Someone';
       const reviewPreview = `${text.slice(0, 80)}${text.length > 80 ? '…' : ''}`;

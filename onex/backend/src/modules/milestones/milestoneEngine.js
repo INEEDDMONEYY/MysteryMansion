@@ -6,7 +6,7 @@ import PostLike from "../../models/PostLike.js";
 import Message from "../../models/Message.js";
 import Milestone from "../../models/Milestone.js";
 
-function profileCompleteness(user) {
+export function profileCompleteness(user) {
   let filled = 0;
   if (user.bio?.trim()) filled += 1;
   if (user.profilePic) filled += 1;

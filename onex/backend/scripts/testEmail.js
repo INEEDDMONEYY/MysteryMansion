@@ -21,6 +21,7 @@
  *   promo-badge-removed | promo-badge-expired | promo-expiring
  *   flag-submitted | flag-update | flag-reported-post | flag-reported-account
  *   contact-inquiry
+ *   forum-digest
  *   all
  */
 
@@ -41,6 +42,7 @@ import {
   sendAccountFlaggedEmail,
 } from '../src/common/utils/sendAccountFlagEmail.js';
 import { sendContactInquiryEmail } from '../src/common/utils/sendContactInquiryEmail.js';
+import { sendForumDigestEmail } from '../src/modules/forum/forumDigest.js';
 
 // All test emails go to the verified test inbox by default.
 const TEST_INBOX = 'someonetothinkabout@gmail.com';
@@ -61,6 +63,10 @@ if (arg1 && arg1.includes('@')) {
 }
 
 const SENDERS = {
+  'forum-digest': () => sendForumDigestEmail({
+    to, username: 'TestMember', frequency: 'weekly', settingsPath: '/user/settings',
+    items: [{ id: '000000000000000000000000', title: 'Example discussion (test email)', newDiscussion: true, replyCount: 3 }],
+  }),
   'welcome-provider': () => sendWelcomeEmail({ to, username: 'TestProvider', accountType: 'provider' }),
   'welcome-client': () => sendWelcomeEmail({ to, username: 'TestClient', accountType: 'client' }),
   verify: () => sendVerificationCodeEmail({ to, code: '482917' }),

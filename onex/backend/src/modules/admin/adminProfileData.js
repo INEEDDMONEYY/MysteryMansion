@@ -38,30 +38,35 @@ const countAttachments = async (Model, match = {}) => {
 };
 
 // ── GET /api/admin/profile-data/activity ─────────────────────────────────────
-// Forum threads, forum replies and post comments across the whole platform.
+// Forum threads, forum replies and post comments across the platform.
+// With `authorId`, only that user's forum threads and replies are returned.
 router.get('/activity', async (req, res) => {
   try {
     const { page, limit } = parsePaging(req.query, 20, 50);
+    const authorId = mongoose.isValidObjectId(req.query.authorId) ? req.query.authorId : null;
     const type = ['threads', 'replies', 'comments'].includes(req.query.type) ? req.query.type : 'all';
     const want = (name) => type === 'all' || type === name;
     const take = page * limit;
+    const threadMatch = authorId ? { authorId } : {};
+    const replyMatch = { isDeleted: false, ...(authorId ? { authorId } : {}) };
+    const includeComments = want('comments') && !authorId;
 
     const [threads, replies, comments, threadTotal, replyTotal, commentTotal] = await Promise.all([
       want('threads')
-        ? ForumThread.find().sort({ createdAt: -1 }).limit(take)
+        ? ForumThread.find(threadMatch).sort({ createdAt: -1 }).limit(take)
             .populate('authorId', AUTHOR_FIELDS).populate('categoryId', 'name slug').lean()
         : [],
       want('replies')
-        ? ForumReply.find({ isDeleted: false }).sort({ createdAt: -1 }).limit(take)
+        ? ForumReply.find(replyMatch).sort({ createdAt: -1 }).limit(take)
             .populate('authorId', AUTHOR_FIELDS).populate('threadId', 'title').lean()
         : [],
-      want('comments')
+      includeComments
         ? Comment.find().sort({ createdAt: -1 }).limit(take)
             .populate('userId', AUTHOR_FIELDS).populate('postId', 'title').lean()
         : [],
-      want('threads') ? ForumThread.countDocuments() : 0,
-      want('replies') ? ForumReply.countDocuments({ isDeleted: false }) : 0,
-      want('comments') ? Comment.countDocuments() : 0,
+      want('threads') ? ForumThread.countDocuments(threadMatch) : 0,
+      want('replies') ? ForumReply.countDocuments(replyMatch) : 0,
+      includeComments ? Comment.countDocuments() : 0,
     ]);
 
     const items = [

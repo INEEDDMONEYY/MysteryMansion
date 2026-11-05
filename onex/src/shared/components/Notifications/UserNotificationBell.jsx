@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
+import { UserContext } from '@/context/UserContext';
 import { Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useNotifications from '@/shared/hooks/useNotifications';
@@ -18,6 +19,7 @@ export default function UserNotificationBell({
   reportsPath = '/user/reports',
 }) {
   const [open, setOpen] = useState(false);
+  const { user } = useContext(UserContext);
   const ref = useRef(null);
   const navigate = useNavigate();
 
@@ -61,6 +63,8 @@ export default function UserNotificationBell({
         navigate(reportsPath);
         break;
       case 'forum_reply':
+      case 'forum_mention':
+      case 'forum_category':
         if (n.meta?.threadId) navigate(`/forum/thread/${n.meta.threadId}`);
         break;
       case 'new_comment':
@@ -100,6 +104,7 @@ export default function UserNotificationBell({
         onItemClick={handleItemClick}
         title="Notifications"
         viewAllHref={viewAllHref}
+        settingsHref={`${user?.accountType === 'client' ? '/client/settings' : '/user/settings'}#forum-settings`}
       />
     </div>
   );

@@ -26,6 +26,9 @@ import ClientReviewsGiven from "@/features/users/components/client-profile/Clien
 import ClientComments from "@/features/users/components/client-profile/ClientComments";
 import ProviderMediaGallery from "@/features/users/components/provider-profile/ProviderMediaGallery";
 import ProviderProfileStats from "@/features/users/components/provider-profile/ProviderProfileStats";
+import ProfileFriendsPanel from "@/features/users/components/profile-shared/ProfileFriendsPanel";
+import ProfileBadgesPanel from "@/features/users/components/profile-shared/ProfileBadgesPanel";
+// import ProfileProgressionPanel from "@/features/users/components/profile-shared/ProfileProgressionPanel";
 
 import UserProfileHeader from "@/features/users/components/UserProfileHeader";
 import PostList from "@/features/posts/components/PostList";
@@ -423,7 +426,7 @@ export default function UserProfileViewPage({
 
                       <p className="text-sm text-gray-500">
                         {viewerIsAdmin
-                          ? "All thread posts, thread replies and platform comments."
+                          ? "Forum thread posts and thread replies by this administrator."
                           : "This is an official Mystery Mansion administrator account."}
                       </p>
                     </div>
@@ -432,7 +435,7 @@ export default function UserProfileViewPage({
 
                 {viewerIsAdmin && (
                   <div className="p-4 sm:p-6">
-                    <AdminActivityFeed />
+                    <AdminActivityFeed authorId={userId} />
                   </div>
                 )}
               </section>
@@ -707,8 +710,15 @@ export default function UserProfileViewPage({
             )}
           </div>
 
-          {profile.loaded && !profile.isAdmin && !profile.isClient && (
-            <ProviderProfileStats details={providerDetails} />
+          {profile.loaded && providerDetails && (
+            <div className="min-w-0 space-y-6">
+              {!profile.isAdmin && !profile.isClient && <ProviderProfileStats details={providerDetails} />}
+              <ProfileBadgesPanel key={userId} userId={userId} />
+              {/* Progression panel parked for later; restore with ProfileProgressionPanel.
+              <ProfileProgressionPanel key={`progression-${userId}`} userId={userId} />
+              */}
+              <ProfileFriendsPanel key={userId} userId={userId} />
+            </div>
           )}
         </div>
       </div>

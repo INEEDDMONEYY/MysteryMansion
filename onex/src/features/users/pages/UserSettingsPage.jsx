@@ -10,6 +10,7 @@ import EmailSettings from "@/shared/components/user/settings/EmailSettings";
 import GenderSettings from "@/shared/components/user/settings/GenderSettings";
 import RedeemPromoSettings from "@/shared/components/user/settings/RedeemPromoSettings";
 import DeleteAccountSettings from "@/shared/components/user/settings/DeleteAccountSettings";
+import ForumSettingsPanel from "@/features/forum/components/ForumSettingsPanel";
 import {
   fetchNotificationPreferences,
   saveNotificationPreferences,
@@ -199,58 +200,6 @@ function NotificationToggle({
   );
 }
 
-function ForumSettingsPlaceholder() {
-  const upcomingSettings = [
-    {
-      title: "Discussion Preferences",
-      description:
-        "Forum-specific preferences for browsing and participating in discussions.",
-    },
-    {
-      title: "Thread and Reply Preferences",
-      description:
-        "Controls for managing your participation in forum discussions.",
-    },
-    {
-      title: "Community Preferences",
-      description:
-        "Additional controls for your forum experience.",
-    },
-  ];
-
-  return (
-    <div className="space-y-4">
-      <div className="rounded-xl border border-dashed border-pink-200 bg-pink-50/40 p-5">
-        <div className="flex items-center gap-2 text-pink-700">
-          <Settings2 size={18} />
-          <h3 className="font-semibold">Forum preferences</h3>
-        </div>
-
-        <p className="mt-2 text-sm leading-6 text-gray-600">
-          Forum-specific controls will be organized here separately from
-          your general account and email notification preferences.
-        </p>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        {upcomingSettings.map((item) => (
-          <div
-            key={item.title}
-            className="rounded-xl border border-gray-100 bg-gray-50 p-4"
-          >
-            <h3 className="text-sm font-semibold text-gray-800">
-              {item.title}
-            </h3>
-
-            <p className="mt-2 text-xs leading-5 text-gray-500">
-              {item.description}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function UserSettingsPage() {
   const { user, mergeUser } = useContext(UserContext);
@@ -494,7 +443,7 @@ export default function UserSettingsPage() {
         title="Forum Settings"
         description="Manage preferences related to your forum discussions and community participation."
       >
-        <ForumSettingsPlaceholder />
+        <ForumSettingsPanel />
       </SettingsSection>
 
       <SettingsSection

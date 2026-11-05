@@ -138,9 +138,11 @@ export async function awardCredits({
     const user = await User.findById(userId).select('role accountType status').lean();
     if (!user) return skipped('no_user');
     if (user.status === 'suspended') return skipped('suspended');
+    // Admin accounts never hold platform coins, including manual grants.
+    if (user.role === 'admin') return skipped('admin');
 
     if (!force) {
-      const eligible = user.role === 'admin' || rule.roles.includes(effectiveRole(user));
+      const eligible = rule.roles.includes(effectiveRole(user));
       if (!eligible) return skipped('role');
 
       if (rule.lifetimeLimit > 0) {

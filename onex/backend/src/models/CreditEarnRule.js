@@ -20,7 +20,7 @@ const CreditEarnRuleSchema = new mongoose.Schema(
     label: { type: String, required: true, trim: true, maxlength: 80 },
     description: { type: String, trim: true, maxlength: 300, default: '' },
     credits: { type: Number, required: true, min: 1, max: 10000 },
-    // Account types that can earn from this rule. Admins can always earn.
+    // Account types that can earn from this rule. Admin accounts never earn (see awardCredits).
     roles: {
       type: [{ type: String, enum: EARN_ROLES }],
       default: ['provider', 'client'],

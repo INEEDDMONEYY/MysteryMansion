@@ -40,3 +40,11 @@ FollowSchema.index({ userId: 1, threadId: 1 }, { unique: true });
 FollowSchema.index({ threadId: 1, notificationsEnabled: 1 });
 
 export const ForumFollow = mongoose.models.ForumFollow || mongoose.model('ForumFollow', FollowSchema);
+
+const CategoryFollowSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'ForumCategory', required: true },
+}, { timestamps: true });
+CategoryFollowSchema.index({ userId: 1, categoryId: 1 }, { unique: true });
+export const ForumCategoryFollow = mongoose.models.ForumCategoryFollow ||
+  mongoose.model('ForumCategoryFollow', CategoryFollowSchema);

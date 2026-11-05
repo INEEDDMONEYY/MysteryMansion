@@ -5,6 +5,20 @@ export const BOOST_DURATION_MS = 24 * 60 * 60 * 1000;
 export const CATEGORY_CREATE_LIMIT = { count: 3, windowMs: 30 * 24 * 60 * 60 * 1000 };
 export const FORUM_BORDER_COLORS = ['pink', 'yellow', 'green', 'blue', 'red', 'orange', 'purple', 'gray'];
 
+// Progression ring colors. Ids are shared with the frontend palette (progressionColors.js).
+export const PROGRESSION_SOLID_COLOR_IDS = ['orange', 'yellow', 'pink', 'blue', 'green', 'purple', 'brown', 'peach'];
+export const PROGRESSION_GRADIENT_COLOR_IDS = [
+  'watermelon-crush',
+  'sedona-sunrise',
+  'seascape',
+  'blackcurrant',
+  'cotton-candy',
+  'carrot',
+  'honeydew',
+];
+export const PROGRESSION_COLOR_IDS = [...PROGRESSION_SOLID_COLOR_IDS, ...PROGRESSION_GRADIENT_COLOR_IDS];
+const STANDARD_PROGRESSION_COLOR_IDS = ['orange', 'yellow', 'pink', 'blue'];
+
 export const NO_PERKS = Object.freeze({
   boostsPerMonth: 0,
   editForumPosts: false,
@@ -14,6 +28,7 @@ export const NO_PERKS = Object.freeze({
   forumBorderColor: false,
   profileBadge: false,
   betterSearchFilters: false,
+  progressionColors: [],
 });
 
 // Admins are never restricted by membership.
@@ -24,8 +39,9 @@ export const ADMIN_PERKS = Object.freeze({
   forumUploads: true,
   createForumCategories: true,
   forumBorderColor: true,
-  profileBadge: false,
+  profileBadge: true,
   betterSearchFilters: true,
+  progressionColors: PROGRESSION_COLOR_IDS,
 });
 
 export const TIER_ORDER = ['Standard', 'Premium', 'Elite'];
@@ -39,8 +55,20 @@ export const MEMBERSHIP_TIERS = Object.freeze({
     // Coins granted back each billing period; adjust here.
     monthlyCoinAllocation: 200,
     featured: false,
-    perks: { ...NO_PERKS, boostsPerMonth: 4, editForumPosts: true, profileBadge: true },
-    benefits: ['200 monthly coin allocation','Edit forum posts', '4 post boosts', 'Membership status on your profile'],
+    perks: {
+      ...NO_PERKS,
+      boostsPerMonth: 4,
+      editForumPosts: true,
+      profileBadge: true,
+      progressionColors: STANDARD_PROGRESSION_COLOR_IDS,
+    },
+    benefits: [
+      '200 monthly coin allocation',
+      'Edit forum posts',
+      '4 post boosts',
+      'Membership status on your profile',
+      '4 progression ring colors',
+    ],
   },
   Premium: {
     id: 'Premium',
@@ -56,6 +84,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
       maxPinnedThreads: 1,
       profileBadge: true,
       betterSearchFilters: true,
+      progressionColors: PROGRESSION_SOLID_COLOR_IDS,
     },
     benefits: [
       'Access to better search filter options',
@@ -64,6 +93,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
       '8 post boosts',
       'Pin forum thread',
       'Membership status on your profile',
+      '8 solid progression ring colors',
     ],
   },
   Elite: {
@@ -82,6 +112,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
       forumBorderColor: true,
       profileBadge: true,
       betterSearchFilters: true,
+      progressionColors: PROGRESSION_COLOR_IDS,
     },
     benefits: [
       'Access to all new features',
@@ -94,6 +125,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
       'Offline storage',
       'Forum card border customization',
       'Access to create forum categories',
+      'All progression ring colors, including gradients',
     ],
   },
 });

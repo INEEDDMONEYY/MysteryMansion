@@ -9,14 +9,15 @@ import ForumThread from '../../models/ForumThread.js';
 import ForumReply from '../../models/ForumReply.js';
 import Notification from '../../models/Notification.js';
 import { getThreadFollowerSummaries, emptyFollowerSummary } from './forumFollowers.js';
-import { ForumVote, ForumBookmark, ForumFollow } from '../../models/ForumInteraction.js';
+import { ForumVote, ForumBookmark, ForumFollow, ForumCategoryFollow } from '../../models/ForumInteraction.js';
+import { DEFAULT_FORUM_SETTINGS, FORUM_NOTIFICATION_TYPES, resolveForumSettings, autoFollowDiscussion } from './forumSettings.js';
+import { notifyForumActivity } from './forumAlerts.js';
 import { authMiddleware } from '../../common/middleware/authMiddleware.js';
 import { enforceRestriction } from '../../common/middleware/restrictionMiddleware.js';
 import { attachmentUpload, saveAttachments } from '../../common/utils/attachmentUpload.js';
 import { deleteBackupCopy } from '../../common/utils/backupStorage.js';
 import { awardCredits } from '../credits/creditEarnService.js';
-import { createNotification } from '../notifications/notificationController.js';
-import { consumeBoost, getUserPerks, notifyBoostApplied } from '../membership/membershipService.js';
+import { syncRpInBackground } from '../progression/rpEngine.js';
 import { BOOST_DURATION_MS, CATEGORY_CREATE_LIMIT, FORUM_BORDER_COLORS } from '../membership/membershipCatalog.js';
 import {
   AUTHOR_SELECT,
@@ -28,6 +29,77 @@ import {
 } from './forumHelpers.js';
 
 const router = express.Router();
+
+router.get('/me/settings', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('+forumSettings').lean();
+    if (!user) return res.status(404).json({ error: 'Account not found.' });
+    res.json({ settings: resolveForumSettings(user.forumSettings) });
+  } catch (err) {
+    console.error('GET /forum/me/settings:', err);
+    res.status(500).json({ error: 'Failed to load forum settings.' });
+  }
+});
+
+router.patch('/me/settings', authMiddleware, async (req, res) => {
+  const body = req.body;
+  if (!body || Array.isArray(body) || typeof body !== 'object' || !Object.keys(body).length) {
+    return res.status(400).json({ error: 'Provide forum settings.' });
+  }
+  const update = {};
+  for (const [key, value] of Object.entries(body)) {
+    if (!Object.hasOwn(DEFAULT_FORUM_SETTINGS, key) || (key === 'digestFrequency'
+      ? !['off', 'daily', 'weekly'].includes(value) : typeof value !== 'boolean')) {
+      return res.status(400).json({ error: `Invalid forum setting: ${key}` });
+    }
+    update[`forumSettings.${key}`] = value;
+  }
+  try {
+    const previous = await User.findById(req.user._id).select('+forumSettings').lean();
+    if (!previous) return res.status(404).json({ error: 'Account not found.' });
+    // Starting a different cadence never backfills old emails.
+    if (body.digestFrequency !== undefined &&
+        body.digestFrequency !== resolveForumSettings(previous.forumSettings).digestFrequency) {
+      update['forumDigest.through'] = new Date();
+      update['forumDigest.nextAttemptAt'] = null;
+    }
+    const user = await User.findByIdAndUpdate(req.user._id, { $set: update }, { new: true, runValidators: true })
+      .select('+forumSettings').lean();
+    if (!user) return res.status(404).json({ error: 'Account not found.' });
+    res.json({ settings: resolveForumSettings(user.forumSettings) });
+  } catch (err) {
+    console.error('PATCH /forum/me/settings:', err);
+    res.status(500).json({ error: 'Failed to save forum settings.' });
+  }
+});
+
+router.get('/me/followed-categories', authMiddleware, async (req, res) => {
+  try {
+    const follows = await ForumCategoryFollow.find({ userId: req.user._id }).select('categoryId').lean();
+    res.json({ categoryIds: follows.map((follow) => String(follow.categoryId)) });
+  } catch (err) {
+    console.error('GET /forum/me/followed-categories:', err);
+    res.status(500).json({ error: 'Failed to load followed categories.' });
+  }
+});
+
+router.put('/categories/:id/follow', authMiddleware, async (req, res) => {
+  if (req.user.status === 'suspended') return res.status(403).json({ error: 'Your account is suspended.' });
+  if (!mongoose.isValidObjectId(req.params.id) || typeof req.body?.following !== 'boolean') {
+    return res.status(400).json({ error: 'Provide a category ID and boolean following value.' });
+  }
+  try {
+    const category = await ForumCategory.findOne({ _id: req.params.id, status: 'approved' });
+    if (!category) return res.status(404).json({ error: 'Category not found.' });
+    const filter = { userId: req.user._id, categoryId: category._id };
+    if (req.body.following) await ForumCategoryFollow.updateOne(filter, { $setOnInsert: filter }, { upsert: true });
+    else await ForumCategoryFollow.deleteOne(filter);
+    res.json({ following: req.body.following });
+  } catch (err) {
+    console.error('PUT /forum/categories/:id/follow:', err);
+    res.status(500).json({ error: 'Failed to update category follow.' });
+  }
+});
 
 const isId = (value) => mongoose.isValidObjectId(value);
 const isAdmin = (user) => user?.role === 'admin';
@@ -295,6 +367,7 @@ router.put('/threads/:id/follow', authMiddleware, blockSuspended, async (req, re
     const filter = { userId: req.user._id, threadId: req.params.id };
     // Keep an explicit off preference so automatic author/reply alerts can also be muted.
     await ForumFollow.updateOne(filter, { $set: { following, notificationsEnabled } }, { upsert: true });
+    syncRpInBackground(req.user._id);
     res.json({ following, notificationsEnabled });
   } catch (err) {
     console.error('❌ PUT /forum/threads/:id/follow:', err);
@@ -352,6 +425,11 @@ router.post('/threads', authMiddleware, blockSuspended, enforceRestriction('post
     }
 
     awardCredits({ userId: req.user._id, eventKey: 'thread_post', refId: String(thread._id) });
+    syncRpInBackground(req.user._id);
+    await autoFollowDiscussion(req.user, thread._id)
+      .catch((err) => console.error('Forum auto-follow failed:', err.message));
+    await notifyForumActivity({ thread, actor: req.user, content })
+      .catch((err) => console.error('Forum activity notification failed:', err.message));
 
     const populated = await populateThread(ForumThread.findById(thread._id)).lean();
     res.status(201).json(serializeThread(populated));
@@ -583,31 +661,12 @@ router.post('/threads/:id/replies', authMiddleware, blockSuspended, enforceRestr
     await ForumThread.updateOne({ _id: thread._id }, { $inc: { replyCount: 1 }, $set: { lastActivityAt: new Date() } });
 
     awardCredits({ userId: req.user._id, eventKey: 'thread_reply', refId: String(reply._id) });
+    syncRpInBackground(req.user._id);
 
-    // Thread author and the member being replied to, never the replier, never twice.
-    const preview = content ? `${content.slice(0, 80)}${content.length > 80 ? '…' : ''}` : 'sent an image';
-    const preferences = await ForumFollow.find({ threadId: thread._id }).lean();
-    const muted = new Set(preferences.filter((follow) => !follow.notificationsEnabled).map((follow) => String(follow.userId)));
-    const notified = new Set([String(req.user._id)]);
-    const notifications = [];
-    const notifyReply = (recipientId, title) => {
-      if (!recipientId || notified.has(String(recipientId)) || muted.has(String(recipientId))) return;
-      notified.add(String(recipientId));
-      notifications.push(createNotification({
-        audience: 'user',
-        type: 'forum_reply',
-        title,
-        message: `${req.user.username} replied in "${thread.title}": "${preview}"`,
-        userId: recipientId,
-        meta: { threadId: String(thread._id), replyId: String(reply._id) },
-      }).catch((err) => console.error('❌ forum reply notification:', err.message)));
-    };
-    notifyReply(parentAuthorId, 'New reply to your comment');
-    notifyReply(thread.authorId, 'New reply to your discussion');
-    for (const follow of preferences) {
-      if (follow.following && follow.notificationsEnabled) notifyReply(follow.userId, 'New reply in a thread you follow');
-    }
-    await Promise.all(notifications);
+    await autoFollowDiscussion(req.user, thread._id)
+      .catch((err) => console.error('Forum auto-follow failed:', err.message));
+    await notifyForumActivity({ thread, actor: req.user, content, replyId: reply._id, parentAuthorId })
+      .catch((err) => console.error('Forum activity notification failed:', err.message));
 
     const populated = await ForumReply.findById(reply._id).populate('authorId', AUTHOR_SELECT).lean();
     res.status(201).json(serializeReply(populated, { solutionReplyId: thread.solutionReplyId }));
@@ -755,7 +814,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const forumNotificationFilter = (userId) => ({
   audience: 'user',
   userId,
-  type: 'forum_reply',
+  type: { $in: FORUM_NOTIFICATION_TYPES },
 });
 
 router.get('/me/notifications', authMiddleware, async (req, res) => {

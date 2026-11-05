@@ -2,6 +2,7 @@ import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useRef, useEffect } from 'react';
 import { X, UserPlus, MessageSquare, TrendingUp, Bell, CheckCheck, Star, PartyPopper, Eye, Coins, Heart, Trophy, Flag, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 const TYPE_META = {
   welcome:            { icon: PartyPopper,    color: 'text-pink-400',    bg: 'bg-pink-400/10'    },
@@ -23,6 +24,8 @@ const TYPE_META = {
   new_credit_request: { icon: Coins,          color: 'text-amber-400',   bg: 'bg-amber-400/10'   },
   flag_update:        { icon: Flag,           color: 'text-red-400',     bg: 'bg-red-400/10'     },
   forum_reply:        { icon: MessageSquare,  color: 'text-pink-400',    bg: 'bg-pink-400/10'    },
+  forum_mention:      { icon: MessageSquare,  color: 'text-violet-400',  bg: 'bg-violet-400/10'  },
+  forum_category:     { icon: MessageSquare,  color: 'text-sky-400',     bg: 'bg-sky-400/10'     },
   credits_earned:     { icon: Coins,          color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
   credits_added:      { icon: Coins,          color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
   earn_rule_added:    { icon: Sparkles,       color: 'text-pink-400',    bg: 'bg-pink-400/10'    },
@@ -81,6 +84,7 @@ export default function NotificationModal({
   onItemClick,
   title = 'Notifications',
   viewAllHref,
+  settingsHref,
 }) {
   const ref = useRef(null);
 
@@ -147,6 +151,12 @@ export default function NotificationModal({
       </div>
 
       {/* Footer */}
+      {settingsHref && (
+        <Link to={settingsHref} onClick={onClose}
+          className="block border-t border-neutral-800 px-4 py-2.5 text-center text-xs text-pink-400 hover:text-pink-300">
+          Forum notification settings
+        </Link>
+      )}
       {viewAllHref && (
         <div className="border-t border-neutral-800 px-4 py-2.5">
           <a

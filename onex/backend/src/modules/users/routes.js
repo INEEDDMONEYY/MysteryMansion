@@ -16,11 +16,13 @@ import PromoCode from "../../models/PromoCode.js";
 import Comment from "../../models/Comment.js";
 import AnalyticsEvent from "../../models/AnalyticsEvent.js";
 import UserMedia from "../../models/UserMedia.js";
-import { ForumFollow } from "../../models/ForumInteraction.js";
+import UserFollow from "../../models/UserFollow.js";
+import { ForumFollow, ForumCategoryFollow } from "../../models/ForumInteraction.js";
 import { getLikedPosts } from "../posts/controllers/postLikeController.js";
 import { enforceRestriction } from "../../common/middleware/restrictionMiddleware.js";
 import { authMiddleware } from "../../common/middleware/authMiddleware.js";
 import { allowEmail } from "../../common/utils/emailRateLimiter.js";
+import { syncRpInBackground } from "../progression/rpEngine.js";
 import {
   NOTIFICATION_PREFERENCE_KEYS,
   resolveNotificationPreferences,
@@ -239,6 +241,8 @@ router.post("/update-profile", enforceRestriction("profile:update"), upload.fiel
       { new: true, runValidators: true }
     ).select("-password -resetPasswordToken -resetPasswordExpires");
 
+    if (updatedUser) syncRpInBackground(req.user._id);
+
     if (!updatedUser) {
       console.error("❌ [UserRoutes] User not found in DB for id:", req.user._id);
       return res.status(404).json({ error: "User not found" });
@@ -397,6 +401,7 @@ router.patch("/me/profile-details", enforceRestriction("profile:update"), async 
     const user = await User.findByIdAndUpdate(req.user._id, { $set: update }, { new: true, runValidators: true })
       .select("-password");
     if (!user) return res.status(404).json({ error: "User not found" });
+    syncRpInBackground(req.user._id);
 
     res.json({ message: "Profile details updated", user });
   } catch (err) {
@@ -644,6 +649,8 @@ router.delete("/delete-account", async (req, res) => {
         Review.deleteMany({ $or: [{ authorUserId: userId }, { targetUserId: userId }] }),
         Profile.deleteOne({ userId }),
         ForumFollow.deleteMany({ userId }),
+        ForumCategoryFollow.deleteMany({ userId }),
+        UserFollow.deleteMany({ $or: [{ followerId: userId }, { followedId: userId }] }),
       ]);
 
     const ownedMedia = await UserMedia.find({ userId }).select("publicId mediaType storage backupKey").lean();

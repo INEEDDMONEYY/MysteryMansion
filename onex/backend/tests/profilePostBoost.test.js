@@ -66,8 +66,9 @@ test('feed lists live boosts first and ignores expired ones', async () => {
     { ...base, title: 'expired boost', boostedUntil: new Date(Date.now() - hour) },
     { ...base, title: 'newest' },
   ]);
-  await Post.updateOne({ _id: oldBoosted._id }, { $set: { createdAt: new Date(Date.now() - 3 * hour) } }, { timestamps: false });
-  await Post.updateOne({ _id: expired._id }, { $set: { createdAt: new Date(Date.now() - 2 * hour) } }, { timestamps: false });
+  // Mongoose treats createdAt as immutable, so set it on the raw collection to get distinct timestamps.
+  await Post.collection.updateOne({ _id: oldBoosted._id }, { $set: { createdAt: new Date(Date.now() - 3 * hour) } });
+  await Post.collection.updateOne({ _id: expired._id }, { $set: { createdAt: new Date(Date.now() - 2 * hour) } });
 
   const res = await request(app).get('/api/posts');
   expect(res.status).toBe(200);

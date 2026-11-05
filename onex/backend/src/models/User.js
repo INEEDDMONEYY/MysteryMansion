@@ -99,6 +99,17 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Consecutive UTC days with any authenticated activity; drives the streak badges.
+    activity: {
+      lastDay: { type: String, default: null },
+      currentStreak: { type: Number, default: 0 },
+      longestStreak: { type: Number, default: 0 },
+    },
+    // Cached RP total; the RpLedger is the source of truth.
+    progression: {
+      rp: { type: Number, default: 0 },
+      syncedAt: { type: Date, default: null },
+    },
     /* -------------------- Provider profile details -------------------- */
     catersTo: { type: String, trim: true, maxlength: 120, default: "" },
     bodyType: { type: String, trim: true, maxlength: 60, default: "" },
@@ -120,6 +131,27 @@ const UserSchema = new mongoose.Schema(
       milestoneNotifications: { type: Boolean, default: true },
       membershipEmails: { type: Boolean, default: true },
       accountFlaggingEmails: { type: Boolean, default: true },
+    },
+    forumSettings: {
+      type: new mongoose.Schema({
+        discussionReplies: { type: Boolean, default: true },
+        mentions: { type: Boolean, default: true },
+        followedDiscussionNotifications: { type: Boolean, default: true },
+        followedCategoryNotifications: { type: Boolean, default: false },
+        autoFollowDiscussions: { type: Boolean, default: true },
+        digestFrequency: { type: String, enum: ['off', 'daily', 'weekly'], default: 'weekly' },
+      }, { _id: false }),
+      default: () => ({}),
+      select: false,
+    },
+    forumDigest: {
+      type: new mongoose.Schema({
+        through: { type: Date, default: null },
+        nextAttemptAt: { type: Date, default: null },
+        leaseUntil: { type: Date, default: null },
+      }, { _id: false }),
+      default: () => ({}),
+      select: false,
     },
     incallPrice: {
       type: Number,
@@ -214,6 +246,11 @@ const UserSchema = new mongoose.Schema(
     },
     // Elite perk: gradient border colour remembered for new forum threads ('' = default).
     forumBorderColor: {
+      type: String,
+      default: "",
+    },
+    // Progression ring color id chosen from the member's perks. Empty means the default purple ring.
+    progressionColor: {
       type: String,
       default: "",
     },

@@ -21,6 +21,8 @@ const TYPE_META = {
   post_liked:         { icon: Heart,          color: 'text-rose-600',    bg: 'bg-rose-100',    label: 'Post Liked'      },
   flag_update:        { icon: Flag,           color: 'text-red-600',     bg: 'bg-red-100',     label: 'Report Update'   },
   forum_reply:        { icon: MessageSquare,  color: 'text-pink-600',    bg: 'bg-pink-100',    label: 'Forum Reply'     },
+  forum_mention:      { icon: MessageSquare,  color: 'text-violet-600',  bg: 'bg-violet-100',  label: 'Forum Mention'   },
+  forum_category:     { icon: MessageSquare,  color: 'text-sky-600',     bg: 'bg-sky-100',     label: 'Followed Category' },
   credits_earned:     { icon: Coins,          color: 'text-emerald-600', bg: 'bg-emerald-100', label: 'Credits Earned'  },
   credits_added:      { icon: Coins,          color: 'text-emerald-600', bg: 'bg-emerald-100', label: 'Credits Added'   },
   earn_rule_added:    { icon: Sparkles,       color: 'text-pink-600',    bg: 'bg-pink-100',    label: 'New Way to Earn' },
@@ -57,6 +59,8 @@ export default function ClientNotificationsPage() {
         navigate('/client/reports');
         break;
       case 'forum_reply':
+      case 'forum_mention':
+      case 'forum_category':
         if (n.meta?.threadId) navigate(`/forum/thread/${n.meta.threadId}`);
         break;
       case 'new_comment':

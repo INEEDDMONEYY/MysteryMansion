@@ -10,7 +10,6 @@ const TYPE_FILTERS = [
   { id: "all", label: "All" },
   { id: "threads", label: "Thread posts", countKey: "threads" },
   { id: "replies", label: "Thread replies", countKey: "replies" },
-  { id: "comments", label: "Post comments", countKey: "comments" },
 ];
 
 const TYPE_BADGES = {
@@ -30,12 +29,12 @@ const formatDateTime = (value) =>
       })
     : "";
 
-/** Every forum thread, forum reply and post comment on the platform, newest first. */
-export default function AdminActivityFeed() {
+/** Forum threads and replies written by one user, newest first. */
+export default function AdminActivityFeed({ authorId }) {
   const [type, setType] = useState("all");
 
   const { items, extra, pagination, loading, loadingMore, error, loadMore } =
-    usePagedProfileData(fetchAdminActivity, { type });
+    usePagedProfileData(fetchAdminActivity, { type, authorId });
 
   const counts = extra.counts || {};
 

@@ -1,12 +1,37 @@
 import jwt from "jsonwebtoken";
 import User from "../../models/User.js";
 import env from "../../config/env.js"; // central env file for JWT_SECRET
+import { awardDailyLogin } from "../../modules/progression/rpEngine.js";
 
 const LAST_ACTIVE_THROTTLE_MS = 2 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const utcDay = (date) => date.toISOString().slice(0, 10);
+
+// Extends the user's daily activity streak once per UTC day. The conditional
+// filter on the previous day keeps concurrent requests from double-counting.
+export const recordDailyActivity = (user, now = new Date()) => {
+  if (!user?._id) return;
+  const today = utcDay(now);
+  const previousDay = user.activity?.lastDay ?? null;
+  if (previousDay === today) return;
+
+  const yesterday = utcDay(new Date(now.getTime() - DAY_MS));
+  const currentStreak = previousDay === yesterday ? (user.activity?.currentStreak ?? 0) + 1 : 1;
+  const longestStreak = Math.max(user.activity?.longestStreak ?? 0, currentStreak);
+  user.activity = { lastDay: today, currentStreak, longestStreak };
+
+  User.updateOne(
+    { _id: user._id, "activity.lastDay": previousDay },
+    { $set: { "activity.lastDay": today, "activity.currentStreak": currentStreak, "activity.longestStreak": longestStreak } }
+  )
+    .then(() => awardDailyLogin(user._id, now))
+    .catch((err) => console.error("[AuthMiddleware] activity streak update failed:", err.message));
+};
 
 // Records session activity for a signed-in user, at most once per window.
 export const touchLastActive = (user) => {
   if (!user?._id) return;
+  recordDailyActivity(user);
   const lastActive = user.lastActiveAt ? new Date(user.lastActiveAt).getTime() : 0;
   if (Date.now() - lastActive <= LAST_ACTIVE_THROTTLE_MS) return;
   const now = new Date();

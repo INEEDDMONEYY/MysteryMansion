@@ -6,6 +6,7 @@ import {
   getMembershipStatus,
   renewNow,
   setAutoRenew,
+  setProgressionColor,
   subscribe,
   upgrade,
 } from './membershipService.js';
@@ -39,5 +40,6 @@ router.post('/upgrade', run((req) => upgrade(req.user, String(req.body?.tierId |
 router.post('/cancel', run((req) => setAutoRenew(req.user, false)));
 router.post('/resume', run((req) => setAutoRenew(req.user, true)));
 router.post('/renew', run((req) => renewNow(req.user)));
+router.patch('/progression-color', run((req) => setProgressionColor(req.user, req.body?.colorId)));
 
 export default router;

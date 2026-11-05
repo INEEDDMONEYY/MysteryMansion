@@ -19,6 +19,8 @@ const TYPE_META = {
   post_liked:         { icon: Heart,          color: 'text-pink-400',    bg: 'bg-pink-400/10',    label: 'Post Liked'      },
   flag_update:        { icon: Flag,           color: 'text-red-400',     bg: 'bg-red-400/10',     label: 'Report Update'   },
   forum_reply:        { icon: MessageSquare,  color: 'text-pink-400',    bg: 'bg-pink-400/10',    label: 'Forum Reply'     },
+  forum_mention:      { icon: MessageSquare,  color: 'text-violet-400',  bg: 'bg-violet-400/10',  label: 'Forum Mention'   },
+  forum_category:     { icon: MessageSquare,  color: 'text-sky-400',     bg: 'bg-sky-400/10',     label: 'Followed Category' },
   credits_earned:     { icon: Coins,          color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Credits Earned'  },
   credits_added:      { icon: Coins,          color: 'text-emerald-400', bg: 'bg-emerald-400/10', label: 'Credits Added'   },
   earn_rule_added:    { icon: Sparkles,       color: 'text-pink-400',    bg: 'bg-pink-400/10',    label: 'New Way to Earn' },
@@ -77,7 +79,7 @@ export default function UserNotificationsPage() {
                 onClick={() => {
                   if (!n.read) markOneRead(n._id);
                   if (n.type === 'flag_update') navigate('/user/reports');
-                  if (n.type === 'forum_reply' && n.meta?.threadId) navigate(`/forum/thread/${n.meta.threadId}`);
+                  if (['forum_reply', 'forum_mention', 'forum_category'].includes(n.type) && n.meta?.threadId) navigate(`/forum/thread/${n.meta.threadId}`);
                   if (n.type === 'new_comment' && n.meta?.postId) navigate(`/posts/${n.meta.postId}`);
                   if (['credits_earned', 'credits_added', 'earn_rule_added', 'low_credits'].includes(n.type)) {
                     navigate('/user/credits');

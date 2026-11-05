@@ -11,6 +11,7 @@ import {
   MEMBERSHIP_GRACE_MS,
   MEMBERSHIP_TIERS,
   NO_PERKS,
+  PROGRESSION_COLOR_IDS,
   TIER_ORDER,
   serializePlan,
 } from './membershipCatalog.js';
@@ -71,7 +72,12 @@ async function charge(userId, cost) {
 
 async function grantAllocation(userId, tier, amount) {
   if (amount <= 0) return null;
-  const updated = await User.findByIdAndUpdate(userId, { $inc: { credits: amount } }, { new: true }).select('credits');
+  // Admin accounts never receive platform coins.
+  const updated = await User.findOneAndUpdate(
+    { _id: userId, role: { $ne: 'admin' } },
+    { $inc: { credits: amount } },
+    { new: true },
+  ).select('credits');
   if (updated) {
     await log(userId, tier, 'allocation', { amount, balanceAfter: updated.credits, note: 'Monthly coin allocation' });
   }
@@ -94,6 +100,22 @@ export async function getUserPerks(user) {
   if (!membership) return { perks: NO_PERKS, tier: null, membership: null };
 
   return { perks: MEMBERSHIP_TIERS[membership.tier].perks, tier: membership.tier, membership };
+}
+
+/** Saves the progression ring color. An empty id restores the default ring. */
+export async function setProgressionColor(user, colorId) {
+  const color = String(colorId ?? '');
+  if (color && !PROGRESSION_COLOR_IDS.includes(color)) return fail(400, 'Unknown ring color.');
+
+  if (color) {
+    const { perks } = await getUserPerks(user);
+    if (!perks.progressionColors.includes(color)) {
+      return fail(403, 'Upgrade your membership to use this ring color.');
+    }
+  }
+
+  await User.updateOne({ _id: user._id }, { $set: { progressionColor: color } });
+  return succeed({ progressionColor: color || null });
 }
 
 export async function getMembershipStatus(user) {

@@ -5,6 +5,7 @@ import { Link, useParams } from "react-router-dom";
 import ForumPageHero from "../components/ForumPageHero";
 import ForumDiscussionsBrowser from "../components/ForumDiscussionsBrowser";
 import NewThreadButton from "../components/NewThreadButton";
+import ForumCategoryFollowButton from "../components/ForumCategoryFollowButton";
 
 import useForum from "../hooks/useForum";
 import { getForumPageConfig } from "../data/forumPageConfig";
@@ -52,6 +53,7 @@ export default function ForumCategoryPage() {
         description={category?.description}
       >
         <NewThreadButton categorySlug={slug} />
+        {category && <ForumCategoryFollowButton categoryId={category.id} />}
         <Link
           to="/forum/discussions"
           className="inline-flex min-h-11 items-center rounded-xl border border-white/30 px-5 text-sm font-semibold text-white transition hover:bg-white/10"

@@ -24,6 +24,7 @@ import {
 import authRoutes from './modules/auth/routes.js';
 import userRoutes from './modules/users/routes.js';
 import publicUserRoutes from './modules/users/publicRoutes.js';
+import socialRoutes from './modules/users/socialRoutes.js';
 import postRoutes from './modules/posts/routes.js';
 import messageRoutes from './modules/messages/routes.js';
 import conversationRoutes from './modules/messages/conversationRoutes.js';
@@ -43,11 +44,14 @@ import creditsRoutes from './modules/credits/routes.js';
 import forumRoutes from './modules/forum/routes.js';
 import membershipRoutes from './modules/membership/routes.js';
 import { startMembershipRenewalJob } from './common/utils/membershipRenewalJob.js';
+import { startForumDigestJob } from './modules/forum/forumDigest.js';
 import { seedDefaultForumCategories } from './modules/forum/forumHelpers.js';
 import faqRoutes from './modules/faqs/routes.js';
 import categoryRoutes from './modules/categories/routes.js';
 import referralRoutes from './modules/referrals/routes.js';
 import milestoneRoutes from './modules/milestones/routes.js';
+import badgeRoutes from './modules/badges/routes.js';
+import progressionRoutes from './modules/progression/routes.js';
 import flagRoutes from './modules/flags/routes.js';
 import contactRoutes from './modules/contact/routes.js';
 import searchRoutes from './modules/search/routes.js';
@@ -125,6 +129,7 @@ const connectDB = async () => {
     startAccountInactivityEmailJob();
     startBadgeRenewalJob();
     startMembershipRenewalJob();
+    startForumDigestJob();
     await seedDefaultFAQs();
     await seedDefaultCategories();
     await seedDefaultEarnRules();
@@ -148,6 +153,7 @@ app.use('/api/auth', forgotPasswordRoutes);
 
 // Public Routes (no auth required)
 app.use('/api/public/users', publicUserRoutes);
+app.use('/api/social', socialRoutes);
 app.use('/api/public/settings', publicSettingsRoutes);
 
 // User Routes
@@ -203,6 +209,8 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/referrals', referralRoutes);
 // Milestone Routes
 app.use('/api/milestones', milestoneRoutes);
+app.use('/api/badges', badgeRoutes);
+app.use('/api/progression', progressionRoutes);
 
 app.use('/api/flags', flagRoutes);
 
