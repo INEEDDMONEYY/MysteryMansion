@@ -13,12 +13,12 @@ export default function ForumHeader({
   return (
     <section className="relative overflow-hidden bg-black text-white">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-pink-500/20 blur-3xl" />
-        <div className="absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-yellow-400/10 blur-3xl" />
+        <div className="absolute -right-32 -top-32 h-64 w-64 rounded-full bg-pink-500/20 blur-3xl sm:h-96 sm:w-96" />
+        <div className="absolute -bottom-40 -left-32 h-64 w-64 rounded-full bg-yellow-400/10 blur-3xl sm:h-96 sm:w-96" />
       </div>
 
-      <div className="relative mx-auto max-w-7xl px-6 py-20 sm:py-24 lg:px-8 lg:py-28">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.2fr_0.8fr]">
+      <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
+        <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -29,14 +29,14 @@ export default function ForumHeader({
               Mystery Mansion Community
             </div>
 
-            <h1 className="max-w-4xl text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+            <h1 className="max-w-4xl text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
               Good conversations.
               <span className="block bg-gradient-to-r from-pink-400 via-pink-500 to-yellow-400 bg-clip-text text-transparent">
                 Better connections.
               </span>
             </h1>
 
-            <p className="mt-7 max-w-2xl text-lg leading-8 text-gray-300 sm:text-xl">
+            <p className="mt-6 max-w-2xl text-base leading-7 text-gray-300 sm:mt-7 sm:text-xl sm:leading-8">
               Ask questions, exchange experiences, share knowledge, and
               connect with the Mystery Mansion community through meaningful
               discussions.
@@ -67,7 +67,7 @@ export default function ForumHeader({
           >
             <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-4 shadow-2xl shadow-pink-900/20 sm:p-6">
               <div className="rounded-2xl bg-gradient-to-br from-pink-600 via-pink-500 to-yellow-400 p-[1px]">
-                <div className="rounded-2xl bg-black p-7 sm:p-9">
+                <div className="rounded-2xl bg-black p-5 sm:p-9">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-pink-500/10 text-pink-400">
                     <Sparkles className="h-7 w-7" />
                   </div>

@@ -76,12 +76,12 @@ function ThreadRowMenu({ threadHref }) {
 export default function ForumThreadTable({ threads = [] }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[640px] border-separate border-spacing-0 text-left">
+      <table className="w-full border-separate border-spacing-0 text-left md:min-w-[640px]">
         <thead>
           <tr className="text-[11px] font-bold uppercase tracking-[0.18em] text-gray-500">
-            <th scope="col" className="border-b border-white/10 px-4 py-3">Topic</th>
-            <th scope="col" className="border-b border-white/10 px-4 py-3">Category</th>
-            <th scope="col" className="border-b border-white/10 px-4 py-3">Activity</th>
+            <th scope="col" className="border-b border-white/10 px-3 py-3 sm:px-4">Topic</th>
+            <th scope="col" className="hidden border-b border-white/10 px-4 py-3 md:table-cell">Category</th>
+            <th scope="col" className="hidden border-b border-white/10 px-4 py-3 md:table-cell">Activity</th>
             <th scope="col" className="border-b border-white/10 px-4 py-3">
               <span className="sr-only">Actions</span>
             </th>
@@ -98,7 +98,7 @@ export default function ForumThreadTable({ threads = [] }) {
 
             return (
               <tr key={threadId} className="group transition hover:bg-white/[0.03]">
-                <td className="border-b border-white/5 px-4 py-4 align-middle">
+                <td className="border-b border-white/5 px-3 py-4 align-middle sm:px-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <Link to={threadHref} className="text-sm font-semibold text-white transition group-hover:text-pink-300 sm:text-base">
                       {thread?.title || "Untitled discussion"}
@@ -120,15 +120,18 @@ export default function ForumThreadTable({ threads = [] }) {
                   <p className="mt-1 text-xs text-gray-500">
                     by {authorName} · {Number(thread?.replyCount) || 0} replies · {Number(thread?.viewCount) || 0} views
                   </p>
+                  <p className="mt-1 text-xs text-gray-500 md:hidden">
+                    {categoryName} · {formatActivity(thread?.lastActivityAt || thread?.createdAt)}
+                  </p>
                 </td>
 
-                <td className="border-b border-white/5 px-4 py-4 align-middle">
+                <td className="hidden border-b border-white/5 px-4 py-4 align-middle md:table-cell">
                   <span className="inline-block rounded-full border border-pink-500/20 bg-pink-500/10 px-3 py-1 text-xs font-semibold text-pink-300">
                     {categoryName}
                   </span>
                 </td>
 
-                <td className="border-b border-white/5 px-4 py-4 align-middle text-sm text-gray-400">
+                <td className="hidden border-b border-white/5 px-4 py-4 align-middle text-sm text-gray-400 md:table-cell">
                   <time dateTime={thread?.lastActivityAt || thread?.createdAt || undefined}>
                     {formatActivity(thread?.lastActivityAt || thread?.createdAt)}
                   </time>

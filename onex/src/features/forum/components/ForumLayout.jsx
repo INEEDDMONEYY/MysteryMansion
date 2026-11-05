@@ -110,7 +110,7 @@ export default function ForumLayout() {
                 <span className="block text-[10px] font-medium uppercase tracking-[0.2em] text-pink-400">Forums</span>
               </span>
             </NavLink>
-            <div className="min-w-[200px] flex-1 lg:max-w-xl">
+            <div className="order-last min-w-0 basis-full sm:order-none sm:basis-auto sm:min-w-[200px] sm:flex-1 lg:max-w-xl">
               <ForumSearch compact query={query} onQueryChange={setQuery} onSearch={search} />
             </div>
             <div className="flex items-center gap-3">
