@@ -59,9 +59,18 @@ const TOAST_TYPES = {
     icon: MessageSquare, label: "Forum mention", accent: "text-violet-400",
     ring: "bg-violet-500/15", cta: "View discussion", target: "thread", ms: 9000,
   },
+  message: {
+    icon: MessageCircle, label: "New message", accent: "text-cyan-400",
+    ring: "bg-cyan-500/15", cta: "View message", target: "messages", ms: 9000,
+  },
   forum_category: {
     icon: MessageSquare, label: "Followed category", accent: "text-sky-400",
     ring: "bg-sky-500/15", cta: "View discussion", target: "thread", ms: 9000,
+  },
+  // Confirms a local follow change; not written by the backend.
+  forum_follow: {
+    icon: MessageSquare, label: "Forum follow", accent: "text-sky-400",
+    ring: "bg-sky-500/15", cta: "Got it", target: null, ms: 6000,
   },
   level_up: {
     icon: Trophy, label: "Level up", accent: "text-amber-300",
@@ -260,6 +269,13 @@ export default function NotificationToastHost() {
 
       if (target === "progression" && userId) {
         navigate(`/user/${userId}`);
+        return;
+      }
+
+      if (target === "messages" && !isAdmin) {
+        const base = isClient ? "/client" : "/user";
+        const conv = toast.meta?.conversationId;
+        navigate(conv ? `${base}/messages?conv=${conv}` : `${base}/messages`);
         return;
       }
 

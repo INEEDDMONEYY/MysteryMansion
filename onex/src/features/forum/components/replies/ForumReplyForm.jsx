@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import AttachmentPicker from "@/shared/components/attachments/AttachmentPicker";
+import MentionTextarea from "../MentionTextarea";
 
 const MAX_LENGTH = 5000;
 
@@ -68,10 +69,10 @@ export default function ForumReplyForm({
         Reply
       </label>
 
-      <textarea
+      <MentionTextarea
         id="forum-reply-input"
         value={value}
-        onChange={(event) => setValue(event.target.value)}
+        onChange={setValue}
         maxLength={MAX_LENGTH}
         rows={4}
         autoFocus={autoFocus}

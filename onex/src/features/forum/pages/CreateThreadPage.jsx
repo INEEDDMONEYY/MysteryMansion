@@ -11,6 +11,7 @@ import { createForumThread } from "../services/forumThreadService";
 import { createForumCategory } from "../services/forumService";
 import AttachmentPicker from "@/shared/components/attachments/AttachmentPicker";
 import ForumBorderPicker from "../components/ForumBorderPicker";
+import MentionTextarea from "../components/MentionTextarea";
 
 const inputClass =
   "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 disabled:opacity-60";
@@ -246,10 +247,10 @@ export default function CreateThreadPage() {
             <label htmlFor="thread-content" className="mb-2 block text-sm font-semibold text-gray-800">
               Details
             </label>
-            <textarea
+            <MentionTextarea
               id="thread-content"
               value={content}
-              onChange={(event) => setContent(event.target.value)}
+              onChange={setContent}
               maxLength={10000}
               rows={10}
               required

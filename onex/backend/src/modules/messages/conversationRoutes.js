@@ -80,15 +80,9 @@ router.post("/", authMiddleware, enforceRestriction("conversation:create"), asyn
 
     const senderUser = await User.findById(userId).select("accountType credits").lean();
     const isClientSender = senderUser?.accountType === 'client';
-    const recipientIsProvider = recipient.role === 'user' && recipient.accountType === 'provider';
-
-    // Clients can start conversations with admins or providers.
-    // Regular providers can only talk to admins (existing behaviour).
-    if (req.user.role === "user" && !isClientSender && recipient.role !== "admin") {
-      return res.status(403).json({ error: "Users can only start conversations with admins" });
-    }
-    if (req.user.role === "user" && isClientSender && recipient.role !== "admin" && !recipientIsProvider) {
-      return res.status(403).json({ error: "Clients can only start conversations with admins or providers" });
+    // Clients can start conversations with anyone. Providers can start them with admins or clients, but not other providers.
+    if (req.user.role === "user" && !isClientSender && recipient.role !== "admin" && recipient.accountType !== "client") {
+      return res.status(403).json({ error: "Providers can only start conversations with admins or clients" });
     }
 
     const existing = await Conversation.findOne({

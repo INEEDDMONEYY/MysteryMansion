@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, BellOff, Check, Plus } from "lucide-react";
 import { UserContext } from "@/context/UserContext";
 import { setForumThreadFollow, FORUM_FOLLOW_CHANGED } from "../../services/forumThreadService";
+import { showAppToast } from "@/shared/utils/appToast";
 
 function FollowControls({ threadId, initialFollowing, initialNotifications, userId }) {
   const navigate = useNavigate();
@@ -24,9 +25,9 @@ function FollowControls({ threadId, initialFollowing, initialNotifications, user
   const save = async (updates) => {
     if (!userId) {
       navigate("/signin");
-      return;
+      return null;
     }
-    if (saving) return;
+    if (saving) return null;
     setSaving(true);
     setError("");
     try {
@@ -35,10 +36,27 @@ function FollowControls({ threadId, initialFollowing, initialNotifications, user
       window.dispatchEvent(new CustomEvent(FORUM_FOLLOW_CHANGED, {
         detail: { threadId, userId, settings: result },
       }));
+      return result;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update thread preferences.");
+      return null;
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Following turns on reply alerts; unfollowing turns them off.
+  const toggleFollow = async () => {
+    const next = !settings.following;
+    const result = await save({ following: next, notificationsEnabled: next });
+    if (result) {
+      showAppToast({
+        type: "forum_follow",
+        title: next ? "Thread followed" : "Thread unfollowed",
+        message: next
+          ? "You'll get alerts for new replies and replies to your comments."
+          : "You won't get alerts for this thread anymore.",
+      });
     }
   };
 
@@ -51,7 +69,7 @@ function FollowControls({ threadId, initialFollowing, initialNotifications, user
           type="button"
           disabled={saving}
           aria-pressed={settings.following}
-          onClick={() => save({ following: !settings.following, notificationsEnabled: false })}
+          onClick={toggleFollow}
           className={`${buttonClass} ${settings.following ? "border-pink-200 bg-pink-50 text-pink-700" : "border-gray-200 text-gray-600 hover:border-pink-300 hover:text-pink-600"}`}
         >
           {settings.following ? <Check size={16} /> : <Plus size={16} />}

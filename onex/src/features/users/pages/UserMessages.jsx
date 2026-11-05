@@ -177,7 +177,7 @@ export default function UserMessages() {
         <NewConversationModal
           onClose={() => setShowNewModal(false)}
           currentUserId={user?._id}
-          restrictToRole={isClient ? null : "admin"}
+          recipientScope={isClient ? undefined : "adminOrClient"}
           excludedRecipientIds={isClient ? [] : conversations.flatMap(c => c.participants || []).filter(p => p.role === "admin").map(p => String(p._id))}
           onCreate={(newConv) => {
             setConversations((prev) => [newConv, ...prev]);

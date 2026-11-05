@@ -19,6 +19,7 @@ import { deleteBackupCopy } from '../../common/utils/backupStorage.js';
 import { awardCredits } from '../credits/creditEarnService.js';
 import { syncRpInBackground } from '../progression/rpEngine.js';
 import { BOOST_DURATION_MS, CATEGORY_CREATE_LIMIT, FORUM_BORDER_COLORS } from '../membership/membershipCatalog.js';
+import { getUserPerks } from '../membership/membershipService.js';
 import {
   AUTHOR_SELECT,
   escapeRegex,
@@ -197,6 +198,22 @@ router.get('/stats', async (_req, res) => {
   } catch (err) {
     console.error('❌ GET /forum/stats:', err);
     res.status(500).json({ error: 'Failed to load forum stats' });
+  }
+});
+
+// Suggests usernames while typing "@" in forum composers.
+router.get('/users/mention-search', authMiddleware, async (req, res) => {
+  try {
+    const q = String(req.query.q || '').trim().slice(0, 40);
+    if (!q) return res.json({ users: [] });
+    const users = await User.find({
+      status: 'active',
+      username: new RegExp(`^${escapeRegex(q)}`, 'i'),
+    }).select('username').limit(6).lean();
+    res.json({ users: users.map((user) => ({ username: user.username })) });
+  } catch (err) {
+    console.error('❌ GET /forum/users/mention-search:', err);
+    res.status(500).json({ error: 'Failed to search users' });
   }
 });
 

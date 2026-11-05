@@ -1,5 +1,10 @@
 import { forumRequest } from "./forumApi";
 
+export const FORUM_NOTIFICATIONS_CHANGED_EVENT = "forum-notifications-changed";
+
+export const notifyForumNotificationsChanged = () =>
+  window.dispatchEvent(new Event(FORUM_NOTIFICATIONS_CHANGED_EVENT));
+
 export const getForumNotifications = ({ page = 1, unread = false } = {}) =>
   forumRequest({
     method: "get",

@@ -14,6 +14,9 @@ import api from "@/shared/utils/api";
 import { fetchProgression } from "@/features/users/services/progressionService";
 import ForumSearch from "./ForumSearch";
 import NewThreadButton from "./NewThreadButton";
+import { FORUM_NOTIFICATIONS_CHANGED_EVENT } from "../services/forumNotificationService";
+
+const FORUM_COUNTS_POLL_MS = 20_000;
 
 const links = [
   { to: "/forum", label: "Overview", Icon: MessagesSquare, end: true },
@@ -29,19 +32,41 @@ function useForumCounts(userId) {
 
   useEffect(() => {
     if (!userId) return undefined;
-    const controller = new AbortController();
-    Promise.all([
-      api.get("/forum/me/notifications", { params: { limit: 1 }, signal: controller.signal }),
-      api.get("/forum/threads", { params: { followed: true, limit: 1 }, signal: controller.signal }),
-    ])
-      .then(([notifications, followed]) => {
-        setCounts({
-          notifications: Number(notifications.data?.unreadCount) || 0,
-          followed: Number(followed.data?.pagination?.total) || 0,
+    let controller = null;
+    const load = () => {
+      controller?.abort();
+      controller = new AbortController();
+      Promise.all([
+        api.get("/forum/me/notifications", { params: { limit: 1 }, signal: controller.signal }),
+        api.get("/forum/threads", { params: { followed: true, limit: 1 }, signal: controller.signal }),
+      ])
+        .then(([notifications, followed]) => {
+          setCounts({
+            notifications: Number(notifications.data?.unreadCount) || 0,
+            followed: Number(followed.data?.pagination?.total) || 0,
+          });
+        })
+        .catch((err) => {
+          if (err?.name !== "CanceledError" && err?.name !== "AbortError") {
+            setCounts({ notifications: 0, followed: 0 });
+          }
         });
-      })
-      .catch(() => setCounts({ notifications: 0, followed: 0 }));
-    return () => controller.abort();
+    };
+
+    load();
+    const id = setInterval(load, FORUM_COUNTS_POLL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener(FORUM_NOTIFICATIONS_CHANGED_EVENT, load);
+
+    return () => {
+      clearInterval(id);
+      controller?.abort();
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener(FORUM_NOTIFICATIONS_CHANGED_EVENT, load);
+    };
   }, [userId]);
 
   return counts;

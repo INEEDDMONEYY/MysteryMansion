@@ -7,7 +7,10 @@ import {
   getForumNotifications,
   markAllForumNotificationsRead,
   markForumNotificationRead,
+  notifyForumNotificationsChanged,
 } from "../services/forumNotificationService";
+
+const FORUM_PANEL_POLL_MS = 20_000;
 
 export default function ForumNotificationsPanel() {
   const navigate = useNavigate();
@@ -20,26 +23,35 @@ export default function ForumNotificationsPanel() {
   const requestId = useRef(0);
   const mounted = useRef(false);
 
-  const load = useCallback(async (page = 1) => {
+  const load = useCallback(async (page = 1, { silent = false } = {}) => {
     const request = ++requestId.current;
-    setLoading(page === 1);
-    setLoadingMore(page > 1);
-    setError("");
+    if (!silent) {
+      setLoading(page === 1);
+      setLoadingMore(page > 1);
+      setError("");
+    }
     try {
       const result = await getForumNotifications({ page, unread });
       if (request !== requestId.current) return;
-      setData((current) => ({
-        ...result,
-        notifications: page > 1
-          ? [...new Map([...(current?.notifications || []), ...result.notifications].map((item) => [item._id, item])).values()]
-          : result.notifications,
-      }));
+      setData((current) => {
+        if (page > 1) {
+          return {
+            ...result,
+            notifications: [...new Map([...(current?.notifications || []), ...result.notifications].map((item) => [item._id, item])).values()],
+          };
+        }
+        if (!silent) return result;
+        // Silent refresh: newest first page, keep older pages the user already loaded.
+        const fresh = new Set(result.notifications.map((item) => item._id));
+        const older = (current?.notifications || []).filter((item) => !fresh.has(item._id) && (!unread || !item.read));
+        return { ...result, notifications: [...result.notifications, ...older] };
+      });
     } catch (err) {
-      if (request === requestId.current) {
+      if (request === requestId.current && !silent) {
         setError(err instanceof Error ? err.message : "Unable to load forum notifications.");
       }
     } finally {
-      if (request === requestId.current) {
+      if (request === requestId.current && !silent) {
         setLoading(false);
         setLoadingMore(false);
       }
@@ -49,9 +61,16 @@ export default function ForumNotificationsPanel() {
   useEffect(() => {
     mounted.current = true;
     load();
+    const id = setInterval(() => load(1, { silent: true }), FORUM_PANEL_POLL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load(1, { silent: true });
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       mounted.current = false;
       requestId.current += 1;
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [load]);
 
@@ -65,6 +84,7 @@ export default function ForumNotificationsPanel() {
       } else {
         await markAllForumNotificationsRead();
       }
+      notifyForumNotificationsChanged();
       if (!mounted.current) return;
       await load();
       if (notification?.meta?.threadId && mounted.current) {

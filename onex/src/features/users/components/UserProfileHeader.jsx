@@ -659,6 +659,13 @@ export default function UserProfileHeader({
   const isClient =
     !isAdmin && user?.accountType === "client";
 
+  // Providers cannot message other providers; the profile Message button is hidden for that pair.
+  const viewerIsProvider =
+    ctxUser?.role === "user" && ctxUser?.accountType !== "client";
+  const targetIsProvider =
+    user?.role === "user" && user?.accountType !== "client";
+  const canMessageProfile = !(viewerIsProvider && targetIsProvider);
+
   // The owner's own plan comes from the membership context; visitors get it with the public profile.
   const badgeTier = isOwner
     ? (membership.active && membership.perks?.profileBadge ? membership.tier : "")
@@ -1032,7 +1039,7 @@ export default function UserProfileHeader({
 
                 <div className="flex flex-wrap items-start gap-2">
                   <ProfileFollowButton key={`${displayUserId}:${ctxUser?._id || ctxUser?.id || ""}`} userId={displayUserId} />
-                {!isOwner && displayUserId && ctxUser && (
+                {!isOwner && displayUserId && ctxUser && canMessageProfile && (
                   <button
                     type="button"
                     onClick={openMessageThread}

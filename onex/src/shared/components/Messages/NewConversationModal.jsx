@@ -8,7 +8,7 @@ export default function NewConversationModal({
   onCreate,
   onBroadcast,
   currentUserId,
-  restrictToRole,
+  recipientScope,
   excludedRecipientIds,
   allowBroadcast = false,
 }) {
@@ -43,7 +43,7 @@ export default function NewConversationModal({
         const filteredUsers = rawUsers.filter((user) => {
           if (!user?._id) return false;
           if (currentUserId && String(user._id) === String(currentUserId)) return false;
-          if (restrictToRole && user.role !== restrictToRole) return false;
+          if (recipientScope === "adminOrClient" && user.role !== "admin" && user.accountType !== "client") return false;
           if (excludedSet.has(String(user._id))) return false;
           return true;
         });
@@ -64,7 +64,7 @@ export default function NewConversationModal({
     return () => {
       isMounted = false;
     };
-  }, [currentUserId, restrictToRole, excludedRecipientIdsKey, normalizedExcludedRecipientIds]);
+  }, [currentUserId, recipientScope, excludedRecipientIdsKey, normalizedExcludedRecipientIds]);
 
   // Create conversation
   const handleCreate = async () => {

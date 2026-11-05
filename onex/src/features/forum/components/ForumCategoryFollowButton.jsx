@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { UserContext } from "@/context/UserContext";
 import api from "@/shared/utils/api";
+import { showAppToast } from "@/shared/utils/appToast";
 
 export default function ForumCategoryFollowButton({ categoryId }) {
   const { user } = useContext(UserContext);
@@ -35,6 +36,13 @@ export default function ForumCategoryFollowButton({ categoryId }) {
       if (typeof data?.following !== "boolean") throw new Error("Invalid category follow response.");
       setFollowing(data.following);
       setError("");
+      showAppToast({
+        type: "forum_follow",
+        title: data.following ? "Category followed" : "Category unfollowed",
+        message: data.following
+          ? "You'll get alerts when new discussions are posted here."
+          : "You won't get alerts for new discussions here anymore.",
+      });
     } catch (err) { setError(err.response?.data?.error || err.message); }
     finally { setBusy(false); }
   };
