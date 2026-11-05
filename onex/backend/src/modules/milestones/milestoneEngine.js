@@ -5,6 +5,10 @@ import SavedPost from "../../models/SavedPost.js";
 import PostLike from "../../models/PostLike.js";
 import Message from "../../models/Message.js";
 import Milestone from "../../models/Milestone.js";
+import { RpLedger } from "../../models/RpLedger.js";
+import { BADGE_CATALOG } from "../badges/badgeCatalog.js";
+import { MILESTONE_TIER_RP_RANGE, catalogMilestoneEventKey } from "../progression/rpRules.js";
+import { computeBadgeStats } from "../badges/badgeEngine.js";
 
 export function profileCompleteness(user) {
   let filled = 0;
@@ -19,11 +23,10 @@ export function profileCompleteness(user) {
 }
 
 /**
- * Computes a user's milestone definitions from real account activity, split into
- * "recent" (achieved) and "new" (not yet achieved) buckets.
- * Shared by the GET /milestones/me route and the milestone achievement email job.
+ * Built-in provider/client milestones computed from account activity. These are the
+ * only milestones that feed RP, reputation, and achievement notifications.
  */
-export async function computeUserMilestones(user) {
+export async function computeLegacyDefinitions(user) {
   const isProvider = user.accountType === "provider";
 
   const [postCount, reviewCount, referral, savedCount, likedCount, messageCount] = await Promise.all([
@@ -107,8 +110,30 @@ export async function computeUserMilestones(user) {
         },
       ];
 
-  // Admin-authored milestone announcements for this account type — always shown
-  // as "new" since they have no computed achievement criteria.
+  return definitions;
+}
+
+/** Forum and time milestones from the badge catalog, with live progress toward each threshold. */
+export async function computeCatalogDefinitions(user) {
+  const stats = await computeBadgeStats(user);
+  return BADGE_CATALOG.map((badge) => {
+    const value = stats[badge.metric] ?? 0;
+    return {
+      id: badge.id,
+      title: badge.title,
+      description: badge.description,
+      tier: badge.tier,
+      achieved: value >= badge.threshold,
+      progress: Math.min(value, badge.threshold),
+      target: badge.threshold,
+      source: "catalog",
+      rewardRange: MILESTONE_TIER_RP_RANGE[badge.tier],
+    };
+  });
+}
+
+/** Admin-authored milestone announcements for this account type — always shown as "new" since they have no computed achievement criteria. */
+async function computeCustomDefinitions(user) {
   const customMilestones = await Milestone.find({ accountType: user.accountType, status: "published" })
     .sort({ sortOrder: 1, publishedAt: 1 })
     .lean();
@@ -120,7 +145,30 @@ export async function computeUserMilestones(user) {
     achieved: false,
   }));
 
-  const allDefinitions = [...definitions, ...customDefinitions];
+  return customDefinitions;
+}
+
+/**
+ * Computes a user's milestone definitions, split into "recent" (achieved) and "new"
+ * (not yet achieved) buckets. Admins keep the built-in list; everyone else gets the badge catalog.
+ * Shared by the GET /milestones/me route.
+ */
+export async function computeUserMilestones(user) {
+  let definitions;
+  if (user.role === "admin") {
+    definitions = await computeLegacyDefinitions(user);
+  } else {
+    definitions = await computeCatalogDefinitions(user);
+    const achievedKeys = definitions.filter((m) => m.achieved).map((m) => catalogMilestoneEventKey(m.id));
+    const rewards = achievedKeys.length
+      ? await RpLedger.find({ userId: user._id, eventKey: { $in: achievedKeys } }).select("eventKey points").lean()
+      : [];
+    const pointsByKey = new Map(rewards.map((row) => [row.eventKey, row.points]));
+    for (const m of definitions) {
+      if (m.achieved) m.rewardPoints = pointsByKey.get(catalogMilestoneEventKey(m.id)) ?? null;
+    }
+  }
+  const allDefinitions = [...definitions, ...(await computeCustomDefinitions(user))];
 
   const recent = allDefinitions.filter((m) => m.achieved);
   const upcoming = allDefinitions.filter((m) => !m.achieved);

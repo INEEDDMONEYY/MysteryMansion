@@ -156,12 +156,13 @@ const removeStoredFiles = (attachments = []) =>
 const populateThread = (query) =>
   query.populate('authorId', AUTHOR_SELECT).populate('categoryId', 'name slug');
 
+// Pinned threads only float to the top inside a category (see the list route).
 const SORTS = {
-  latest: { pinned: -1, boostedUntil: -1, lastActivityAt: -1 },
-  active: { pinned: -1, boostedUntil: -1, lastActivityAt: -1 },
-  newest: { pinned: -1, boostedUntil: -1, createdAt: -1 },
-  popular: { pinned: -1, boostedUntil: -1, upvoteCount: -1, replyCount: -1, viewCount: -1 },
-  most_replied: { pinned: -1, boostedUntil: -1, replyCount: -1, lastActivityAt: -1 },
+  latest: { boostedUntil: -1, lastActivityAt: -1 },
+  active: { boostedUntil: -1, lastActivityAt: -1 },
+  newest: { boostedUntil: -1, createdAt: -1 },
+  popular: { boostedUntil: -1, upvoteCount: -1, replyCount: -1, viewCount: -1 },
+  most_replied: { boostedUntil: -1, replyCount: -1, lastActivityAt: -1 },
 };
 
 // ── Categories ───────────────────────────────────────────────────────────────
@@ -180,6 +181,22 @@ router.get('/categories', async (_req, res) => {
   } catch (err) {
     console.error('❌ GET /forum/categories:', err);
     res.status(500).json({ error: 'Failed to load categories' });
+  }
+});
+
+router.get('/stats', async (_req, res) => {
+  try {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const [totalLikes, totalCategories, newCategories, totalDiscussions] = await Promise.all([
+      ForumVote.countDocuments({ value: 1 }),
+      ForumCategory.countDocuments({ status: 'approved' }),
+      ForumCategory.countDocuments({ status: 'approved', createdAt: { $gte: since } }),
+      ForumThread.countDocuments({ archived: false }),
+    ]);
+    res.json({ totalLikes, totalCategories, newCategories, totalDiscussions });
+  } catch (err) {
+    console.error('❌ GET /forum/stats:', err);
+    res.status(500).json({ error: 'Failed to load forum stats' });
   }
 });
 
@@ -274,11 +291,15 @@ router.get('/threads', optionalAuth, async (req, res) => {
     // Expired boosts must read as null so they sort below live ones.
     await ForumThread.updateMany({ boostedUntil: { $ne: null, $lte: new Date() } }, { $set: { boostedUntil: null } });
 
+    // Pins only apply on a category page, so global feeds ignore them.
+    const scopedToCategory = Boolean(filter.categoryId);
+    const sortSpec = { ...(scopedToCategory ? { pinned: -1 } : {}), ...(SORTS[req.query.sort] || SORTS.latest) };
+
     const [total, threads] = await Promise.all([
       ForumThread.countDocuments(filter),
       populateThread(
         ForumThread.find(filter)
-          .sort(SORTS[req.query.sort] || SORTS.latest)
+          .sort(sortSpec)
           .skip((page - 1) * limit)
           .limit(limit)
       ).lean(),
@@ -558,11 +579,12 @@ router.post('/threads/:id/solution', authMiddleware, async (req, res) => {
     if (!thread) return res.status(404).json({ error: 'Thread not found' });
     if (!isAdmin(req.user) && !isOwner(thread, req.user)) return res.status(403).json({ error: 'Only the thread author can mark a solution.' });
 
-    const reply = await ForumReply.findOne({ _id: req.body.replyId, threadId: thread._id, isDeleted: false }).select('_id').lean();
+    const reply = await ForumReply.findOne({ _id: req.body.replyId, threadId: thread._id, isDeleted: false }).select('_id authorId').lean();
     if (!reply) return res.status(404).json({ error: 'Reply not found in this thread.' });
 
     thread.solutionReplyId = reply._id;
     await thread.save();
+    if (reply.authorId) syncRpInBackground(reply.authorId);
     res.json({ threadId: String(thread._id), solutionReplyId: String(reply._id), isSolved: true });
   } catch (err) {
     console.error('❌ POST /forum/threads/:id/solution:', err);
@@ -759,6 +781,9 @@ router.post('/interactions/vote', authMiddleware, blockSuspended, async (req, re
 
     const delta = value - previous;
     const updated = delta === 0 ? target : await Model.findByIdAndUpdate(targetId, { $inc: { upvoteCount: delta } }, { new: true }).select('upvoteCount').lean();
+
+    syncRpInBackground(req.user._id);
+    if (target.authorId) syncRpInBackground(target.authorId);
 
     res.json({ targetType, targetId, value, score: updated.upvoteCount });
   } catch (err) {

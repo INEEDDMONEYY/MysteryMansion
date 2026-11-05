@@ -12,6 +12,7 @@ import ForumThread from '../src/models/ForumThread.js';
 import ForumReply from '../src/models/ForumReply.js';
 import { ForumFollow } from '../src/models/ForumInteraction.js';
 import { RpLedger } from '../src/models/RpLedger.js';
+import Notification from '../src/models/Notification.js';
 import { MAX_LEVEL, levelForRp, levelThreshold } from '../src/modules/progression/rpRules.js';
 import { awardDailyLogin, awardRp, getProgression, syncRpForUser } from '../src/modules/progression/rpEngine.js';
 import progressionRoutes from '../src/modules/progression/routes.js';
@@ -141,6 +142,25 @@ test('admin accounts always report the max level', async () => {
   expect(progression.rp).toBe(levelThreshold(MAX_LEVEL));
   expect(progression.nextLevelRp).toBeNull();
   expect(progression.levelProgress).toBe(1);
+});
+
+test('RP awards notify once for XP earned and for a new level', async () => {
+  const threshold = levelThreshold(2);
+  await awardRp(user._id, [{ eventKey: 'seed', category: 'seed', label: 'Seed', points: threshold - 5 }]);
+  await User.updateOne({ _id: user._id }, { $set: { 'progression.rp': threshold - 5 } });
+  await awardDailyLogin(user._id, new Date('2030-01-01T12:00:00Z'));
+  await awardDailyLogin(user._id, new Date('2030-01-01T13:00:00Z'));
+  const xp = await Notification.find({ userId: user._id, type: 'rp_earned' }).lean();
+  expect(xp).toHaveLength(1);
+  expect(xp[0].title).toBe('+5 RP earned');
+  const levels = await Notification.find({ userId: user._id, type: 'level_up' }).lean();
+  expect(levels).toHaveLength(1);
+  expect(levels[0].meta.level).toBe(2);
+});
+
+test('the first sync backfills history silently', async () => {
+  await syncRpForUser(user._id);
+  expect(await Notification.countDocuments({ userId: user._id, type: { $in: ['rp_earned', 'level_up'] } })).toBe(0);
 });
 
 test('public progression endpoint serves active profiles and hides missing or suspended ones', async () => {

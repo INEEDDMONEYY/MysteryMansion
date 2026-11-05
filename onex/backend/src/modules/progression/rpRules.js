@@ -35,3 +35,19 @@ export const RP_RULES = Object.freeze({
 export const FORUM_REPLY_MIN_LENGTH = 20;
 
 export const ACHIEVEMENT_TIER_RP = Object.freeze({ 1: 10, 2: 25, 3: 50, 4: 100, 5: 200 });
+
+// Catalog milestones pay a random whole-number RP amount within their tier's range.
+export const MILESTONE_TIER_RP_RANGE = Object.freeze({
+  1: [5, 15],
+  2: [15, 30],
+  3: [30, 60],
+  4: [60, 120],
+  5: [120, 250],
+});
+
+export const catalogMilestoneEventKey = (id) => `catalog-milestone:${id}`;
+
+export function randomMilestoneRp(tier, random = Math.random) {
+  const [min, max] = MILESTONE_TIER_RP_RANGE[tier] ?? MILESTONE_TIER_RP_RANGE[1];
+  return min + Math.floor(random() * (max - min + 1));
+}

@@ -5,7 +5,8 @@ import { Heart, BadgeCheck, Rocket, Star, ArrowLeft } from 'lucide-react';
 import api from '@/shared/utils/api';
 import { setSEO } from '@/shared/utils/seo';
 
-function LikedPostCard({ post }) {
+function LikedPostCard({ post, variant = "user" }) {
+  const isClient = variant === "client";
   const username = post.userId?.username || 'Unknown';
   const profilePic = post.userId?.profilePic || '';
   const badgeType = post.badgeType || post.userId?.badgeType || '';
@@ -26,7 +27,9 @@ function LikedPostCard({ post }) {
   return (
     <Link
       to={`/posts/${post._id}`}
-      className="group flex gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm hover:shadow-md hover:border-pink-200 transition-all"
+      className={`group flex gap-4 rounded-2xl border bg-white p-4 shadow-sm hover:shadow-md transition-all ${
+        isClient ? "border-gray-200 hover:border-gray-400" : "border-gray-100 hover:border-pink-200"
+      }`}
     >
       {/* Thumbnail */}
       <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gray-100">
@@ -40,7 +43,9 @@ function LikedPostCard({ post }) {
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-bold text-gray-900 truncate group-hover:text-pink-600 transition-colors">
+          <h3 className={`text-sm font-bold text-gray-900 truncate transition-colors ${
+            isClient ? "group-hover:text-black" : "group-hover:text-pink-600"
+          }`}>
             {post.title || 'Untitled Post'}
           </h3>
           {badgeType === 'blue' && (
@@ -72,7 +77,8 @@ function LikedPostCard({ post }) {
   );
 }
 
-export default function LikedPostsPage() {
+export default function LikedPostsPage({ variant = "user" }) {
+  const isClient = variant === "client";
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -86,11 +92,13 @@ export default function LikedPostsPage() {
   }, []);
 
   return (
-    <div className="min-h-full -m-4 md:-m-6 p-4 md:p-6 bg-gradient-to-br from-pink-50 via-purple-50 to-white">
+    <div className={`min-h-full -m-4 md:-m-6 p-4 md:p-6 ${
+      isClient ? "bg-gradient-to-br from-gray-100 via-white to-gray-200" : "bg-gradient-to-br from-pink-50 via-purple-50 to-white"
+    }`}>
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="h-10 w-10 rounded-xl bg-pink-100 flex items-center justify-center">
-          <Heart size={18} className="text-pink-600 fill-pink-500" />
+        <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${isClient ? "bg-gray-900" : "bg-pink-100"}`}>
+          <Heart size={18} className={isClient ? "text-white fill-white" : "text-pink-600 fill-pink-500"} />
         </div>
         <div>
           <h1 className="text-xl font-bold text-gray-900">Liked Posts</h1>
@@ -107,15 +115,19 @@ export default function LikedPostsPage() {
       {loading ? (
         <BrandLoader size="sm" />
       ) : posts.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-pink-200 bg-white p-10 text-center">
-          <Heart size={40} className="mx-auto mb-3 text-pink-200" />
+        <div className={`rounded-2xl border border-dashed bg-white p-10 text-center ${
+          isClient ? "border-gray-300" : "border-pink-200"
+        }`}>
+          <Heart size={40} className={`mx-auto mb-3 ${isClient ? "text-gray-300" : "text-pink-200"}`} />
           <p className="text-gray-500 font-medium">No liked posts yet</p>
           <p className="text-sm text-gray-400 mt-1">
             Browse provider listings and tap the heart to save them here.
           </p>
           <Link
             to="/"
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-pink-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-pink-500 transition-colors"
+            className={`mt-4 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition-colors ${
+              isClient ? "bg-gray-900 hover:bg-black" : "bg-pink-600 hover:bg-pink-500"
+            }`}
           >
             <ArrowLeft size={14} /> Browse Listings
           </Link>
@@ -124,7 +136,7 @@ export default function LikedPostsPage() {
         <div className="space-y-3">
           <p className="text-xs text-gray-400 mb-4">{posts.length} saved {posts.length === 1 ? 'listing' : 'listings'}</p>
           {posts.map((post) => (
-            <LikedPostCard key={post._id} post={post} />
+            <LikedPostCard key={post._id} post={post} variant={variant} />
           ))}
         </div>
       )}

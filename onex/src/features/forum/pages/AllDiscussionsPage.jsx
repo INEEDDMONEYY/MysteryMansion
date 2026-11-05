@@ -1,18 +1,14 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
-import ForumPageHero from "../components/ForumPageHero";
 import ForumDiscussionsBrowser from "../components/ForumDiscussionsBrowser";
 import ForumCard from "../components/ForumCard";
-import NewThreadButton from "../components/NewThreadButton";
 
 import useForum from "../hooks/useForum";
-import { getForumPageConfig } from "../data/forumPageConfig";
 import { setSEO } from "@/shared/utils/seo";
 
 export default function AllDiscussionsPage() {
   const { categories, error } = useForum();
-  const hero = getForumPageConfig("allDiscussions");
 
   useEffect(() => {
     setSEO(
@@ -24,16 +20,6 @@ export default function AllDiscussionsPage() {
 
   return (
     <main className="min-h-screen w-full bg-gray-50">
-      <ForumPageHero {...hero}>
-        <NewThreadButton />
-        <Link
-          to="/forum"
-          className="inline-flex min-h-11 items-center rounded-xl border border-white/30 px-5 text-sm font-semibold text-white transition hover:bg-white/10"
-        >
-          Forum home
-        </Link>
-      </ForumPageHero>
-
       <section className="px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div className="min-w-0">
@@ -43,7 +29,7 @@ export default function AllDiscussionsPage() {
               </p>
             )}
 
-            <ForumDiscussionsBrowser categories={categories} />
+            <ForumDiscussionsBrowser categories={categories} showSearch={false} />
           </div>
 
           <aside className="space-y-5">

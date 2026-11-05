@@ -9,7 +9,7 @@
  */
 
 import User from "../../models/User.js";
-import { computeUserMilestones } from "../../modules/milestones/milestoneEngine.js";
+import { computeLegacyDefinitions } from "../../modules/milestones/milestoneEngine.js";
 import { createNotification } from "../../modules/notifications/notificationController.js";
 import { sendMilestoneAchievedEmail } from "./sendMilestoneAchievedEmail.js";
 
@@ -22,7 +22,7 @@ async function processMilestoneAchievements() {
 
   for (const user of users) {
     try {
-      const { recent } = await computeUserMilestones(user);
+      const recent = (await computeLegacyDefinitions(user)).filter((m) => m.achieved);
       const alreadyNotified = new Set(user.notifiedMilestones || []);
       const newlyAchieved = recent.filter((m) => !alreadyNotified.has(m.id));
       if (newlyAchieved.length === 0) continue;

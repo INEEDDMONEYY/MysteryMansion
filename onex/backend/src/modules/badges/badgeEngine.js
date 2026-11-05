@@ -7,7 +7,7 @@ import Flag from '../../models/Flag.js';
 import ForumThread from '../../models/ForumThread.js';
 import ForumReply from '../../models/ForumReply.js';
 import { ForumVote } from '../../models/ForumInteraction.js';
-import { computeUserMilestones } from '../milestones/milestoneEngine.js';
+import { computeLegacyDefinitions } from '../milestones/milestoneEngine.js';
 import { BADGE_CATALOG } from './badgeCatalog.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -43,7 +43,7 @@ function timeStats(createdAt, now) {
 
 /**
  * Gathers the raw counts behind every badge. `user` must include the fields
- * used by computeUserMilestones (see BADGE_USER_FIELDS in routes.js).
+ * used by computeLegacyDefinitions (see BADGE_USER_FIELDS in routes.js).
  */
 export async function computeBadgeStats(user, now = new Date()) {
   const userId = user._id;
@@ -86,7 +86,7 @@ export async function computeBadgeStats(user, now = new Date()) {
     Referral.findOne({ providerId: userId }).select('signupCount').lean(),
     Flag.countDocuments({ reporterId: userId, status: { $in: ['action_taken', 'resolved'] } }),
     Flag.countDocuments({ reportedUserId: userId, status: { $ne: 'dismissed' } }),
-    computeUserMilestones(user).then(({ recent }) => recent.length),
+    computeLegacyDefinitions(user).then((defs) => defs.filter((m) => m.achieved).length),
   ]);
 
   const likesReceived = listingLikesReceived + forumLikesReceived;

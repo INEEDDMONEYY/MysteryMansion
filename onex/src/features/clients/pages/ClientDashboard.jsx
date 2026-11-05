@@ -140,25 +140,6 @@ export default function ClientDashboard() {
       {/* Forum analytics */}
       <ForumAnalyticsPanel />
 
-      {/* Buy Credits CTA */}
-      {credits != null && credits < 100 && (
-        <div className="bg-gradient-to-r from-blue-800 to-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4">
-          <div>
-            <p className="text-white font-bold text-sm">
-              {credits < 20 ? '⚠️ You\'re out of messaging credits!' : '💬 Running low on credits?'}
-            </p>
-            <p className="text-blue-100 text-xs mt-0.5">
-              Top up to keep messaging providers. Each message costs 20 credits.
-            </p>
-          </div>
-          <Link
-            to="/client/credits"
-            className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-white text-blue-800 font-semibold text-sm px-4 py-2 hover:bg-blue-50 transition-colors shadow-sm"
-          >
-            <Coins size={14} /> Buy Credits
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

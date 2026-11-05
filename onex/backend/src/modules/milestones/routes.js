@@ -1,6 +1,7 @@
 import express from "express";
 import { authMiddleware } from "../../common/middleware/authMiddleware.js";
 import { computeUserMilestones } from "./milestoneEngine.js";
+import { syncRpForUser } from "../progression/rpEngine.js";
 
 const router = express.Router();
 
@@ -11,6 +12,8 @@ router.use(authMiddleware);
 // splits them into "recent" (achieved) and "new" (not yet achieved) buckets.
 router.get("/me", async (req, res) => {
   try {
+    // Sync first so newly achieved milestones pay their RP and notify on page load.
+    await syncRpForUser(req.user._id);
     const { accountType, recent, new: upcoming } = await computeUserMilestones(req.user);
     res.json({ accountType, recent, new: upcoming });
   } catch (err) {

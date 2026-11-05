@@ -2,6 +2,7 @@ import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { MessageSquareText } from "lucide-react";
 
 import ForumThreadCard from "./ForumThreadCard";
+import ForumThreadTable from "./ForumThreadTable";
 
 export default function ForumThreadList({
   threads = [],
@@ -9,6 +10,8 @@ export default function ForumThreadList({
   error = "",
   emptyTitle = "No discussions found",
   emptyDescription = "Try another category or search term, or start a new discussion.",
+  variant = "cards",
+  showPinned = false,
 }) {
   if (loading) {
     return (
@@ -51,12 +54,17 @@ export default function ForumThreadList({
     );
   }
 
+  if (variant === "table") {
+    return <ForumThreadTable threads={threads} />;
+  }
+
   return (
     <div className="space-y-4">
       {threads.map((thread, index) => (
         <ForumThreadCard
           key={thread?._id || thread?.id || index}
           thread={thread}
+          showPinned={showPinned}
         />
       ))}
     </div>

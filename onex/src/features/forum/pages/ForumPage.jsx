@@ -1,136 +1,75 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  ArrowRight,
-  MessageSquareText,
-  MessagesSquare,
-  Users,
-  ShieldCheck,
-  ChevronRight,
-  Sparkles,
-} from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Check, Copy, Facebook, Heart, LayoutGrid, Mail, ShieldCheck, Twitter } from "lucide-react";
 
-import ForumSearch from "../components/ForumSearch";
+function RedditIcon({ className = "" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <circle cx="12" cy="13.5" r="7.5" />
+      <circle cx="19.2" cy="5.8" r="1.6" />
+      <path d="M12 6.2 13.2 2.6l5.4 1.2" stroke="currentColor" strokeWidth="1.2" fill="none" />
+      <circle cx="9.2" cy="12.8" r="1.2" fill="#fff" />
+      <circle cx="14.8" cy="12.8" r="1.2" fill="#fff" />
+      <path d="M9 16.3c1.8 1.2 4.2 1.2 6 0" stroke="#fff" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+import ForumSort from "../components/ForumSort";
 import ForumThreadList from "../components/ForumThreadList";
-import NewThreadButton from "../components/NewThreadButton";
 
+import useForumStats from "../hooks/useForumStats";
 import useForumThreads from "../hooks/useForumThreads";
 
 import { setPublicPageSEO } from "@/shared/utils/seo";
 
 const LATEST_COUNT = 6;
+const SHARE_TITLE = "Join the Mystery Mansion forum";
 
-function ForumHero({ query, onQueryChange, onSearch }) {
-  return (
-    <section className="relative isolate overflow-hidden bg-neutral-950">
-      <div className="pointer-events-none absolute -left-40 top-0 h-96 w-96 rounded-full bg-fuchsia-600/15 blur-[130px]" />
-      <div className="pointer-events-none absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-pink-600/10 blur-[130px]" />
-
-      <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.2fr_0.8fr] lg:px-8 lg:py-24">
-        <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-pink-500/20 bg-pink-500/10 px-4 py-2">
-            <Sparkles size={14} className="text-pink-400" />
-
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-300 sm:text-xs">
-              Mystery Mansion Community
-            </span>
-          </div>
-
-          <h1 className="mt-6 max-w-3xl text-4xl font-black leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Your Community.
-            <span className="mt-2 block bg-gradient-to-r from-pink-400 via-fuchsia-400 to-pink-200 bg-clip-text text-transparent">
-              Your Conversations.
-            </span>
-          </h1>
-
-          <p className="mt-6 max-w-xl text-sm leading-7 text-gray-400 sm:text-base">
-            Explore discussions, exchange ideas, ask questions, and
-            connect with the Mystery Mansion community. Find conversations
-            that matter and contribute your perspective.
-          </p>
-
-          <div className="mt-8 max-w-2xl rounded-2xl border border-white/10 bg-white/[0.04] p-2 shadow-2xl shadow-black/30 backdrop-blur-md sm:p-3">
-            <ForumSearch
-              query={query}
-              onQueryChange={onQueryChange}
-              onSearch={onSearch}
-            />
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center gap-5 text-xs font-medium text-gray-500">
-            <span className="flex items-center gap-2">
-              <MessageSquareText size={15} className="text-pink-400" />
-              Community discussions
-            </span>
-
-            <span className="flex items-center gap-2">
-              <Users size={15} className="text-pink-400" />
-              Member perspectives
-            </span>
-          </div>
-        </div>
-
-        <div className="relative hidden lg:block">
-          <div className="absolute inset-0 rounded-full bg-pink-500/10 blur-3xl" />
-
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-neutral-800 via-neutral-900 to-black p-8 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-500/10">
-                <MessagesSquare
-                  size={25}
-                  className="text-pink-400"
-                />
-              </div>
-
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
-                Community Hub
-              </span>
-            </div>
-
-            <h2 className="mt-10 text-3xl font-black leading-tight text-white">
-              Every conversation starts somewhere.
-            </h2>
-
-            <p className="mt-4 text-sm leading-7 text-gray-400">
-              Ask questions, share experiences, exchange ideas, and help
-              shape the community through meaningful discussions.
-            </p>
-
-            <div className="mt-8 space-y-3">
-              {[
-                "Start a discussion",
-                "Explore community categories",
-                "Share your perspective",
-              ].map((item, index) => (
-                <div
-                  key={item}
-                  className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.04] p-3"
-                >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-pink-400">
-                    {index + 1}
-                  </div>
-
-                  <span className="text-sm font-medium text-gray-300">
-                    {item}
-                  </span>
-
-                  <ChevronRight
-                    size={16}
-                    className="ml-auto text-gray-600"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
+const getForumShareUrl = () =>
+  typeof window === "undefined" ? "/forum" : `${window.location.origin}/forum`;
 
 export default function ForumPage() {
-  const navigate = useNavigate();
-  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("latest");
+  const [copied, setCopied] = useState(false);
+  const { stats, loading: statsLoading } = useForumStats();
+
+  const shareUrl = getForumShareUrl();
+  const encodedUrl = encodeURIComponent(shareUrl);
+  const encodedTitle = encodeURIComponent(SHARE_TITLE);
+
+  const shareLinks = [
+    {
+      label: "Share on Facebook",
+      Icon: Facebook,
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+    },
+    {
+      label: "Share on X",
+      Icon: Twitter,
+      href: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
+    },
+    {
+      label: "Share on Reddit",
+      Icon: RedditIcon,
+      href: `https://www.reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}`,
+    },
+    {
+      label: "Share by email",
+      Icon: Mail,
+      href: `mailto:?subject=${encodedTitle}&body=${encodedUrl}`,
+    },
+  ];
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   const {
     threads,
@@ -138,7 +77,7 @@ export default function ForumPage() {
     loading: threadsLoading,
     error: threadsError,
   } = useForumThreads({
-    sort: "latest",
+    sort,
     limit: LATEST_COUNT,
   });
 
@@ -146,24 +85,8 @@ export default function ForumPage() {
     setPublicPageSEO("/forum");
   }, []);
 
-  const search = (value) => {
-    const term = value.trim();
-
-    if (term) {
-      navigate(
-        `/forum/discussions?q=${encodeURIComponent(term)}`
-      );
-    }
-  };
-
   return (
     <main className="min-h-screen w-full bg-neutral-950 text-white">
-      <ForumHero
-        query={query}
-        onQueryChange={setQuery}
-        onSearch={search}
-      />
-
       {/* Latest Discussions */}
       <section className="bg-neutral-950 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="mx-auto max-w-7xl">
@@ -184,17 +107,26 @@ export default function ForumPage() {
                   </p>
                 </div>
 
-                <Link
-                  to="/forum/discussions"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-pink-400 transition hover:text-pink-300"
-                >
-                  View all discussions
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                  <ForumSort
+                    sort={sort}
+                    onChange={setSort}
+                    disabled={threadsLoading}
+                  />
+
+                  <Link
+                    to="/forum/discussions"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-pink-400 transition hover:text-pink-300"
+                  >
+                    View all discussions
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
               </div>
 
               <div className="mt-7 overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 p-3 sm:p-5">
                 <ForumThreadList
+                  variant="table"
                   threads={threads}
                   loading={threadsLoading}
                   error={threadsError}
@@ -218,26 +150,73 @@ export default function ForumPage() {
 
             {/* Right Sidebar */}
             <aside className="space-y-5">
-              <div className="relative overflow-hidden rounded-2xl border border-pink-500/20 bg-gradient-to-br from-pink-950/40 via-neutral-900 to-neutral-950 p-6">
-                <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-pink-500/10 blur-3xl" />
-
-                <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-pink-500/15 text-pink-400">
-                  <MessageSquareText className="h-5 w-5" />
-                </div>
-
-                <h3 className="relative mt-5 text-lg font-bold text-white">
-                  Start a Conversation
-                </h3>
-
-                <p className="relative mt-2 text-sm leading-7 text-gray-400">
-                  Have a question, an idea, or something useful to share?
-                  Start a discussion with the community.
+              <div className="rounded-2xl border border-white/10 bg-neutral-900 p-6">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-400">
+                  Conversation Stats
                 </p>
 
-                <NewThreadButton
-                  label="Create a Discussion"
-                  className="relative mt-5 w-full"
-                />
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <Heart className="h-4 w-4 text-pink-400" aria-hidden="true" />
+                    <p className="mt-3 text-2xl font-black text-white">
+                      {statsLoading ? "—" : (stats?.totalLikes ?? 0).toLocaleString()}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">Total likes</p>
+                  </div>
+
+                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                    <LayoutGrid className="h-4 w-4 text-yellow-400" aria-hidden="true" />
+                    <p className="mt-3 text-2xl font-black text-white">
+                      {statsLoading ? "—" : (stats?.newCategories ?? 0).toLocaleString()}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">New categories (30 days)</p>
+                  </div>
+                </div>
+
+                <p className="mt-4 text-xs text-gray-500">
+                  {statsLoading
+                    ? ""
+                    : `${(stats?.totalCategories ?? 0).toLocaleString()} categories · ${(stats?.totalDiscussions ?? 0).toLocaleString()} discussions`}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-neutral-900 p-6">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-400">
+                  Share the Forum
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {shareLinks.map((item) => {
+                    const { label, Icon: ShareIcon, href } = item;
+                    return (
+                    <a
+                      key={label}
+                      href={href}
+                      target={href.startsWith("mailto:") ? undefined : "_blank"}
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      title={label}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-300 transition hover:border-pink-500/40 hover:bg-pink-500/10 hover:text-white"
+                    >
+                      <ShareIcon className="h-4 w-4" aria-hidden="true" />
+                    </a>
+                    );
+                  })}
+
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    aria-label="Copy forum link"
+                    title="Copy forum link"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-300 transition hover:border-pink-500/40 hover:bg-pink-500/10 hover:text-white"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4 text-green-400" aria-hidden="true" />
+                    ) : (
+                      <Copy className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-neutral-900 p-6">

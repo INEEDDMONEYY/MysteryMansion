@@ -25,6 +25,13 @@ export const createForumSlug = (value) => {
     .replace(/^-|-$/g, "");
 };
 
+const NEW_THREAD_WINDOW_MS = 48 * 60 * 60 * 1000;
+
+export const isNewForumThread = (item, now = Date.now()) => {
+  const createdAt = new Date(item?.createdAt).getTime();
+  return Number.isFinite(createdAt) && now >= createdAt && now - createdAt < NEW_THREAD_WINDOW_MS;
+};
+
 export const isArchivedForumItem = (item) =>
   Boolean(item?.archived);
 

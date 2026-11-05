@@ -8,7 +8,9 @@ import ForumThread from '../../models/ForumThread.js';
 import ForumReply from '../../models/ForumReply.js';
 import { ForumFollow } from '../../models/ForumInteraction.js';
 import { RpLedger } from '../../models/RpLedger.js';
-import { profileCompleteness, computeUserMilestones } from '../milestones/milestoneEngine.js';
+import Notification from '../../models/Notification.js';
+import { createNotification } from '../notifications/notificationController.js';
+import { profileCompleteness, computeLegacyDefinitions } from '../milestones/milestoneEngine.js';
 import { computeEarnedBadges } from '../badges/badgeEngine.js';
 import {
   ACHIEVEMENT_TIER_RP,
@@ -16,8 +18,10 @@ import {
   MAX_LEVEL,
   RP_AT_MAX_LEVEL,
   RP_RULES,
+  catalogMilestoneEventKey,
   levelForRp,
   levelThreshold,
+  randomMilestoneRp,
 } from './rpRules.js';
 
 const SYNC_TTL_MS = 60 * 60 * 1000;
@@ -50,16 +54,65 @@ function isDuplicateKeyOnly(err) {
  * Writes ledger rows, skipping any (userId, eventKey) that already exists.
  * Duplicate-key errors from concurrent requests are expected and ignored.
  */
-export async function awardRp(userId, entries) {
-  if (!entries.length) return 0;
+export async function insertRewards(userId, entries) {
+  if (!entries.length) return [];
   const docs = entries.map((e) => ({ userId, ...e }));
+  const summarize = (rows) => rows.map((d) => ({ eventKey: d.eventKey, label: d.label, points: d.points }));
   try {
-    await RpLedger.insertMany(docs, { ordered: false });
-    return docs.reduce((sum, d) => sum + d.points, 0);
+    const inserted = await RpLedger.insertMany(docs, { ordered: false });
+    return summarize(inserted);
   } catch (err) {
     if (!isDuplicateKeyOnly(err)) throw err;
-    const inserted = Array.isArray(err.insertedDocs) ? err.insertedDocs : [];
-    return inserted.reduce((sum, d) => sum + d.points, 0);
+    return summarize(Array.isArray(err.insertedDocs) ? err.insertedDocs : []);
+  }
+}
+
+export async function awardRp(userId, entries) {
+  const inserted = await insertRewards(userId, entries);
+  return inserted.reduce((sum, d) => sum + d.points, 0);
+}
+
+/**
+ * Tells the user about RP they just earned and any level they reached.
+ * Only called for rows inserted by this request, so repeat syncs stay silent.
+ */
+async function announceAwards(user, awarded, levelBefore, total, { milestones = new Map(), announceMilestones = false } = {}) {
+  if (!awarded.length || user.role === 'admin') return;
+  const points = awarded.reduce((sum, a) => sum + a.points, 0);
+  const labels = awarded.slice(0, 3).map((a) => a.label);
+  const extra = awarded.length - labels.length;
+  const message = extra > 0 ? `${labels.join(', ')} and ${extra} more` : labels.join(', ');
+  const base = { audience: 'user', userId: user._id };
+  try {
+    await createNotification({ ...base, type: 'rp_earned', title: `+${points} RP earned`, message, meta: { points } });
+    if (announceMilestones) {
+      for (const a of awarded) {
+        const milestone = milestones.get(a.eventKey);
+        if (!milestone) continue;
+        await createNotification({
+          ...base,
+          type: 'milestone_achieved',
+          title: 'Milestone achieved!',
+          message: `You reached "${milestone.title}" and earned ${a.points} RP.`,
+          meta: { milestoneId: milestone.id, points: a.points },
+        });
+      }
+    }
+    const levelAfter = levelForRp(total);
+    if (levelAfter > levelBefore) {
+      const already = await Notification.exists({ userId: user._id, type: 'level_up', 'meta.level': levelAfter });
+      if (!already) {
+        await createNotification({
+          ...base,
+          type: 'level_up',
+          title: `Level ${levelAfter} reached`,
+          message: `You reached level ${levelAfter}. Keep it up!`,
+          meta: { level: levelAfter },
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[progression] award notification failed', user._id, err?.message || err);
   }
 }
 
@@ -77,9 +130,14 @@ async function refreshCachedRp(userId) {
 /** Awards the daily login once per UTC day. Called from the auth middleware. */
 export async function awardDailyLogin(userId, now = new Date()) {
   const key = `daily-login:${dayKey(now)}`;
-  const awarded = await awardRp(userId, [ruleEntry('dailyLogin', key)]);
-  if (awarded) await refreshCachedRp(userId);
-  return awarded;
+  const awarded = await insertRewards(userId, [ruleEntry('dailyLogin', key)]);
+  if (!awarded.length) return 0;
+  // Read before refreshing the cache so levelBefore reflects the pre-award total.
+  const user = await User.findById(userId).select('role progression').lean();
+  const levelBefore = levelForRp(user?.progression?.rp ?? 0);
+  const total = await refreshCachedRp(userId);
+  if (user) await announceAwards(user, awarded, levelBefore, total);
+  return awarded.reduce((sum, a) => sum + a.points, 0);
 }
 
 /**
@@ -103,7 +161,7 @@ export async function syncRpForUser(userId) {
         .lean(),
       ForumFollow.find({ userId, following: true }).select('createdAt').sort({ createdAt: 1, _id: 1 }).lean(),
       EmailVerification.exists({ email: user.email, verified: true }),
-      computeUserMilestones(user),
+      computeLegacyDefinitions(user),
       computeEarnedBadges(user),
       Referral.findOne({ providerId: userId }).select('signupCount').lean(),
     ]);
@@ -136,7 +194,7 @@ export async function syncRpForUser(userId) {
     entries.push(ruleEntry('forumFollow', `follow:${follow._id}`));
   }
 
-  for (const milestone of milestones.recent) {
+  for (const milestone of milestones.filter((m) => m.achieved)) {
     entries.push(ruleEntry('milestoneComplete', `milestone:${milestone.id}`, `Milestone: ${milestone.title}`));
   }
 
@@ -150,9 +208,30 @@ export async function syncRpForUser(userId) {
     entries.push(ruleEntry('referralSignup', `referral:${n}`));
   }
 
-  await awardRp(userId, entries);
+  const milestoneAwards = new Map();
+  if (user.role !== 'admin') {
+    for (const badge of badges.badges) {
+      const key = catalogMilestoneEventKey(badge.id);
+      entries.push({ eventKey: key, category: 'milestones', label: `Milestone: ${badge.title}`, points: randomMilestoneRp(badge.tier) });
+      milestoneAwards.set(key, { id: badge.id, title: badge.title });
+    }
+  }
+
+  // The first sync backfills history, so it stays silent rather than flooding alerts.
+  const isBackfill = !user.progression?.syncedAt;
+  // Catalog rewards get their own one-time backfill so existing users are not told about old milestones.
+  const announceMilestones = !!user.progression?.catalogRewardsSyncedAt;
+  const levelBefore = levelForRp(user.progression?.rp ?? 0);
+  const awarded = await insertRewards(userId, entries);
   const total = await refreshCachedRp(userId);
-  await User.updateOne({ _id: userId }, { $set: { 'progression.syncedAt': new Date() } });
+  if (!isBackfill) {
+    const noticeRows = announceMilestones ? awarded : awarded.filter((a) => !milestoneAwards.has(a.eventKey));
+    await announceAwards(user, noticeRows, levelBefore, total, { milestones: milestoneAwards, announceMilestones });
+  }
+  await User.updateOne(
+    { _id: userId },
+    { $set: { 'progression.syncedAt': new Date(), 'progression.catalogRewardsSyncedAt': new Date() } },
+  );
   return total;
 }
 

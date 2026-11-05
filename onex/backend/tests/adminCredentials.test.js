@@ -2,6 +2,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import express from 'express';
 import request from 'supertest';
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 import User from '../src/models/User.js';
 import adminRoutes from '../src/modules/admin/routes.js';
 
@@ -44,4 +45,21 @@ test('PUT /api/admin/settings/credentials is routed and updates the admin userna
 test('PUT /api/admin/credentials keeps working as the original path', async () => {
   const res = await request(app).put('/api/admin/credentials').send({ username: 'boss2' });
   expect(res.status).toBe(200);
+});
+
+test('PUT /api/admin/settings/credentials resets the password only with the correct current password', async () => {
+  await User.updateOne({ _id: admin._id }, { password: await bcrypt.hash('oldpass', 10) });
+
+  const wrong = await request(app)
+    .put('/api/admin/settings/credentials')
+    .send({ currentPassword: 'nope', newPassword: 'freshpass' });
+  expect(wrong.status).toBeGreaterThanOrEqual(400);
+
+  const ok = await request(app)
+    .put('/api/admin/settings/credentials')
+    .send({ currentPassword: 'oldpass', newPassword: 'freshpass' });
+  expect(ok.status).toBe(200);
+
+  const updated = await User.findById(admin._id).lean();
+  expect(await bcrypt.compare('freshpass', updated.password)).toBe(true);
 });

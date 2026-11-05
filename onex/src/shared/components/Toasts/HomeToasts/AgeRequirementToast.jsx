@@ -13,7 +13,7 @@ export default function AgeRequirementToast({ onOk }) {
     }
   }, []);
 
-  const handleOk = () => {
+  const handleYes = () => {
     setAnimate(false); // fade-out
     setTimeout(() => {
       setShowToast(false);
@@ -22,35 +22,48 @@ export default function AgeRequirementToast({ onOk }) {
     }, 300);
   };
 
+  const handleNo = () => {
+    window.location.href = "https://www.isittruenews.com/";
+  };
+
   if (!showToast) return null;
 
   return (
-    <div style={styles.overlay}>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div
-        style={{
-          ...styles.toast,
-          opacity: animate ? 1 : 0,
-          transform: animate ? "translateY(0)" : "translateY(-20px)",
-          transition: "opacity 0.3s ease, transform 0.3s ease",
-        }}
+        className={`w-full max-w-md overflow-hidden rounded-2xl border border-gray-800 bg-black text-white shadow-2xl transition-all duration-300 ${
+          animate ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-5"
+        }`}
       >
-        <h2 style={styles.title}>Age Requirement</h2>
-        <p style={styles.text}>
-          By using this site, you confirm that you are at least 18 years old (or
-          meet your region’s minimum age requirement).
-        </p>
-        <button style={styles.button} onClick={handleOk}>
-          OK
-        </button>
+        <div className="border-b border-gray-800 px-6 py-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+            Age Verification
+          </p>
+          <h2 className="mt-1 text-xl font-bold">Are you of age?</h2>
+        </div>
+        <div className="px-6 py-5">
+          <p className="text-sm leading-relaxed text-gray-300">
+            By using this site, you confirm that you are at least 18 years old
+            (or meet your region’s minimum age requirement).
+          </p>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={handleNo}
+              className="rounded-lg border border-gray-700 bg-transparent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-900"
+            >
+              No
+            </button>
+            <button
+              type="button"
+              onClick={handleYes}
+              className="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-gray-200"
+            >
+              Yes
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  overlay: { position:"fixed", top:0, left:0, width:"100%", height:"100%", backgroundColor:"rgba(0,0,0,0.5)", display:"flex", justifyContent:"center", alignItems:"center", zIndex:9999 },
-  toast: { backgroundColor:"#eba9e7ff", padding:"20px", borderRadius:"8px", maxWidth:"400px", textAlign:"center", boxShadow:"0 4px 12px rgba(0,0,0,0.2)" },
-  title: { marginBottom:"10px", fontSize:"18px", fontWeight:"bold" },
-  text: { marginBottom:"20px", fontSize:"14px", lineHeight:"1.5" },
-  button: { display:"block", margin:"0 auto", padding:"10px 20px", backgroundColor:"#050505ff", color:"#fff", border:"none", borderRadius:"4px", cursor:"pointer" }
-};

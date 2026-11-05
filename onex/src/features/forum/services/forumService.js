@@ -15,6 +15,15 @@ export const getForumCategories = async () => {
   return Array.isArray(categories) ? categories : [];
 };
 
+export const getForumStats = async () => {
+  const stats = await forumRequest({
+    method: "get",
+    url: "/forum/stats",
+  });
+
+  return stats || {};
+};
+
 export const getForum = async ({
   sort = DEFAULT_FORUM_SORT,
 } = {}) => ({

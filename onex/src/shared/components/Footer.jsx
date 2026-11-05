@@ -136,6 +136,10 @@ export default function Footer() {
               <Link to="/platform-updates" className={linkClass}>
                 Platform Updates
               </Link>
+
+              <a href="https://www.fantometechnologies.com/status" target="_blank" rel="noopener noreferrer" className={linkClass}>
+                Status
+              </a>
             </FooterSection>
 
             {FEATURE_FLAGS.ENABLE_FOLLOW_US && (

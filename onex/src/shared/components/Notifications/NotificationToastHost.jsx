@@ -63,6 +63,18 @@ const TOAST_TYPES = {
     icon: MessageSquare, label: "Followed category", accent: "text-sky-400",
     ring: "bg-sky-500/15", cta: "View discussion", target: "thread", ms: 9000,
   },
+  level_up: {
+    icon: Trophy, label: "Level up", accent: "text-amber-300",
+    ring: "bg-amber-500/15", cta: "View progression", target: "progression", ms: 9000,
+  },
+  rp_earned: {
+    icon: Sparkles, label: "RP earned", accent: "text-emerald-400",
+    ring: "bg-emerald-500/15", cta: "View progression", target: "progression", ms: 7000,
+  },
+  milestone_achieved: {
+    icon: Trophy, label: "Milestone", accent: "text-purple-400",
+    ring: "bg-purple-500/15", cta: "View milestones", target: "milestones", ms: 8000,
+  },
   new_comment: {
     icon: MessageCircle,
     label: "New comment",
@@ -246,6 +258,11 @@ export default function NotificationToastHost() {
         return;
       }
 
+      if (target === "progression" && userId) {
+        navigate(`/user/${userId}`);
+        return;
+      }
+
       if (target === "reports") {
         navigate(isAdmin ? "/admin/reported-flags" : isClient ? "/client/reports" : "/user/reports");
         return;
@@ -256,7 +273,7 @@ export default function NotificationToastHost() {
 
       navigate(`${isClient ? "/client" : "/user"}/${target}`);
     },
-    [dismiss, isAdmin, isClient, navigate]
+    [dismiss, isAdmin, isClient, navigate, userId]
   );
 
   // Toasts raised in the app itself (e.g. a report was just submitted).

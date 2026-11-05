@@ -239,13 +239,13 @@ const router = createBrowserRouter([
         element: <ClientLayout />,
         children: [
           { path: "/client/dashboard", element: <ClientDashboard /> },
-          { path: "/client/liked-posts", element: <LikedPostsPage /> },
+          { path: "/client/liked-posts", element: <LikedPostsPage variant="client" /> },
           { path: "/client/messages", element: <UserMessages /> },
           { path: "/client/profile", element: <ClientProfilePage /> },
           { path: "/client/notifications", element: <ClientNotifications /> },
           { path: "/client/credits", element: <ClientCreditsPage /> },
           { path: "/client/membership", element: <MyMembershipPage /> },
-          { path: "/client/milestones", element: <UserMilestonesPage /> },
+          { path: "/client/milestones", element: <UserMilestonesPage variant="client" /> },
           { path: "/client/reports", element: <MyReportsPage /> },
           { path: "/client/settings", element: <ClientSettingsPage /> }
         ],

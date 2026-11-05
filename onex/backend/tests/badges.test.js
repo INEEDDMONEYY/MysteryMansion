@@ -15,7 +15,7 @@ import { BADGE_CATALOG } from '../src/modules/badges/badgeCatalog.js';
 import { computeBadgeStats, computeEarnedBadges, REPUTATION_POINTS } from '../src/modules/badges/badgeEngine.js';
 import { recordDailyActivity } from '../src/common/middleware/authMiddleware.js';
 import badgeRoutes from '../src/modules/badges/routes.js';
-import { computeUserMilestones } from '../src/modules/milestones/milestoneEngine.js';
+import { computeLegacyDefinitions } from '../src/modules/milestones/milestoneEngine.js';
 
 const app = express();
 app.use('/api/badges', badgeRoutes);
@@ -104,7 +104,7 @@ test('reputation adds up likes, solutions and clean standing', async () => {
   })));
   await ForumVote.create(voters.map((voter) => ({ userId: voter._id, targetType: 'thread', targetId: thread._id, value: 1 })));
 
-  const { recent } = await computeUserMilestones(author);
+  const recent = (await computeLegacyDefinitions(author)).filter((m) => m.achieved);
   const base = 3 * REPUTATION_POINTS.likeReceived + recent.length * REPUTATION_POINTS.milestone;
   const stats = await computeBadgeStats(author);
   expect(stats.reputation).toBe(base + REPUTATION_POINTS.cleanStanding);

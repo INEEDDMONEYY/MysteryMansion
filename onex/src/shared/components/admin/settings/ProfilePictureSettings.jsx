@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { ImageIcon, Upload } from "lucide-react";
 import api from "@/shared/utils/api";
+import { useUser } from "@/context/useUser";
 
 export default function ProfilePictureSetting({ onProfileUpdate, currentProfile }) {
+  const { user, refreshUser } = useUser();
   const [profilePic, setProfilePic] = useState(null);
-  const [preview, setPreview] = useState(currentProfile || null);
+  const [localPreview, setLocalPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState(null);
+  const preview = localPreview || currentProfile || user?.profilePic || null;
 
   const handleProfileUpload = async () => {
     if (!profilePic) { setStatus({ type: 'error', msg: 'Please select a file first.' }); return; }
@@ -15,8 +18,9 @@ export default function ProfilePictureSetting({ onProfileUpdate, currentProfile 
     setUploading(true);
     try {
       const { data } = await api.post("/admin/profile/picture", formData);
-      setPreview(data.url);
+      setLocalPreview(null);
       localStorage.setItem("profilePicture", data.url);
+      await refreshUser?.();
       onProfileUpdate?.(data.url);
       setStatus({ type: 'success', msg: 'Profile picture updated.' });
     } catch (err) {
@@ -55,7 +59,7 @@ export default function ProfilePictureSetting({ onProfileUpdate, currentProfile 
               onChange={(e) => {
                 const file = e.target.files[0];
                 setProfilePic(file);
-                if (file) setPreview(URL.createObjectURL(file));
+                if (file) setLocalPreview(URL.createObjectURL(file));
               }}
             />
           </label>

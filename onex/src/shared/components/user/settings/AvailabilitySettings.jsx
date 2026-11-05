@@ -206,17 +206,19 @@ export default function AvailabilitySettings({
           <div className="space-y-2 text-left">
             <label className="block text-pink-600 font-medium">Availability</label>
 
-            <select
+            <input
+              type="text"
               value={availability.status || ""}
+              maxLength={100}
               onChange={(e) =>
                 setAvailability({ ...availability, status: e.target.value })
               }
+              placeholder="e.g. Mon-Fri, 9am-4pm"
               className="w-full border border-pink-300 rounded-lg px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-400"
-            >
-              <option value="">Select status</option>
-              <option value="Available">Available</option>
-              <option value="Not Available">Not Available</option>
-            </select>
+            />
+            <p className="text-xs text-gray-500">
+              Enter your days and hours, separated by a comma. For example: Mon-Fri, 9am-4pm or Sat-Sun, 10am-2pm.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

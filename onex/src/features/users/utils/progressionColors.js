@@ -23,6 +23,9 @@ const TRACK_COLOR = "#374151";
 export const getProgressionColor = (id) =>
   PROGRESSION_COLORS.find((color) => color.id === id) || null;
 
+/** Solid accent for the level badge, matching the ring's first color stop. */
+export const progressionBadgeColor = (colorId) => getProgressionColor(colorId)?.stops[0] ?? DEFAULT_RING_COLOR;
+
 /** Conic-gradient for the level ring: the color fills the progress arc over the grey track. */
 export function progressionRingBackground(colorId, progress) {
   const arc = Math.round(Math.min(Math.max(progress || 0, 0), 1) * 360);

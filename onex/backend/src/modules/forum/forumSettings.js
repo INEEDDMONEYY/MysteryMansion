@@ -5,7 +5,7 @@ export const DEFAULT_FORUM_SETTINGS = Object.freeze({
   discussionReplies: true,
   mentions: true,
   followedDiscussionNotifications: true,
-  followedCategoryNotifications: false,
+  followedCategoryNotifications: true,
   autoFollowDiscussions: true,
   digestFrequency: 'weekly',
 });

@@ -70,7 +70,7 @@ const UserSchema = new mongoose.Schema(
     availability: {
       status: {
         type: String,
-        enum: ["Available", "Not Available", ""],
+        maxlength: 100,
         default: "",
       },
     },
@@ -109,6 +109,7 @@ const UserSchema = new mongoose.Schema(
     progression: {
       rp: { type: Number, default: 0 },
       syncedAt: { type: Date, default: null },
+      catalogRewardsSyncedAt: { type: Date, default: null },
     },
     /* -------------------- Provider profile details -------------------- */
     catersTo: { type: String, trim: true, maxlength: 120, default: "" },
@@ -137,7 +138,7 @@ const UserSchema = new mongoose.Schema(
         discussionReplies: { type: Boolean, default: true },
         mentions: { type: Boolean, default: true },
         followedDiscussionNotifications: { type: Boolean, default: true },
-        followedCategoryNotifications: { type: Boolean, default: false },
+        followedCategoryNotifications: { type: Boolean, default: true },
         autoFollowDiscussions: { type: Boolean, default: true },
         digestFrequency: { type: String, enum: ['off', 'daily', 'weekly'], default: 'weekly' },
       }, { _id: false }),

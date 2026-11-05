@@ -4,6 +4,7 @@ import User from '../../../models/User.js';
 import env from '../../../config/env.js';
 import { createNotification } from '../../notifications/notificationController.js';
 import { sendAccountActivityEmail } from '../../../common/utils/sendAccountActivityEmail.js';
+import { syncRpInBackground } from '../../progression/rpEngine.js';
 
 /**
  * POST /api/posts/:id/like
@@ -51,6 +52,9 @@ export async function toggleLike(req, res) {
         }
       }
     }
+
+    syncRpInBackground(userId);
+    if (post.userId && String(post.userId) !== String(userId)) syncRpInBackground(post.userId);
 
     const likeCount = await PostLike.countDocuments({ postId });
     return res.json({ liked: !existing, likeCount });

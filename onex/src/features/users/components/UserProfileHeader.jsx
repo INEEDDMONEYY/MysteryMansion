@@ -1,5 +1,6 @@
 import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState, useContext, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { UserContext } from "@/context/UserContext";
 import {
   Camera,
@@ -29,11 +30,41 @@ import {
 import { FLAG_TARGET_TYPES } from "@/features/flagging/utils/flagTargets";
 import ProfileFollowButton from "./profile-shared/ProfileFollowButton";
 import { fetchProgression } from "@/features/users/services/progressionService";
-import { PROGRESSION_COLORS, progressionRingBackground } from "@/features/users/utils/progressionColors";
+import {
+  PROGRESSION_COLORS,
+  progressionBadgeColor,
+  progressionRingBackground,
+} from "@/features/users/utils/progressionColors";
 
 // Stable reference — not connected to real criterion data yet, so the score
 // preview always reflects a fresh/unranked account until the backend lands.
 const EMPTY_CRITERION_SCORES = {};
+
+// Progression is cached per user so the level ring renders on the first paint.
+const progressionMemoryCache = new Map();
+const PROGRESSION_STORAGE_PREFIX = "userProgression_";
+
+function readCachedProgression(userId) {
+  if (progressionMemoryCache.has(userId)) return progressionMemoryCache.get(userId);
+  try {
+    const raw = localStorage.getItem(`${PROGRESSION_STORAGE_PREFIX}${userId}`);
+    const data = raw ? JSON.parse(raw) : null;
+    if (data) progressionMemoryCache.set(userId, data);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedProgression(userId, data) {
+  if (!userId || !data) return;
+  progressionMemoryCache.set(userId, data);
+  try {
+    localStorage.setItem(`${PROGRESSION_STORAGE_PREFIX}${userId}`, JSON.stringify(data));
+  } catch {
+    // Storage may be full or disabled; the in-memory cache still applies.
+  }
+}
 
 export default function UserProfileHeader({
   propUser = null,
@@ -42,6 +73,9 @@ export default function UserProfileHeader({
   const { user: ctxUser, updateProfile } =
     useContext(UserContext);
   const { membership } = useMembership();
+  const navigate = useNavigate();
+  const [messageOpening, setMessageOpening] = useState(false);
+  const [messageError, setMessageError] = useState("");
 
   const displayUserId =
     propUser?._id ||
@@ -49,7 +83,20 @@ export default function UserProfileHeader({
     propUserId ||
     null;
 
-  const [progression, setProgression] = useState(null);
+  // Stores which user the fetched progression belongs to, so a stale profile never shows.
+  const [progressionState, setProgressionState] = useState({ userId: null, data: null });
+  const progression =
+    progressionState.userId === displayUserId
+      ? progressionState.data
+      : readCachedProgression(displayUserId);
+  const setProgression = (updater) =>
+    setProgressionState((prev) => {
+      const current =
+        prev.userId === displayUserId ? prev.data : readCachedProgression(displayUserId);
+      const next = typeof updater === "function" ? updater(current) : updater;
+      writeCachedProgression(displayUserId, next);
+      return { userId: displayUserId, data: next };
+    });
   const [ringPickerOpen, setRingPickerOpen] = useState(false);
   const [ringSaving, setRingSaving] = useState(false);
   const [ringError, setRingError] = useState("");
@@ -74,10 +121,13 @@ export default function UserProfileHeader({
     if (!displayUserId) return undefined;
     const controller = new AbortController();
     fetchProgression(displayUserId, controller.signal)
-      .then(setProgression)
+      .then((data) => {
+        writeCachedProgression(displayUserId, data);
+        setProgressionState({ userId: displayUserId, data });
+      })
       .catch((err) => {
         if (err?.name === "CanceledError" || err?.name === "AbortError") return;
-        setProgression(null);
+        // Keep any cached value; with no cache the ring falls back to its defaults.
       });
     return () => controller.abort();
   }, [displayUserId]);
@@ -135,6 +185,30 @@ export default function UserProfileHeader({
 
   const fileInputRef = useRef(null);
   const shareRef = useRef(null);
+
+  const openMessageThread = async () => {
+    if (!displayUserId || messageOpening) return;
+    setMessageOpening(true);
+    setMessageError("");
+    try {
+      const { data } = await api.post("/conversations", {
+        recipientId: displayUserId,
+      });
+      const boardPath =
+        ctxUser?.role === "admin"
+          ? "/admin/messages"
+          : ctxUser?.accountType === "client"
+            ? "/client/messages"
+            : "/user/messages";
+      navigate(`${boardPath}?conv=${data._id}`);
+    } catch (err) {
+      setMessageError(
+        err?.response?.data?.error || "Could not open messages."
+      );
+    } finally {
+      setMessageOpening(false);
+    }
+  };
 
   const isOwner = Boolean(
     ctxUser?._id &&
@@ -758,7 +832,8 @@ export default function UserProfileHeader({
                   avatarContent
                 )}
 
-                <div className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-black bg-violet-600 text-xs font-bold text-white sm:h-9 sm:w-9"
+                <div className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-black text-xs font-bold text-white sm:h-9 sm:w-9"
+                  style={{ backgroundColor: progressionBadgeColor(progression?.progressionColor) }}
                   aria-label={`Level ${progression?.level ?? 1} of ${progression?.maxLevel ?? 50}`}
                   title={`Level ${progression?.level ?? 1} / ${progression?.maxLevel ?? 50} — ${(progression?.rp ?? 0).toLocaleString()} RP`}>
                   {progression?.level ?? 1}
@@ -864,15 +939,6 @@ export default function UserProfileHeader({
                   {isAdmin ? (
                     <>
                       <span
-                        className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-semibold leading-none text-white sm:text-xs"
-                        aria-label="Verified"
-                        title="Verified Admin"
-                      >
-                        <CheckCircle2 size={13} />
-                        Verified
-                      </span>
-
-                      <span
                         className="relative inline-flex overflow-hidden rounded-full p-[1px]"
                         aria-label="Developer"
                         title="Developer"
@@ -966,6 +1032,21 @@ export default function UserProfileHeader({
 
                 <div className="flex flex-wrap items-start gap-2">
                   <ProfileFollowButton key={`${displayUserId}:${ctxUser?._id || ctxUser?.id || ""}`} userId={displayUserId} />
+                {!isOwner && displayUserId && ctxUser && (
+                  <button
+                    type="button"
+                    onClick={openMessageThread}
+                    disabled={messageOpening}
+                    aria-label="Message user"
+                    title={messageError || "Message"}
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-white transition hover:border-pink-500/50 hover:bg-pink-500/10 disabled:opacity-50"
+                  >
+                    <MessageCircle size={16} className="text-pink-400" />
+                  </button>
+                )}
+                {messageError && (
+                  <span className="self-center text-xs text-red-400">{messageError}</span>
+                )}
                 <div className="relative shrink-0" ref={shareRef}>
                   <button
                     type="button"

@@ -105,6 +105,7 @@ test('category following persists and new-discussion alerts honor settings and m
   expect(list.body.categoryIds).toEqual([categoryId]);
   const create = (content) => request(app).post('/api/forum/threads').set('Authorization', auth(users[0]))
     .send({ categoryId, title: 'New discussion', content });
+  await User.updateOne({ _id: users[1]._id }, { $set: { 'forumSettings.followedCategoryNotifications': false } });
   expect((await create('Some content for the discussion.')).status).toBe(201);
   expect(await Notification.countDocuments({ type: 'forum_category' })).toBe(0);
   await User.updateOne({ _id: users[1]._id }, { $set: { 'forumSettings.followedCategoryNotifications': true } });

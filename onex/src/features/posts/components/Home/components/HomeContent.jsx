@@ -12,7 +12,10 @@ import EmptyCategoryLoader from "@/shared/components/Loaders/EmptyCategoryLoader
 import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import PostCard from "@/features/posts/components/PostCard";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
-import { toNearParams } from "@/features/posts/utils/postLocation";
+import {
+  getViewerFilterDefaults,
+  toNearParams,
+} from "@/features/posts/utils/postLocation";
 import { isPostBoosted } from "@/features/posts/utils/postBoost";
 import { setLocationSEO, setPublicPageSEO } from "@/shared/utils/seo";
 import api from "@/shared/utils/api";
@@ -20,7 +23,7 @@ import { useServerReady } from "@/context/ServerReadyContext";
 
 import HomeCategorySelector from "./HomeCategorySelector";
 import HomeSearch from "./HomeSearch";
-import HomeFilters from "./HomeFilters";
+import HomeFilterModal from "./HomeFilterModal";
 
 const POSTS_PER_PAGE = 20;
 
@@ -642,45 +645,28 @@ export default function HomeContent({
     []
   );
 
-  const handleOpenFilters = useCallback(() => {
-    if (!showFilters && location) {
-      const locationState =
-        (location.state || "").trim();
-
-      const locationCity =
-        (location.city || "").trim();
-
-      if (
-        locationState &&
-        filterOptions.states.includes(
-          locationState
-        )
-      ) {
-        setPendingState(locationState);
-
-        const cities =
-          filterOptions.citiesByState[
-            locationState
-          ] || [];
-
-        const matchedCity = cities.find(
-          (city) =>
-            city.toLowerCase() ===
-            locationCity.toLowerCase()
-        );
-
-        setPendingCity(matchedCity || "");
-      }
+  // Without explicit filters, the panel defaults to the viewer's location and
+  // follows it as the location or the canonical filter options change.
+  useEffect(() => {
+    if (activeFilters.state || activeFilters.city || activeFilters.gender) {
+      return;
     }
 
-    setShowFilters(
-      (previous) => !previous
-    );
-  }, [
-    showFilters,
-    location,
-    filterOptions,
-  ]);
+    const defaults = getViewerFilterDefaults(location, filterOptions);
+    setPendingState(defaults.state);
+    setPendingCity(defaults.city);
+  }, [location, filterOptions, activeFilters]);
+
+  const handleOpenFilters = useCallback(() => {
+    setPendingState(activeFilters.state || "");
+    setPendingCity(activeFilters.city || "");
+    setPendingGender(activeFilters.gender || "");
+    setShowFilters(true);
+  }, [activeFilters]);
+
+  const handleCloseFilters = useCallback(() => {
+    setShowFilters(false);
+  }, []);
 
   const handleUpdateSearch = useCallback(() => {
     const filters = {
@@ -690,6 +676,7 @@ export default function HomeContent({
     };
 
     setActiveFilters(filters);
+    setShowFilters(false);
     setCurrentPage(1);
     fetchPosts(filters, location);
   }, [
@@ -711,6 +698,7 @@ export default function HomeContent({
     setPendingCity("");
     setPendingGender("");
     setActiveFilters(clearedFilters);
+    setShowFilters(false);
     setCurrentPage(1);
     fetchPosts({}, location);
   }, [fetchPosts, location]);
@@ -948,7 +936,7 @@ export default function HomeContent({
 
   const filterProps = {
     showFilters,
-    onToggle: handleOpenFilters,
+    onClose: handleCloseFilters,
     filterOptions,
     pendingState,
     pendingCity,
@@ -1034,7 +1022,7 @@ export default function HomeContent({
           />
         )}
 
-        <HomeFilters {...filterProps} />
+        <HomeFilterModal {...filterProps} />
 
         {FEATURE_FLAGS.ENABLE_PROMOTE_ACCOUNT && (
           <div className="mt-6">

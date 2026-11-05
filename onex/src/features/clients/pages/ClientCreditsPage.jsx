@@ -24,7 +24,7 @@ function fmt(cents) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-function PackageCard({ pkg, onSelect, selected, showMessages = true }) {
+function PackageCard({ pkg, onSelect, selected }) {
   return (
     <button
       type="button"
@@ -65,12 +65,6 @@ function PackageCard({ pkg, onSelect, selected, showMessages = true }) {
         </span>
       </div>
 
-      {showMessages && (
-        <p className="mt-0.5 text-[11px] text-gray-400">
-          ≈ {Math.floor(pkg.credits / 20)} messages
-        </p>
-      )}
-
       {selected && (
         <div className="mt-2 flex items-center gap-1 text-xs font-semibold text-black">
           <Zap size={11} className="text-black" />
@@ -81,7 +75,6 @@ function PackageCard({ pkg, onSelect, selected, showMessages = true }) {
   );
 }
 
-const CREDITS_PER_MESSAGE = 20;
 const CASHAPP_TAG = "$MysteryyyMansion";
 
 function PaymentInfoCard() {
@@ -458,12 +451,6 @@ export default function ClientCreditsPage() {
     }
   };
 
-  const messages =
-    credits !== null ? Math.floor(credits / CREDITS_PER_MESSAGE) : null;
-
-  const isLow =
-    !isProvider && credits !== null && credits < CREDITS_PER_MESSAGE;
-
   return (
     <div className="min-h-full -m-4 space-y-6 bg-gray-100 p-4 md:-m-6 md:p-6">
       {/* Header */}
@@ -476,17 +463,13 @@ export default function ClientCreditsPage() {
         <p className="mt-0.5 text-sm text-gray-500">
           {isProvider
             ? "Credits pay for promotions and your monthly Blue Badge. Top up below with Cash App."
-            : `Credits are required to message providers. Each message costs ${CREDITS_PER_MESSAGE} credits.`}
+            : "Messaging is free. Top up below with Cash App."}
         </p>
       </div>
 
       {/* Balance card */}
       <div
-        className={`flex items-center gap-5 rounded-2xl border p-6 shadow-sm ${
-          isLow
-            ? "border-gray-300 bg-gray-200"
-            : "border-gray-200 bg-white"
-        }`}
+        className="flex items-center gap-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
       >
         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-gray-200 bg-gray-100 shadow-sm">
           <Coins size={30} className="text-black" />
@@ -501,21 +484,9 @@ export default function ClientCreditsPage() {
                 {credits?.toLocaleString() ?? "—"}
               </p>
 
-              <p className="mt-1 text-sm text-gray-500">
-                {!isProvider && messages !== null
-                  ? `≈ ${messages} message${messages !== 1 ? "s" : ""} remaining`
-                  : ""}
-              </p>
             </>
           )}
         </div>
-
-        {isLow && (
-          <div className="ml-auto flex items-center gap-1.5 text-sm font-medium text-black">
-            <AlertCircle size={16} className="text-black" />
-            Insufficient credits
-          </div>
-        )}
       </div>
 
       {isProvider && promoStatus && (
@@ -549,7 +520,6 @@ export default function ClientCreditsPage() {
                 pkg={pkg}
                 onSelect={handleSelectPackage}
                 selected={selectedPkg?._id === pkg._id}
-                showMessages={!isProvider}
               />
             ))}
           </div>

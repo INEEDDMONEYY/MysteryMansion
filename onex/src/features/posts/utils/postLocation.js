@@ -21,6 +21,22 @@ export const getViewerLocation = () => {
   }
 };
 
+const matchOption = (value, options = []) => {
+  if (!isKnown(value)) return "";
+  const wanted = value.trim().toLowerCase();
+  return options.find((option) => option.toLowerCase() === wanted) || "";
+};
+
+/**
+ * Filter-panel defaults for a viewer location. Matches the stored location to the
+ * canonical state/city options the API returns, so the filters follow the viewer.
+ */
+export const getViewerFilterDefaults = (location, filterOptions = {}) => {
+  const state = matchOption(location?.state, filterOptions.states);
+  const cities = state ? filterOptions.citiesByState?.[state] || [] : [];
+  return { state, city: matchOption(location?.city, cities) };
+};
+
 /** Query params asking the API for posts near a location (empty when unknown). */
 export const toNearParams = (location) => {
   if (!location) return {};

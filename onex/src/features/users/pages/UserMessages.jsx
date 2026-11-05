@@ -1,7 +1,7 @@
 import BrandLoader from "@/shared/components/Loaders/BrandLoader";
 import { useEffect, useState, useContext } from "react";
-import { ArrowLeft, Coins, AlertCircle, MessageCircle, RefreshCw } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { ArrowLeft, MessageCircle, RefreshCw } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import MessageInput from "@/shared/components/Messages/MessageInput";
 import MessageList from "@/shared/components/Messages/MessageList";
 import ConversationList from "@/shared/components/Messages/ConversationList";
@@ -9,8 +9,6 @@ import NewConversationModal from "@/shared/components/Messages/NewConversationMo
 import { UserContext } from "@/context/UserContext";
 import api from "@/shared/utils/api";
 import { setSEO } from "@/shared/utils/seo";
-
-const CREDITS_PER_MESSAGE = 75;
 
 export default function UserMessages() {
   const { user, loading: userLoading } = useContext(UserContext);
@@ -23,7 +21,6 @@ export default function UserMessages() {
   const [msgLoading, setMsgLoading]                     = useState(false);
   const [mobileView, setMobileView]                     = useState("list");
   const isClient = user?.accountType === "client";
-  const [credits, setCredits] = useState(null);
 
   useEffect(() => {
     setSEO("Messages | Mystery Mansion", "", { robots: "noindex, nofollow" });
@@ -32,9 +29,6 @@ export default function UserMessages() {
   useEffect(() => {
     if (!user || userLoading) return;
     fetchConversations();
-    if (isClient) {
-      api.get("/credits/balance").then(r => setCredits(r.data.credits ?? 0)).catch(() => {});
-    }
   }, [user, userLoading]);
 
   const fetchConversations = async () => {
@@ -90,7 +84,6 @@ export default function UserMessages() {
           : c
       )
     );
-    if (isClient) setCredits((c) => Math.max(0, (c ?? 0) - CREDITS_PER_MESSAGE));
   };
 
   const handleReact = async (messageId, emoji) => {
@@ -109,7 +102,6 @@ export default function UserMessages() {
   const otherParticipant  = selectedConversation
     ? selectedConversation.participants?.find((p) => String(p._id) !== String(user?._id))
     : null;
-  const insufficientCredits = isClient && credits !== null && credits < CREDITS_PER_MESSAGE;
 
   if (userLoading) {
     return (
@@ -157,21 +149,6 @@ export default function UserMessages() {
               </button>
             </div>
 
-            {/* Credits bar */}
-            {isClient && credits !== null && (
-              <div className={`flex items-center justify-between px-4 py-2 text-xs border-b ${insufficientCredits ? "bg-red-50 border-red-100 text-red-600" : "bg-amber-50 border-amber-100 text-amber-700"}`}>
-                <span className="flex items-center gap-1.5">
-                  <Coins size={12} />
-                  <strong>{credits}</strong> credits — {CREDITS_PER_MESSAGE} per message
-                </span>
-                {insufficientCredits && (
-                  <Link to="/client/credits" className="flex items-center gap-1 font-semibold hover:underline">
-                    <AlertCircle size={11} /> Top up
-                  </Link>
-                )}
-              </div>
-            )}
-
             {/* Messages */}
             {msgLoading ? (
               <BrandLoader size="sm" className="flex-1" />
@@ -180,14 +157,7 @@ export default function UserMessages() {
             )}
 
             {/* Input */}
-            {insufficientCredits ? (
-              <div className="px-4 py-4 bg-white border-t border-gray-100 text-center text-sm text-red-500">
-                You need at least {CREDITS_PER_MESSAGE} credits to send a message.{" "}
-                <Link to="/client/credits" className="font-semibold text-pink-600 hover:underline">Top up credits</Link>
-              </div>
-            ) : (
-              <MessageInput onSend={handleSend} placeholder={`Message ${otherParticipant?.username || ""}\u2026`} />
-            )}
+            <MessageInput onSend={handleSend} placeholder={`Message ${otherParticipant?.username || ""}\u2026`} />
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-8 text-gray-400">

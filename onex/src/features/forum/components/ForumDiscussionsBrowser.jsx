@@ -23,6 +23,7 @@ const chipClass = (active) =>
 export default function ForumDiscussionsBrowser({
   categories = [],
   fixedCategorySlug = "",
+  showSearch = true,
 }) {
   const [params, setParams] = useSearchParams();
 
@@ -60,13 +61,15 @@ export default function ForumDiscussionsBrowser({
 
   return (
     <div>
-      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
-        <ForumSearch
-          query={queryInput}
-          onQueryChange={setQueryInput}
-          onSearch={(value) => updateParams({ q: value.trim() })}
-        />
-      </div>
+      {showSearch && (
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+          <ForumSearch
+            query={queryInput}
+            onQueryChange={setQueryInput}
+            onSearch={(value) => updateParams({ q: value.trim() })}
+          />
+        </div>
+      )}
 
       {!fixedCategorySlug && categories.length > 0 && (
         <div
@@ -141,6 +144,7 @@ export default function ForumDiscussionsBrowser({
           threads={threads}
           loading={loading}
           error={error}
+          showPinned={Boolean(categorySlug)}
           emptyTitle="No discussions found"
           emptyDescription="Try another search or category, or start a new discussion with the community."
         />
