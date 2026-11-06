@@ -20,7 +20,7 @@ import api from "@/shared/utils/api";
 import { useUser } from "@/context/useUser";
 
 const CONTACT_IMAGE = "/mm-hero.png";
-const SUPPORT_EMAIL = "support.mysterymansion@gmail.com";
+const SUPPORT_EMAIL = "fantometechnologies@gmail.com";
 
 const inquiryOptions = [
   {
@@ -85,8 +85,8 @@ export default function ContactPage() {
 
   useEffect(() => {
     setSEO(
-      "Contact Support | Mystery Mansion",
-      "Contact Mystery Mansion for membership and account help, technical support, advertising opportunities, general questions, and legal inquiries.",
+      "Contact Support | TopEscortNetwork",
+      "Contact TopEscortNetwork for membership and account help, technical support, advertising opportunities, general questions, and legal inquiries.",
       {
         robots: "index, follow",
         canonicalPath: "/contact",
@@ -200,7 +200,7 @@ export default function ContactPage() {
               <div className="group relative h-56 overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 sm:h-64">
                 <img
                   src={CONTACT_IMAGE}
-                  alt="Mystery Mansion customer support"
+                  alt="TopEscortNetwork customer support"
                   className="absolute inset-0 h-full w-full scale-105 object-cover blur-sm transition duration-700 group-hover:scale-110"
                 />
 
@@ -208,7 +208,7 @@ export default function ContactPage() {
 
                 <div className="absolute bottom-5 left-5 right-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-400">
-                    Mystery Mansion Support
+                    TopEscortNetwork Support
                   </p>
 
                   <h2 className="mt-2 text-xl font-bold text-white sm:text-2xl">
@@ -534,7 +534,7 @@ export default function ContactPage() {
 
               <p className="text-center text-xs leading-relaxed text-gray-500">
                 By submitting this inquiry, you are contacting
-                Mystery Mansion support regarding your selected topic.
+                TopEscortNetwork support regarding your selected topic.
               </p>
             </form>
           </motion.div>
@@ -552,7 +552,7 @@ export default function ContactPage() {
           </h2>
 
           <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-gray-400">
-            Mystery Mansion continues to grow through user feedback,
+            TopEscortNetwork continues to grow through user feedback,
             ongoing development, and a commitment to improving the
             platform experience.
           </p>

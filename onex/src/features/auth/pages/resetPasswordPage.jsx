@@ -8,7 +8,7 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setSEO('Reset Password | Mystery Mansion', '', { robots: 'noindex, nofollow' });
+    setSEO('Reset Password | TopEscortNetwork', '', { robots: 'noindex, nofollow' });
   }, []);
 
   const [password, setPassword] = useState("");

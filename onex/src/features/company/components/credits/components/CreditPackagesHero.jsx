@@ -105,7 +105,7 @@ export default function CreditPackagesHero({ data }) {
             <p className="mt-4 text-sm leading-7 text-neutral-400 sm:text-base">
               Explore the available package prices, understand the eligible
               uses of credits, and review your account balance as you use
-              Mystery Mansion.
+              TopEscortNetwork.
             </p>
 
             <div className="mt-7 space-y-4 border-t border-white/10 pt-6">

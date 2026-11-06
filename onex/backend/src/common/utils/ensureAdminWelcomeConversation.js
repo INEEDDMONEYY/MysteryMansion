@@ -2,7 +2,7 @@ import Conversation from "../../models/Conversation.js";
 import User from "../../models/User.js";
 import Message from "../../models/Message.js";
 
-const WELCOME_MESSAGE = `Welcome to Mystery Mansion 🎉
+const WELCOME_MESSAGE = `Welcome to TopEscortNetwork 🎉
 
 We are happy to have you on the platform.
 

@@ -261,7 +261,7 @@ export default function UserActivity() {
   const [error, setError]             = useState("");
 
   useEffect(() => {
-    setSEO("Activity | Mystery Mansion", "", { robots: "noindex, nofollow" });
+    setSEO("Activity | TopEscortNetwork", "", { robots: "noindex, nofollow" });
   }, []);
 
   const fetchActivity = useCallback(async (tab, page) => {

@@ -12,9 +12,9 @@ export const communityGuidelinesData = {
   hero: {
     eyebrow: "Community Guidelines",
     title: "Build a better",
-    highlightedTitle: "Mystery Mansion.",
+    highlightedTitle: "TopEscortNetwork.",
     description:
-      "Mystery Mansion is built around a community of providers and clients. These guidelines help keep interactions respectful, authentic, and safer for everyone using the platform.",
+      "TopEscortNetwork is built around a community of providers and clients. These guidelines help keep interactions respectful, authentic, and safer for everyone using the platform.",
     updatedLabel: "Community Guidelines",
   },
 
@@ -22,7 +22,7 @@ export const communityGuidelinesData = {
     eyebrow: "Our Standard",
     title: "Respect the people behind every profile.",
     description:
-      "Every account represents a real person or business using Mystery Mansion. Use the platform honestly, respect boundaries, protect personal information, and help keep the community welcoming.",
+      "Every account represents a real person or business using TopEscortNetwork. Use the platform honestly, respect boundaries, protect personal information, and help keep the community welcoming.",
   },
 
   guidelines: [
@@ -59,7 +59,7 @@ export const communityGuidelinesData = {
     {
       title: "No Fraud or Deception",
       description:
-        "Do not use Mystery Mansion to conduct scams, fraudulent transactions, financial deception, or other activity intended to unlawfully obtain money, information, or access.",
+        "Do not use TopEscortNetwork to conduct scams, fraudulent transactions, financial deception, or other activity intended to unlawfully obtain money, information, or access.",
       icon: Ban,
     },
     {
@@ -71,7 +71,7 @@ export const communityGuidelinesData = {
     {
       title: "Follow the Law",
       description:
-        "Do not use Mystery Mansion for illegal activity or to facilitate unlawful conduct. Content and activity must comply with applicable laws and platform requirements.",
+        "Do not use TopEscortNetwork for illegal activity or to facilitate unlawful conduct. Content and activity must comply with applicable laws and platform requirements.",
       icon: ShieldCheck,
     },
   ],
@@ -80,7 +80,7 @@ export const communityGuidelinesData = {
     eyebrow: "Enforcement",
     title: "Keeping the community accountable.",
     description:
-      "Mystery Mansion may review reported activity and take action when accounts or content violate these guidelines, applicable policies, or platform requirements.",
+      "TopEscortNetwork may review reported activity and take action when accounts or content violate these guidelines, applicable policies, or platform requirements.",
     items: [
       "Content may be reviewed when it is reported or identified through platform safety processes.",
       "Accounts or content may be limited, removed, suspended, or otherwise restricted when appropriate.",

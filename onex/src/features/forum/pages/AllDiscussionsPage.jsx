@@ -12,8 +12,8 @@ export default function AllDiscussionsPage() {
 
   useEffect(() => {
     setSEO(
-      "All Discussions | Mystery Mansion Forum",
-      "Browse and search every Mystery Mansion community discussion.",
+      "All Discussions | TopEscortNetwork Forum",
+      "Browse and search every TopEscortNetwork community discussion.",
       { robots: "index, follow", canonicalPath: "/forum/discussions" }
     );
   }, []);

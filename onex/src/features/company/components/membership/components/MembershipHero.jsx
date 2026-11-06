@@ -85,7 +85,7 @@ export default function MembershipHero() {
             </div>
 
             <p className="relative mt-9 text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">
-              The Mystery Mansion Experience
+              The TopEscortNetwork Experience
             </p>
 
             <h2 className="relative mt-3 text-3xl font-black leading-tight sm:text-4xl">

@@ -5,7 +5,7 @@ import { setSEO } from "@/shared/utils/seo";
 
 export default function Signout() {
   useEffect(() => {
-    setSEO('Sign Out | Mystery Mansion', '', { robots: 'noindex, nofollow' });
+    setSEO('Sign Out | TopEscortNetwork', '', { robots: 'noindex, nofollow' });
   }, []);
 
   return <SignoutFlow />;

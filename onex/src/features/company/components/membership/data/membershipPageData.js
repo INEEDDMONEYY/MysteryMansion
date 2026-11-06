@@ -7,17 +7,17 @@ import {
 
 export const membershipPageData = {
   seo: {
-    title: "Membership | Mystery Mansion",
+    title: "Membership | TopEscortNetwork",
     description:
-      "Explore Mystery Mansion monthly memberships, coin-based billing, and subscription renewal information.",
+      "Explore TopEscortNetwork monthly memberships, coin-based billing, and subscription renewal information.",
   },
 
   hero: {
     eyebrow: "The Membership Experience",
     title: "Make more of",
-    highlightedTitle: "Mystery Mansion.",
+    highlightedTitle: "TopEscortNetwork.",
     description:
-      "Explore monthly membership options powered by Mystery Mansion coins. Review each plan's cost and included benefits before subscribing.",
+      "Explore monthly membership options powered by TopEscortNetwork coins. Review each plan's cost and included benefits before subscribing.",
     primaryCta: {
       label: "Explore Memberships",
       href: "#membership-plans",
@@ -44,7 +44,7 @@ export const membershipPageData = {
         icon: Coins,
         title: "Coin-Based Billing",
         description:
-          "Membership subscriptions use Mystery Mansion platform coins rather than a separate monthly card charge.",
+          "Membership subscriptions use TopEscortNetwork platform coins rather than a separate monthly card charge.",
       },
       {
         id: "monthly-access",
@@ -113,7 +113,7 @@ export const membershipPageData = {
     eyebrow: "Renewal Transparency",
     title: "A missed renewal doesn't leave you guessing.",
     description:
-      "If a monthly renewal cannot be completed, Mystery Mansion provides a short window to resolve the payment issue.",
+      "If a monthly renewal cannot be completed, TopEscortNetwork provides a short window to resolve the payment issue.",
     gracePeriod: "2 hours",
     steps: [
       {
@@ -146,7 +146,7 @@ export const membershipPageData = {
       id: "monthly-billing",
       question: "How are memberships paid for?",
       answer:
-        "Memberships are monthly subscriptions paid with Mystery Mansion platform coins. The backend verifies your available balance and processes each charge.",
+        "Memberships are monthly subscriptions paid with TopEscortNetwork platform coins. The backend verifies your available balance and processes each charge.",
     },
     {
       id: "renewal-failure",

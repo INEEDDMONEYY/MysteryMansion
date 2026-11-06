@@ -4,7 +4,7 @@ import env from '../../config/env.js';
 
 // Support inbox that receives new contact-form inquiries.
 export const CONTACT_INBOX =
-  process.env.CONTACT_INBOX_EMAIL?.trim() || 'support.mysterymansion@gmail.com';
+  process.env.CONTACT_INBOX_EMAIL?.trim() || 'fantometechnologies@gmail.com';
 
 function escapeHtml(value = '') {
   return String(value)

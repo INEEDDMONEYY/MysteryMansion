@@ -3,15 +3,15 @@ export const privacyPolicyData = {
     eyebrow: "Privacy Policy",
     title: "Your privacy matters.",
     description:
-      "This Privacy Policy explains how Mystery Mansion collects, uses, discloses, and safeguards information when you use the Platform.",
+      "This Privacy Policy explains how TopEscortNetwork collects, uses, discloses, and safeguards information when you use the Platform.",
     effectiveDate: "09-24-2026",
   },
 
   introduction: {
-    eyebrow: "Privacy at Mystery Mansion",
+    eyebrow: "Privacy at TopEscortNetwork",
     title: "Understanding how your information is handled.",
     description:
-      "Mystery Mansion is committed to protecting your privacy. This policy covers our mobile application, website, and related services, collectively referred to as the Platform.",
+      "TopEscortNetwork is committed to protecting your privacy. This policy covers our mobile application, website, and related services, collectively referred to as the Platform.",
   },
 
   sections: [
@@ -150,7 +150,7 @@ export const privacyPolicyData = {
           type: "email",
           before:
             "If you have questions or concerns about this Privacy Policy, contact us at",
-          email: "support.mysterymansion@gmail.com",
+          email: "fantometechnologies@gmail.com",
         },
       ],
     },

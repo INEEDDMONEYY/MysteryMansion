@@ -18,11 +18,11 @@ import {
 
 export const milestonesPageData = {
   hero: {
-    eyebrow: "Mystery Mansion Milestones",
+    eyebrow: "TopEscortNetwork Milestones",
     title: "Progress that",
     highlightedTitle: "means something.",
     description:
-      "Milestones give providers and clients a clear way to recognize meaningful participation, activity, and progression across the Mystery Mansion platform.",
+      "Milestones give providers and clients a clear way to recognize meaningful participation, activity, and progression across the TopEscortNetwork platform.",
     primaryCta: {
       label: "Explore Milestones",
       href: "/milestones",
@@ -58,7 +58,7 @@ export const milestonesPageData = {
       {
         title: "Recognition",
         description:
-          "Milestones can recognize important moments and accomplishments throughout your Mystery Mansion experience.",
+          "Milestones can recognize important moments and accomplishments throughout your TopEscortNetwork experience.",
         icon: Medal,
       },
       {
@@ -70,7 +70,7 @@ export const milestonesPageData = {
       {
         title: "Community Growth",
         description:
-          "Meaningful participation contributes to a stronger and more engaged Mystery Mansion community.",
+          "Meaningful participation contributes to a stronger and more engaged TopEscortNetwork community.",
         icon: Users,
       },
     ],
@@ -80,7 +80,7 @@ export const milestonesPageData = {
     eyebrow: "Two Progression Paths",
     title: "Milestones for every side of the platform.",
     description:
-      "Providers and clients have different platform goals, so their milestone progression can reflect the way they use Mystery Mansion.",
+      "Providers and clients have different platform goals, so their milestone progression can reflect the way they use TopEscortNetwork.",
     provider: {
       label: "Provider Milestones",
       title: "Build your presence.",
@@ -91,7 +91,7 @@ export const milestonesPageData = {
         {
           title: "Get Started",
           description:
-            "Complete your account and establish your initial presence on Mystery Mansion.",
+            "Complete your account and establish your initial presence on TopEscortNetwork.",
           icon: Flag,
         },
         {
@@ -118,13 +118,13 @@ export const milestonesPageData = {
       label: "Client Milestones",
       title: "Explore and engage.",
       description:
-        "Client milestones focus on meaningful platform participation, engagement, and continued use of Mystery Mansion.",
+        "Client milestones focus on meaningful platform participation, engagement, and continued use of TopEscortNetwork.",
       icon: Sparkles,
       milestones: [
         {
           title: "Get Started",
           description:
-            "Create your account and begin exploring what Mystery Mansion has to offer.",
+            "Create your account and begin exploring what TopEscortNetwork has to offer.",
           icon: Flag,
         },
         {
@@ -176,7 +176,7 @@ export const milestonesPageData = {
       {
         title: "Evolving System",
         description:
-          "Milestones may be updated as Mystery Mansion develops new features and improves the platform.",
+          "Milestones may be updated as TopEscortNetwork develops new features and improves the platform.",
         icon: Sparkles,
       },
     ],

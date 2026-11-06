@@ -71,7 +71,7 @@ export default function Header() {
 
             {/* Eyebrow */}
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-pink-600">
-              Mystery Mansion
+              TopEscortNetwork
             </p>
 
             {/* Main message */}

@@ -57,12 +57,12 @@ export const clientPageData = {
    */
 
   benefits: {
-    eyebrow: "Why Mystery Mansion",
+    eyebrow: "Why TopEscortNetwork",
 
     title: "A better way to find your next experience.",
 
     description:
-      "Mystery Mansion gives clients a place to discover providers, explore their work, and connect with the people behind the experiences they are interested in.",
+      "TopEscortNetwork gives clients a place to discover providers, explore their work, and connect with the people behind the experiences they are interested in.",
 
     items: [
       {
@@ -98,7 +98,7 @@ export const clientPageData = {
         title: "Build Better Experiences",
 
         description:
-          "Keep track of your experiences and contribute feedback that can help strengthen the Mystery Mansion community.",
+          "Keep track of your experiences and contribute feedback that can help strengthen the TopEscortNetwork community.",
       },
     ],
   },
@@ -126,7 +126,7 @@ export const clientPageData = {
         title: "Explore",
 
         description:
-          "Browse providers and explore the experiences and services available through Mystery Mansion.",
+          "Browse providers and explore the experiences and services available through TopEscortNetwork.",
       },
 
       {
@@ -165,7 +165,7 @@ export const clientPageData = {
     title: "Everything you need to make better choices.",
 
     description:
-      "Mystery Mansion brings the tools, information, and connections you need into one experience.",
+      "TopEscortNetwork brings the tools, information, and connections you need into one experience.",
 
     items: [
       {
@@ -210,7 +210,7 @@ export const clientPageData = {
         title: "Personalized Experience",
 
         description:
-          "Keep your activity and interactions connected to your own Mystery Mansion experience.",
+          "Keep your activity and interactions connected to your own TopEscortNetwork experience.",
       },
 
       {
@@ -236,7 +236,7 @@ export const clientPageData = {
     title: "Know who you're connecting with.",
 
     description:
-      "Mystery Mansion is designed to give clients more information and visibility throughout the process.",
+      "TopEscortNetwork is designed to give clients more information and visibility throughout the process.",
 
     points: [
       {
@@ -254,7 +254,7 @@ export const clientPageData = {
         title: "Stay Connected",
 
         description:
-          "Keep communication with providers within your Mystery Mansion experience.",
+          "Keep communication with providers within your TopEscortNetwork experience.",
       },
 
       {
@@ -273,7 +273,7 @@ export const clientPageData = {
       text:
         "The goal is simple: give clients more visibility, more information, and a better way to connect.",
 
-      label: "The Mystery Mansion experience",
+      label: "The TopEscortNetwork experience",
     },
   },
 
@@ -289,7 +289,7 @@ export const clientPageData = {
     title: "Your next experience starts here.",
 
     description:
-      "Create your Mystery Mansion account and start discovering what the platform has to offer.",
+      "Create your TopEscortNetwork account and start discovering what the platform has to offer.",
 
     primaryCta: {
       label: "Create Your Account",

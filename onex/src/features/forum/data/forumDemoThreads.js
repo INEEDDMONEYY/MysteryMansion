@@ -1,7 +1,7 @@
 export const forumDemoThreads = [
   {
     id: "demo-thread-001",
-    title: "Welcome to the Mystery Mansion community",
+    title: "Welcome to the TopEscortNetwork community",
     content:
       "Introduce yourself, meet other members, and share what you are looking forward to exploring on the platform.",
     categoryId: "general",
@@ -12,7 +12,7 @@ export const forumDemoThreads = [
     },
     author: {
       id: "demo-user-001",
-      username: "MysteryMansionTeam",
+      username: "TopEscortNetworkTeam",
       role: "Team",
     },
     createdAt: "2026-10-20T15:30:00.000Z",
@@ -29,7 +29,7 @@ export const forumDemoThreads = [
     id: "demo-thread-002",
     title: "What would you like to see added to the platform?",
     content:
-      "Share your ideas, feature requests, and suggestions for making Mystery Mansion better for everyone.",
+      "Share your ideas, feature requests, and suggestions for making TopEscortNetwork better for everyone.",
     categoryId: "community",
     category: {
       id: "community",
@@ -105,7 +105,7 @@ export const forumDemoThreads = [
   },
   {
     id: "demo-thread-005",
-    title: "What have you learned from using Mystery Mansion?",
+    title: "What have you learned from using TopEscortNetwork?",
     content:
       "Share useful lessons, constructive advice, and experiences that could help other members.",
     categoryId: "general",

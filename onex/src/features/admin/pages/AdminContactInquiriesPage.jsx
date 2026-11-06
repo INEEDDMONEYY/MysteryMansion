@@ -103,7 +103,7 @@ function InquiryDetail({ inquiry, onClose, onUpdated, onDeleted }) {
     `mailto:${inquiry.email}` +
     `?subject=${encodeURIComponent(`Re: ${inquiry.subject}`)}` +
     `&body=${encodeURIComponent(
-      `Hi ${inquiry.name},\n\n\n\n— Mystery Mansion Support\n\n> ${inquiry.message
+      `Hi ${inquiry.name},\n\n\n\n— TopEscortNetwork Support\n\n> ${inquiry.message
         .split("\n")
         .join("\n> ")}`
     )}`;

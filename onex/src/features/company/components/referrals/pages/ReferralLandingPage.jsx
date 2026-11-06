@@ -15,8 +15,8 @@ export default function ReferralLandingPage() {
 
   useEffect(() => {
     setSEO(
-      "You've Been Invited | Mystery Mansion",
-      "You've been invited to join Mystery Mansion. Explore the platform and create a Client account.",
+      "You've Been Invited | TopEscortNetwork",
+      "You've been invited to join TopEscortNetwork. Explore the platform and create a Client account.",
       {
         robots: "noindex, nofollow",
         canonicalPath: `/referral/${referralCode || ""}`,

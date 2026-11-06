@@ -269,7 +269,7 @@ export default function PlatformUpdatesPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16 text-center">
           <div className="inline-flex items-center gap-2 bg-pink-50 text-pink-600 text-xs font-semibold px-3 py-1.5 rounded-full mb-5">
             <Newspaper size={12} />
-            Mystery Mansion Blog
+            TopEscortNetwork Blog
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-4 leading-tight tracking-tight">
@@ -278,7 +278,7 @@ export default function PlatformUpdatesPage() {
 
           <p className="text-gray-500 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
             Platform updates, upcoming features, and announcements —
-            everything happening at Mystery Mansion.
+            everything happening at TopEscortNetwork.
           </p>
 
           {/* Stats row */}

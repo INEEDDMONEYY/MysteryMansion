@@ -22,7 +22,7 @@ export async function sendNewMessageEmail({ to, recipientUsername, senderUsernam
     <p style="margin:0 0 20px;color:#c8c8c8;">Hi ${escapeHtml(recipientUsername || 'there')},</p>
     <p style="margin:0 0 16px;color:#c8c8c8;">
       <strong style="color:#e2e2e2;">${escapeHtml(senderUsername)}</strong> sent you a message on
-      <strong style="color:#e2e2e2;">Mystery Mansion</strong>:
+      <strong style="color:#e2e2e2;">TopEscortNetwork</strong>:
     </p>
     ${darkCard(`
       <p style="margin:0;color:#e2e2e2;font-size:14px;line-height:1.7;">${escapeHtml(messageText).slice(0, 400)}</p>

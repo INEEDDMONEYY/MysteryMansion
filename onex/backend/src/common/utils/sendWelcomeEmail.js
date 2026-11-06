@@ -9,7 +9,7 @@ async function sendWelcomeEmail({ to, username, accountType = 'provider' }) {
   const isClient = accountType === 'client';
 
   const providerContent = `
-    ${heading(`Welcome to Mystery Mansion, ${name}!`)}
+    ${heading(`Welcome to TopEscortNetwork, ${name}!`)}
     <p style="margin:0 0 6px;color:#aaa;font-size:14px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Provider Account</p>
     <p style="margin:0 0 20px;color:#c8c8c8;">Your provider account is active. Start building your presence and getting discovered today — posting is completely free.</p>
     ${darkCard(`
@@ -29,7 +29,7 @@ async function sendWelcomeEmail({ to, username, accountType = 'provider' }) {
   `;
 
   const clientContent = `
-    ${heading(`Welcome to Mystery Mansion, ${name}!`)}
+    ${heading(`Welcome to TopEscortNetwork, ${name}!`)}
     <p style="margin:0 0 6px;color:#aaa;font-size:14px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Client Account</p>
     <p style="margin:0 0 20px;color:#c8c8c8;">Your client account is ready. Discover top providers, save your favourites, and be part of the community.</p>
     ${darkCard(`
@@ -55,9 +55,9 @@ async function sendWelcomeEmail({ to, username, accountType = 'provider' }) {
     from: FROM_ADDRESS,
     to,
     subject: isClient
-      ? 'Welcome to Mystery Mansion — Your Client Account is Ready'
-      : 'Welcome to Mystery Mansion — Your Provider Account is Active',
-    html: buildEmail(isClient ? clientContent : providerContent, { showHero: true }),
+      ? 'Welcome to TopEscortNetwork — Your Client Account is Ready'
+      : 'Welcome to TopEscortNetwork — Your Provider Account is Active',
+    html: buildEmail(isClient ? clientContent : providerContent),
   });
 }
 

@@ -279,7 +279,7 @@ export default function AdminEmailUsersPage() {
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g. Important Update from Mystery Mansion"
+              placeholder="e.g. Important Update from TopEscortNetwork"
               maxLength={150}
               className="w-full bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-pink-500/60 transition-colors"
             />

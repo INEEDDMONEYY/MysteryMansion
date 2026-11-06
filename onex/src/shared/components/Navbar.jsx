@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Link, useLocation } from "react-router-dom";
-import Logo from "@/assets/Logo2.png";
+import Logo from "@/assets/logos/ten-logo.svg";
 import { FEATURE_FLAGS } from "@/config/featureFlags.js";
 import { useUser } from "@/context/useUser";
 import api from "@/shared/utils/api";
@@ -286,7 +286,7 @@ export default function Navbar() {
         />
 
         <span className="text-sm sm:text-base md:text-lg font-semibold tracking-wide whitespace-nowrap">
-          Mystery Mansion
+          TopEscortNetwork
         </span>
       </Link>
 

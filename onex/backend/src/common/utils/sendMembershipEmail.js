@@ -13,7 +13,7 @@ const MEMBERSHIP_COPY = {
   activated: {
     subject: (tier) => `Your ${tier} membership is active 🎉`,
     title: 'Membership Activated! 🎉',
-    intro: (tier) => `Welcome aboard — your <strong style="color:#e2e2e2;">${tier}</strong> membership is now active on <strong style="color:#e2e2e2;">Mystery Mansion</strong>.`,
+    intro: (tier) => `Welcome aboard — your <strong style="color:#e2e2e2;">${tier}</strong> membership is now active on <strong style="color:#e2e2e2;">TopEscortNetwork</strong>.`,
     cta: 'View Your Membership',
   },
   upgraded: {
@@ -84,7 +84,7 @@ export async function sendMembershipEmail({ to, username, event, tierName, detai
     category: EMAIL_CATEGORIES.MEMBERSHIP,
     from: FROM_ADDRESS,
     to,
-    subject: `Mystery Mansion — ${copy.subject(tierName)}`,
+    subject: `TopEscortNetwork — ${copy.subject(tierName)}`,
     html: buildEmail(content),
   });
 }

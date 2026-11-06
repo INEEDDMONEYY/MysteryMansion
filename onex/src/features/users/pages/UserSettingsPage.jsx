@@ -346,7 +346,7 @@ export default function UserSettingsPage() {
         id="account-information"
         icon={UserRound}
         title="Account Information"
-        description="Manage the personal and account information associated with your Mystery Mansion account."
+        description="Manage the personal and account information associated with your TopEscortNetwork account."
       >
         <div className="space-y-6">
           <div>

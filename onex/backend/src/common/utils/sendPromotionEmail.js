@@ -13,7 +13,7 @@ const PROMOTION_COPY = {
   purchased: {
     subject: (label) => `${label} purchased 🎉`,
     title: 'Promotion Active! 🎉',
-    intro: (label) => `Your <strong style="color:#e2e2e2;">${label}</strong> purchase is confirmed and your promotion is live on <strong style="color:#e2e2e2;">Mystery Mansion</strong>.`,
+      intro: (label) => `Your <strong style="color:#e2e2e2;">${label}</strong> purchase is confirmed and your promotion is live on <strong style="color:#e2e2e2;">TopEscortNetwork</strong>.`,
     cta: 'View Promotion Status',
   },
   badge_renewed: {
@@ -78,7 +78,7 @@ export async function sendPromotionEmail({ to, username, event, tierLabel, detai
     category: EMAIL_CATEGORIES.PROMOTIONAL,
     from: FROM_ADDRESS,
     to,
-    subject: `Mystery Mansion — ${copy.subject(tierLabel)}`,
+    subject: `TopEscortNetwork — ${copy.subject(tierLabel)}`,
     html: buildEmail(content),
   });
 }

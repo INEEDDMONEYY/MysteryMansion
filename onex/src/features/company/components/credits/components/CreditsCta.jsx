@@ -21,7 +21,7 @@ export default function CreditsCta() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-pink-400/30 bg-pink-500/10 px-4 py-2 text-sm font-medium text-pink-300">
                 <Coins className="h-4 w-4" />
-                Mystery Mansion Credits
+                TopEscortNetwork Credits
               </div>
 
               <h2 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl">
@@ -29,7 +29,7 @@ export default function CreditsCta() {
               </h2>
 
               <p className="mt-5 text-lg leading-8 text-gray-300">
-                Explore the Mystery Mansion credit system and understand how
+                Explore the TopEscortNetwork credit system and understand how
                 credits fit into the platform before using them.
               </p>
             </div>

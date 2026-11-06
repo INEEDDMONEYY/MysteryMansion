@@ -83,7 +83,7 @@ export default function AdminDashboard() {
   const [emailEnabled, setEmailEnabled]     = useState(true);
 
   useEffect(() => {
-    setSEO("Admin | Mystery Mansion", "", { robots: "noindex, nofollow" });
+    setSEO("Admin | TopEscortNetwork", "", { robots: "noindex, nofollow" });
   }, []);
 
   // Live clock

@@ -105,7 +105,7 @@ function buildEmailHtml({ username, message, promoBlock }) {
     <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#111;">
       <div style="background:#111;padding:28px 32px;border-radius:12px 12px 0 0;">
         <h1 style="margin:0;font-size:20px;color:#fff;font-weight:700;letter-spacing:-.3px;">
-          Mystery Mansion
+          TopEscortNetwork
         </h1>
       </div>
       <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;">
@@ -114,15 +114,15 @@ function buildEmailHtml({ username, message, promoBlock }) {
         ${promoBlock}
         <div style="margin-top:28px;">
           <a
-            href="${env.CLIENT_URL || 'https://mysterymansion.app'}/home"
+            href="${env.CLIENT_URL || 'https://topescortnetwork.com'}/home"
             style="display:inline-block;background:#111;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;"
           >
-            Visit Mystery Mansion
+            Visit TopEscortNetwork
           </a>
         </div>
         <hr style="margin:28px 0;border:none;border-top:1px solid #e5e7eb;" />
         <p style="margin:0;font-size:11px;color:#9ca3af;">
-          © ${new Date().getFullYear()} Mystery Mansion. You are receiving this because you have an account on our platform.
+          © ${new Date().getFullYear()} TopEscortNetwork. You are receiving this because you have an account on our platform.
         </p>
       </div>
     </div>

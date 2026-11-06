@@ -390,7 +390,7 @@ export default function PostDetail() {
     if (loading) return;
 
     if (!post) {
-      setSEO("Listing Unavailable | Mystery Mansion", "", {
+      setSEO("Listing Unavailable | TopEscortNetwork", "", {
         robots: "noindex, follow",
       });
       return;

@@ -381,7 +381,7 @@ function CreditHero({ data }) {
               <div className="mt-7 rounded-xl border border-white/[0.06] bg-black/20 p-4">
                 <p className="text-xs leading-6 text-neutral-500">
                   Your balance and credit usage are associated with your
-                  Mystery Mansion account.
+                  TopEscortNetwork account.
                 </p>
               </div>
             </div>
@@ -540,8 +540,8 @@ export default function CreditsLearnMorePage() {
 
   useEffect(() => {
     setSEO(
-      "Learn More About Credits | Mystery Mansion",
-      "Learn how Mystery Mansion credits work, how to add credits, where they can be used, and how to understand your credit balance and activity."
+      "Learn More About Credits | TopEscortNetwork",
+      "Learn how TopEscortNetwork credits work, how to add credits, where they can be used, and how to understand your credit balance and activity."
     );
   }, []);
 

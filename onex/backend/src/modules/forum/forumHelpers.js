@@ -100,7 +100,7 @@ export const slugify = (value) =>
 export const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const DEFAULT_CATEGORIES = [
-  { name: 'General Discussion', slug: 'general', description: 'General conversations within the Mystery Mansion community.' },
+  { name: 'General Discussion', slug: 'general', description: 'General conversations within the TopEscortNetwork community.' },
   { name: 'Community', slug: 'community', description: 'Community conversations, experiences, and questions.' },
   { name: 'Questions & Help', slug: 'questions-help', description: 'Ask how things work and get answers from members.' },
   { name: 'Feedback & Ideas', slug: 'feedback-ideas', description: 'Suggest features and share feedback about the platform.' },

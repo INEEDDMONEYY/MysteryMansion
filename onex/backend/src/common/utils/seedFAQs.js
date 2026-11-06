@@ -39,7 +39,7 @@ const DEFAULT_FAQS = [
   },
   {
     question: 'Is this a sister company of other platforms?',
-    answer: 'No. We do not participate in the operations or business dealings of any other company or platform. Mystery Mansion is owned and monitored solely by Fantome Technologies. Any partner logos displayed in the footer represent partnerships or affiliations only and do not indicate shared ownership.',
+    answer: 'No. We do not participate in the operations or business dealings of any other company or platform. TopEscortNetwork is owned and monitored solely by Fantome Technologies. Any partner logos displayed in the footer represent partnerships or affiliations only and do not indicate shared ownership.',
     sortOrder: 7,
     isActive: true,
   },

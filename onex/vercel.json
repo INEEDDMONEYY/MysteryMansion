@@ -3,9 +3,41 @@
     {
       "source": "/",
       "has": [
+        { "type": "host", "value": "mysterymansion.app" }
+      ],
+      "destination": "https://topescortnetwork.com/",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
+        { "type": "host", "value": "www.mysterymansion.app" }
+      ],
+      "destination": "https://topescortnetwork.com/",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        { "type": "host", "value": "mysterymansion.app" }
+      ],
+      "destination": "https://topescortnetwork.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        { "type": "host", "value": "www.mysterymansion.app" }
+      ],
+      "destination": "https://topescortnetwork.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/",
+      "has": [
         { "type": "host", "value": "mysterymansion.xyz" }
       ],
-      "destination": "https://mysterymansion.app/",
+      "destination": "https://topescortnetwork.com/",
       "permanent": true
     },
     {
@@ -13,7 +45,7 @@
       "has": [
         { "type": "host", "value": "www.mysterymansion.xyz" }
       ],
-      "destination": "https://mysterymansion.app/",
+      "destination": "https://topescortnetwork.com/",
       "permanent": true
     },
     {
@@ -21,7 +53,7 @@
       "has": [
         { "type": "host", "value": "mysterymansion.xyz" }
       ],
-      "destination": "https://mysterymansion.app/:path*",
+      "destination": "https://topescortnetwork.com/:path*",
       "permanent": true
     },
     {
@@ -29,7 +61,7 @@
       "has": [
         { "type": "host", "value": "www.mysterymansion.xyz" }
       ],
-      "destination": "https://mysterymansion.app/:path*",
+      "destination": "https://topescortnetwork.com/:path*",
       "permanent": true
     }
   ],

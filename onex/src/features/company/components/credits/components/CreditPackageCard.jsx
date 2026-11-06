@@ -80,7 +80,7 @@ export default function CreditPackageCard({ pack, index = 0 }) {
       </div>
 
       <p className="mt-4 flex-1 text-sm leading-7 text-neutral-400">
-        Use your credits on eligible Mystery Mansion platform features when
+        Use your credits on eligible TopEscortNetwork platform features when
         credits are required.
       </p>
 

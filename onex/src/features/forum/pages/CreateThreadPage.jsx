@@ -40,7 +40,7 @@ export default function CreateThreadPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setSEO("Start a Discussion | Mystery Mansion Forum", "", {
+    setSEO("Start a Discussion | TopEscortNetwork Forum", "", {
       robots: "noindex, nofollow",
     });
   }, []);

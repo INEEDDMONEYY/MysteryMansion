@@ -29,5 +29,5 @@ Disallow: /post$
 Disallow: /forum/create
 Disallow: /referral/
 
-Sitemap: https://mysterymansion.app/sitemap.xml
-Sitemap: https://mysterymansion.app/sitemap-locations.xml
+Sitemap: https://topescortnetwork.com/sitemap.xml
+Sitemap: https://topescortnetwork.com/sitemap-locations.xml

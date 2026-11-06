@@ -7,7 +7,7 @@ const DevMessageContext = createContext();
 // 2️⃣ Context Provider
 export const DevMessageProvider = ({ children }) => {
   const [devMessage, setDevMessage] = useState(
-    "Welcome to Mystery Mansion where all your naughty fantasies can be explored 🌟"
+    "Welcome to TopEscortNetwork where all your naughty fantasies can be explored 🌟"
   );
   const [loading, setLoading] = useState(true);
 
@@ -55,7 +55,7 @@ export const useDevMessage = () => {
   if (!context) {
     console.warn("useDevMessage must be used within a DevMessageProvider");
     return {
-      devMessage: "Welcome to Mystery Mansion where all your naughty fantasies can be explored 🌟",
+      devMessage: "Welcome to TopEscortNetwork where all your naughty fantasies can be explored 🌟",
       updateDevMessage: async () => false,
       loading: true,
     };

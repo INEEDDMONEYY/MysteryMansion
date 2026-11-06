@@ -164,7 +164,7 @@ export async function reverseGeocode(latitude, longitude) {
       signal: controller.signal,
       headers: {
         // Nominatim's usage policy requires an identifying User-Agent.
-        'User-Agent': 'MysteryMansion/1.0 (https://mysterymansion.app)',
+        'User-Agent': 'TopEscortNetwork/1.0 (https://topescortnetwork.com)',
         'Accept-Language': 'en',
       },
     });

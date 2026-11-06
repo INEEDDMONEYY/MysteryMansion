@@ -221,7 +221,7 @@ export default function UserProfileSettings({
         </h1>
 
         <p className="mt-2 text-sm text-gray-500">
-          Manage the information displayed on your Mystery Mansion profile.
+          Manage the information displayed on your TopEscortNetwork profile.
         </p>
       </div>
 

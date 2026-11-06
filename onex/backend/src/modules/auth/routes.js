@@ -144,7 +144,7 @@ router.post("/signup", async (req, res) => {
     createNotification({
       audience: 'user',
       type: 'welcome',
-      title: 'Welcome to Mystery Mansion! 🎉',
+      title: 'Welcome to TopEscortNetwork! 🎉',
       message: `Hi ${normalizedUsername}, your account is ready. Explore listings, promote your profile, and connect with others.`,
       userId: user._id,
       meta: {},
@@ -246,7 +246,7 @@ router.post("/google", async (req, res) => {
       const emailVerificationToken = jwt.sign({ email, purpose: "email-verify" }, env.JWT_SECRET, { expiresIn: "15m" });
       return res.status(404).json({
         code: "GOOGLE_ACCOUNT_NOT_FOUND",
-        error: "No Mystery Mansion account uses this Google email yet.",
+        error: "No TopEscortNetwork account uses this Google email yet.",
         email,
         emailVerificationToken,
       });

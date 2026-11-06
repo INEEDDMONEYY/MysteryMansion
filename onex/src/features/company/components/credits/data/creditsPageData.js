@@ -14,9 +14,9 @@ import {
 
 export const creditsPageData = {
   hero: {
-    eyebrow: "Mystery Mansion Credits",
+    eyebrow: "TopEscortNetwork Credits",
     title: "More ways to use",
-    highlightedTitle: "Mystery Mansion.",
+    highlightedTitle: "TopEscortNetwork.",
     description:
       "Credits give you a simple way to access eligible platform features without having to manage each feature as a separate purchase.",
     primaryCta: {
@@ -43,7 +43,7 @@ export const creditsPageData = {
     eyebrow: "One Balance",
     title: "A simpler way to use platform features.",
     description:
-      "Mystery Mansion credits are designed to give users one account-based balance that can be used across eligible platform features.",
+      "TopEscortNetwork credits are designed to give users one account-based balance that can be used across eligible platform features.",
     items: [
       {
         title: "One Credit Balance",
@@ -96,7 +96,7 @@ export const creditsPageData = {
         number: "03",
         title: "Use Eligible Features",
         description:
-          "Apply credits toward eligible Mystery Mansion features when an applicable feature requires them.",
+          "Apply credits toward eligible TopEscortNetwork features when an applicable feature requires them.",
         icon: Rocket,
       },
       {
@@ -145,11 +145,11 @@ export const creditsPageData = {
 
 export const creditsLearnMoreData = {
   hero: {
-    eyebrow: "The Mystery Mansion Credit System",
+    eyebrow: "The TopEscortNetwork Credit System",
     title: "Everything you need to know about",
     highlightedTitle: "credits.",
     description:
-      "Learn how Mystery Mansion credits work, how to add them to your account, where they can be used, and how to keep track of your balance.",
+      "Learn how TopEscortNetwork credits work, how to add them to your account, where they can be used, and how to keep track of your balance.",
     primaryCta: {
       label: "View Credit Options",
       href: "/credit-packages",
@@ -172,9 +172,9 @@ export const creditsLearnMoreData = {
 
   introduction: {
     eyebrow: "Getting Started",
-    title: "One balance. More ways to use Mystery Mansion.",
+    title: "One balance. More ways to use TopEscortNetwork.",
     description:
-      "Mystery Mansion credits provide an account-based way to access eligible platform features. Instead of managing a separate payment process for every eligible feature, you can maintain a credit balance and use it when needed.",
+      "TopEscortNetwork credits provide an account-based way to access eligible platform features. Instead of managing a separate payment process for every eligible feature, you can maintain a credit balance and use it when needed.",
     items: [
       {
         title: "Understand Your Balance",
@@ -185,7 +185,7 @@ export const creditsLearnMoreData = {
       {
         title: "Know Where Credits Apply",
         description:
-          "Credits can be used for eligible Mystery Mansion features. Not every platform feature necessarily requires credits.",
+          "Credits can be used for eligible TopEscortNetwork features. Not every platform feature necessarily requires credits.",
         icon: Info,
       },
       {
@@ -207,7 +207,7 @@ export const creditsLearnMoreData = {
         number: "01",
         title: "Explore Available Options",
         description:
-          "Review the credit packages or other credit-acquiring options currently made available by Mystery Mansion.",
+          "Review the credit packages or other credit-acquiring options currently made available by TopEscortNetwork.",
         icon: Coins,
       },
       {
@@ -231,7 +231,7 @@ export const creditsLearnMoreData = {
     eyebrow: "Using Your Credits",
     title: "Use credits when eligible features require them.",
     description:
-      "Credits are intended to support access to eligible Mystery Mansion functionality. Their use depends on the feature and the applicable platform requirements.",
+      "Credits are intended to support access to eligible TopEscortNetwork functionality. Their use depends on the feature and the applicable platform requirements.",
     items: [
       {
         title: "Check Feature Eligibility",
@@ -258,7 +258,7 @@ export const creditsLearnMoreData = {
     eyebrow: "Your Account",
     title: "Stay informed about your credit activity.",
     description:
-      "Your credits are associated with your Mystery Mansion account, helping keep your balance and eligible usage connected to one place.",
+      "Your credits are associated with your TopEscortNetwork account, helping keep your balance and eligible usage connected to one place.",
     items: [
       {
         title: "Available Balance",
@@ -285,7 +285,7 @@ export const creditsLearnMoreData = {
     eyebrow: "Before You Begin",
     title: "A few things to understand about credits.",
     description:
-      "Knowing how credit eligibility and account balances work can help you make informed decisions when using Mystery Mansion.",
+      "Knowing how credit eligibility and account balances work can help you make informed decisions when using TopEscortNetwork.",
     items: [
       {
         title: "Credits Have Specific Uses",
@@ -296,7 +296,7 @@ export const creditsLearnMoreData = {
       {
         title: "Availability May Vary",
         description:
-          "Available packages, credit-acquiring options, and feature requirements depend on what Mystery Mansion currently offers.",
+          "Available packages, credit-acquiring options, and feature requirements depend on what TopEscortNetwork currently offers.",
         icon: Info,
       },
       {
@@ -312,12 +312,12 @@ export const creditsLearnMoreData = {
     eyebrow: "Frequently Asked Questions",
     title: "Questions about credits?",
     description:
-      "Here are some basics to help you understand the Mystery Mansion credit system.",
+      "Here are some basics to help you understand the TopEscortNetwork credit system.",
     items: [
       {
-        question: "What are Mystery Mansion credits?",
+        question: "What are TopEscortNetwork credits?",
         answer:
-          "Mystery Mansion credits are an account-based balance that can be used to access eligible platform features when credits are required.",
+          "TopEscortNetwork credits are an account-based balance that can be used to access eligible platform features when credits are required.",
         icon: Coins,
       },
       {
@@ -335,7 +335,7 @@ export const creditsLearnMoreData = {
       {
         question: "Where can I check my credit balance?",
         answer:
-          "Check your Mystery Mansion account for the available balance and credit activity information provided by the platform.",
+          "Check your TopEscortNetwork account for the available balance and credit activity information provided by the platform.",
         icon: WalletCards,
       },
       {
@@ -347,7 +347,7 @@ export const creditsLearnMoreData = {
       {
         question: "What if I have a question about a credit transaction?",
         answer:
-          "Review your available account activity and the applicable platform policies. Contact Mystery Mansion through its available support channel if you need help understanding a transaction.",
+          "Review your available account activity and the applicable platform policies. Contact TopEscortNetwork through its available support channel if you need help understanding a transaction.",
         icon: Info,
       },
     ],
@@ -355,7 +355,7 @@ export const creditsLearnMoreData = {
 
   cta: {
     eyebrow: "Ready to Get Started?",
-    title: "Make the most of your Mystery Mansion credits.",
+    title: "Make the most of your TopEscortNetwork credits.",
     description:
       "Explore the available credit options and learn which platform features support credit usage.",
     primaryCta: {

@@ -16,7 +16,7 @@ export const DEFAULT_FORUM_CATEGORIES = Object.freeze([
     name: "General Discussion",
     slug: "general",
     description:
-      "General conversations and discussions within the Mystery Mansion community.",
+      "General conversations and discussions within the TopEscortNetwork community.",
     source: FORUM_CATEGORY_SOURCES.ADMIN,
     status: FORUM_CATEGORY_STATUSES.APPROVED,
     archived: false,

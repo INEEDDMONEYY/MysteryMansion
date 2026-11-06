@@ -21,7 +21,7 @@ export default function ForumActivityPage({ section }) {
   const { user } = useContext(UserContext) || {};
 
   useEffect(() => {
-    setSEO(`${title} | Mystery Mansion`, description, {
+    setSEO(`${title} | TopEscortNetwork`, description, {
       canonicalPath: `/forum/${section}`,
       robots: "noindex, nofollow",
     });

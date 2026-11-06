@@ -88,10 +88,10 @@ export default function PromotionPayment() {
             <li>
                 <span className="font-semibold">Optional:</span> After sending payment, send a screenshot of the confirmation to our support email:{" "}
                 <a
-                  href="mailto:support.mysterymansion@gmail.com"
+                  href="mailto:fantometechnologies@gmail.com"
                   className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-700"
                 >
-                  support.mysterymansion@gmail.com
+                  fantometechnologies@gmail.com
                 </a>
                 . Please allow up to 3-5 minutes for processing after we receive your payment confirmation.
             </li>

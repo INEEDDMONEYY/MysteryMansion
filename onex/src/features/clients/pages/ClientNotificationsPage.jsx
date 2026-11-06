@@ -34,7 +34,7 @@ export default function ClientNotificationsPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setSEO('Notifications | Mystery Mansion', '', { robots: 'noindex, nofollow' });
+    setSEO('Notifications | TopEscortNetwork', '', { robots: 'noindex, nofollow' });
   }, []);
 
   const handleItemClick = (n) => {

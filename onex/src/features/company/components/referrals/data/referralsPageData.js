@@ -17,7 +17,7 @@ export const referralsPageData = {
     title: "Bring someone",
     highlightedTitle: "into the community.",
     description:
-      "Mystery Mansion referrals give providers a simple way to invite potential clients to join the platform and begin exploring.",
+      "TopEscortNetwork referrals give providers a simple way to invite potential clients to join the platform and begin exploring.",
     primaryCta: {
       label: "How Referrals Work",
       href: "#how-it-works",
@@ -32,7 +32,7 @@ export const referralsPageData = {
       steps: [
         "Provider shares a referral link",
         "Visitor opens the invitation",
-        "Mystery Mansion identifies the referral",
+        "TopEscortNetwork identifies the referral",
         "Visitor continues to Client registration",
       ],
     },
@@ -42,7 +42,7 @@ export const referralsPageData = {
     eyebrow: "The Referral Program",
     title: "A simple way to invite new clients.",
     description:
-      "Providers can share referral links with people they want to introduce to Mystery Mansion. The public referral experience explains who invited the visitor and provides a clear path into the platform.",
+      "Providers can share referral links with people they want to introduce to TopEscortNetwork. The public referral experience explains who invited the visitor and provides a clear path into the platform.",
     items: [
       {
         title: "Share a Link",
@@ -53,7 +53,7 @@ export const referralsPageData = {
       {
         title: "Identify the Invitation",
         description:
-          "When a visitor opens the link, Mystery Mansion can associate the visit with the referring provider.",
+          "When a visitor opens the link, TopEscortNetwork can associate the visit with the referring provider.",
         icon: BadgeCheck,
       },
       {
@@ -95,7 +95,7 @@ export const referralsPageData = {
         number: "03",
         title: "Referral Source Is Identified",
         description:
-          "Mystery Mansion identifies the provider associated with the referral before showing the landing page.",
+          "TopEscortNetwork identifies the provider associated with the referral before showing the landing page.",
         icon: BadgeCheck,
       },
       {
@@ -126,7 +126,7 @@ export const referralsPageData = {
     eyebrow: "Why Referrals",
     title: "Built around a clear invitation.",
     description:
-      "Referral links create a direct connection between a provider's invitation and a new visitor's introduction to Mystery Mansion.",
+      "Referral links create a direct connection between a provider's invitation and a new visitor's introduction to TopEscortNetwork.",
     items: [
       {
         title: "Direct Invitations",
@@ -162,10 +162,10 @@ export const referralsPageData = {
       "The referral system works best when links are shared intentionally and visitors understand who invited them.",
     items: [
       "Referral links should be shared with people who may genuinely be interested in the platform.",
-      "Providers should not misrepresent Mystery Mansion or the purpose of the referral.",
+      "Providers should not misrepresent TopEscortNetwork or the purpose of the referral.",
       "Visitors should be able to clearly identify the provider associated with their invitation.",
       "Referral activity should not be manipulated through fraudulent, automated, or deceptive behavior.",
-      "Referral program rules may evolve as Mystery Mansion expands its referral and milestone systems.",
+      "Referral program rules may evolve as TopEscortNetwork expands its referral and milestone systems.",
     ],
   },
 
@@ -173,6 +173,6 @@ export const referralsPageData = {
     eyebrow: "Invite Someone New",
     title: "Your next referral starts with one link.",
     description:
-      "A clear invitation can give a potential client a direct introduction to Mystery Mansion and the community waiting for them.",
+      "A clear invitation can give a potential client a direct introduction to TopEscortNetwork and the community waiting for them.",
   },
 };

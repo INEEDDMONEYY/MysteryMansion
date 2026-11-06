@@ -3,7 +3,7 @@ export const termsOfUseData = {
     eyebrow: "Terms of Use",
     title: "Know the rules.",
     description:
-      "These Terms of Service govern your access to and use of the Mystery Mansion mobile application, website, and related services.",
+      "These Terms of Service govern your access to and use of the TopEscortNetwork mobile application, website, and related services.",
     effectiveDate: "09-24-2026",
   },
 
@@ -11,7 +11,7 @@ export const termsOfUseData = {
     eyebrow: "Before You Use the Platform",
     title: "Please review the terms before getting started.",
     description:
-      "Welcome to Mystery Mansion. By accessing or using the Platform, you agree to be bound by these Terms.",
+      "Welcome to TopEscortNetwork. By accessing or using the Platform, you agree to be bound by these Terms.",
   },
 
   sections: [
@@ -180,7 +180,7 @@ export const termsOfUseData = {
           type: "email",
           before:
             "For questions or concerns, contact us at",
-          email: "support.mysterymansion@gmail.com",
+          email: "fantometechnologies@gmail.com",
         },
       ],
     },

@@ -52,7 +52,7 @@ export async function sendForumDigestEmail({ to, username, items, frequency, set
     ${item.newDiscussion ? ' &mdash; new discussion' : ''} &mdash; ${item.replyCount} new replies</li>`).join('');
   return sendEmail({
     from: FROM_ADDRESS, to,
-    subject: `Your ${frequency} Mystery Mansion forum digest`,
+    subject: `Your ${frequency} TopEscortNetwork forum digest`,
     html: buildEmail(`<h2>Your forum digest</h2><p>Hi ${escapeHtml(username)},</p>
       <p>New activity in the discussions and categories you follow:</p><ul>${rows}</ul>
       ${items.length > 20 ? `<p>${items.length - 20} more active discussions are available in the forum.</p>` : ''}

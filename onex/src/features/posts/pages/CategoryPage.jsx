@@ -206,11 +206,11 @@ export default function CategoryPage() {
     DEFAULT_CATEGORY_IMAGE;
 
   useEffect(() => {
-    const title = `${categoryNameDisplay} | Mystery Mansion`;
+    const title = `${categoryNameDisplay} | TopEscortNetwork`;
 
     const metaDescription =
       description ||
-      `Explore ${categoryNameDisplay} listings on Mystery Mansion.`;
+      `Explore ${categoryNameDisplay} listings on TopEscortNetwork.`;
 
     setSEO(
       title,

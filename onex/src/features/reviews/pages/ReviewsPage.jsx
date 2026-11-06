@@ -33,8 +33,8 @@ export default function ReviewsPage() {
 
     if (username && username !== "this user") {
       setSEO(
-        `Client Reviews for ${username} | Mystery Mansion`,
-        `Read verified client reviews for ${username} on Mystery Mansion. See honest feedback from real clients.`
+        `Client Reviews for ${username} | TopEscortNetwork`,
+        `Read verified client reviews for ${username} on TopEscortNetwork. See honest feedback from real clients.`
       );
     }
   };

@@ -26,7 +26,7 @@ export default function ForumHeader({
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-pink-400/30 bg-pink-500/10 px-4 py-2 text-sm font-medium text-pink-300">
               <MessageSquareText className="h-4 w-4" />
-              Mystery Mansion Community
+              TopEscortNetwork Community
             </div>
 
             <h1 className="max-w-4xl text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
@@ -38,7 +38,7 @@ export default function ForumHeader({
 
             <p className="mt-6 max-w-2xl text-base leading-7 text-gray-300 sm:mt-7 sm:text-xl sm:leading-8">
               Ask questions, exchange experiences, share knowledge, and
-              connect with the Mystery Mansion community through meaningful
+              connect with the TopEscortNetwork community through meaningful
               discussions.
             </p>
 

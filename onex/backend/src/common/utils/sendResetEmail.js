@@ -11,14 +11,14 @@ async function sendResetEmail({ to, username, resetToken, isAdminInvite = false 
     const resetUrl = env.CLIENT_URL + '/reset-password/' + resetToken;
 
     const subject = isAdminInvite
-      ? 'Your Mystery Mansion Account Is Ready'
-      : 'Reset Your Mystery Mansion Password';
+      ? 'Your TopEscortNetwork Account Is Ready'
+      : 'Reset Your TopEscortNetwork Password';
 
     const title = isAdminInvite ? 'Account Created by Admin' : 'Password Reset Request';
 
     const intro = isAdminInvite
-      ? 'An admin has created a <strong style="color:#e2e2e2;">Mystery Mansion</strong> account for you. Use the button below to set your password and activate your account.'
-      : 'We received a request to reset the password on your <strong style="color:#e2e2e2;">Mystery Mansion</strong> account. If this was you, click below to continue.';
+      ? 'An admin has created a <strong style="color:#e2e2e2;">TopEscortNetwork</strong> account for you. Use the button below to set your password and activate your account.'
+      : 'We received a request to reset the password on your <strong style="color:#e2e2e2;">TopEscortNetwork</strong> account. If this was you, click below to continue.';
 
     const actionLabel = isAdminInvite ? 'Create My Password' : 'Reset My Password';
 

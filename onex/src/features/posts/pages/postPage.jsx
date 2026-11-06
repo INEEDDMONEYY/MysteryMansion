@@ -16,11 +16,11 @@ export default function PostPage() {
           {/* 🏠 Header Section */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 mb-4">
             <h1 className="text-black text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
-              Mystery Mansion
+              TopEscortNetwork
             </h1>
             <img
               src={Logo}
-              alt="Mystery Mansion Logo"
+              alt="TopEscortNetwork Logo"
               className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-contain"
             />
           </div>

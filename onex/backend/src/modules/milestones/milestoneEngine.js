@@ -47,7 +47,7 @@ export async function computeLegacyDefinitions(user) {
         {
           id: "get-started",
           title: "Get Started",
-          description: "Create your account and establish your presence on Mystery Mansion.",
+          description: "Create your account and establish your presence on TopEscortNetwork.",
           achieved: true,
           achievedAt: user.createdAt,
         },
@@ -80,7 +80,7 @@ export async function computeLegacyDefinitions(user) {
         {
           id: "get-started",
           title: "Get Started",
-          description: "Create your account and begin exploring Mystery Mansion.",
+          description: "Create your account and begin exploring TopEscortNetwork.",
           achieved: true,
           achievedAt: user.createdAt,
         },

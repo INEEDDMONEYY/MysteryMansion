@@ -1,4 +1,4 @@
-import loadingSvg from "@/assets/logos/loading.svg";
+import loadingSvg from "@/assets/icons/ten-loader.svg";
 
 // The SVG animates itself (SMIL), so a plain <img> keeps playing everywhere.
 const SIZES = {
@@ -15,7 +15,7 @@ const TONES = {
 };
 
 /**
- * Mystery Mansion loading animation.
+ * TopEscortNetwork loading animation.
  *
  * size:       xs | sm | md | lg | xl
  * label:      optional visible caption under the animation

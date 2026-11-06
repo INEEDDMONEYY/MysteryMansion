@@ -80,7 +80,7 @@ export default function LocationPage() {
           : undefined,
       });
     } else if (status === "notfound" || status === "error") {
-      setSEO("Location Not Found | Mystery Mansion", "This location page is not available.", {
+      setSEO("Location Not Found | TopEscortNetwork", "This location page is not available.", {
         robots: "noindex, follow",
         canonicalPath: "/locations",
       });

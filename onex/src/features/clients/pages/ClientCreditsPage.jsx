@@ -308,7 +308,7 @@ export default function ClientCreditsPage() {
   const prefilledRef = useRef(false);
 
   useEffect(() => {
-    setSEO("My Credits | Mystery Mansion", "", {
+    setSEO("My Credits | TopEscortNetwork", "", {
       robots: "noindex, nofollow",
     });
 
@@ -591,7 +591,7 @@ export default function ClientCreditsPage() {
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g. Sent $10 via Venmo to @mysterymansion"
+              placeholder="e.g. Sent $10 via Venmo to @topescortnetwork"
               rows={2}
               maxLength={500}
               className="w-full resize-none rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-600 focus:ring-2 focus:ring-gray-200"

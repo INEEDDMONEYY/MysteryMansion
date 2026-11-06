@@ -35,7 +35,7 @@ function FollowedThreads() {
 export default function ForumFollowedPage() {
   const { user } = useContext(UserContext) || {};
   useEffect(() => {
-    setSEO("Threads Followed | Mystery Mansion Forum", "Keep track of the forum discussions you follow.", {
+    setSEO("Threads Followed | TopEscortNetwork Forum", "Keep track of the forum discussions you follow.", {
       canonicalPath: "/forum/followed",
       robots: "noindex, nofollow",
     });

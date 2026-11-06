@@ -84,7 +84,7 @@ export default function LikedPostsPage({ variant = "user" }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    setSEO('Liked Posts | Mystery Mansion', '', { robots: 'noindex, nofollow' });
+    setSEO('Liked Posts | TopEscortNetwork', '', { robots: 'noindex, nofollow' });
     api.get('/users/me/liked-posts')
       .then(({ data }) => setPosts(Array.isArray(data) ? data : []))
       .catch((err) => setError(err?.response?.data?.error || 'Failed to load liked posts.'))

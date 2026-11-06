@@ -159,7 +159,7 @@ export default function MyMembershipPage() {
   const creditsPath = user?.accountType === "client" ? "/client/credits" : "/user/credits";
 
   useEffect(() => {
-    setSEO("My Membership | Mystery Mansion", "", { robots: "noindex, nofollow" });
+    setSEO("My Membership | TopEscortNetwork", "", { robots: "noindex, nofollow" });
     fetchMembershipPlans().then(setPlans).catch(() => {});
   }, []);
 

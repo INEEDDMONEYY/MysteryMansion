@@ -18,7 +18,7 @@ export async function sendPlatformUpdateEmail({ to, username, title, description
   const content = `
     ${heading('Platform Update')}
     <p style="margin:0 0 20px;color:#c8c8c8;">Hi ${escapeHtml(username || 'there')},</p>
-    <p style="margin:0 0 16px;color:#c8c8c8;">We&rsquo;ve just shipped something new on <strong style="color:#e2e2e2;">Mystery Mansion</strong>. Here&rsquo;s what&rsquo;s changed:</p>
+    <p style="margin:0 0 16px;color:#c8c8c8;">We&rsquo;ve just shipped something new on <strong style="color:#e2e2e2;">TopEscortNetwork</strong>. Here&rsquo;s what&rsquo;s changed:</p>
     ${darkCard(`
       <p style="margin:0 0 4px;color:#d5197e;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;">${escapeHtml(typeLabel)}</p>
       <p style="margin:0 0 10px;color:#ffffff;font-size:17px;font-weight:700;">${escapeHtml(title || '')}</p>
@@ -32,7 +32,7 @@ export async function sendPlatformUpdateEmail({ to, username, title, description
     category: EMAIL_CATEGORIES.PROMOTIONAL,
     from: FROM_ADDRESS,
     to,
-    subject: `Mystery Mansion — ${escapeHtml(title || 'Platform Update')}`,
+    subject: `TopEscortNetwork — ${escapeHtml(title || 'Platform Update')}`,
     html: buildEmail(content),
   });
 }

@@ -8,7 +8,7 @@ export default function CreditPackagesGrid({ packages = [] }) {
           No credit packages are currently available.
         </h2>
         <p className="mt-3 text-sm leading-7 text-neutral-400">
-          Please check back later for available Mystery Mansion credit options.
+          Please check back later for available TopEscortNetwork credit options.
         </p>
       </div>
     );

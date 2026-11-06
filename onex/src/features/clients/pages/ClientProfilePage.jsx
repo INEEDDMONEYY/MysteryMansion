@@ -16,7 +16,7 @@ export default function ClientProfilePage() {
   const { user } = useContext(UserContext);
 
   useEffect(() => {
-    setSEO("My Profile | Mystery Mansion", "", {
+    setSEO("My Profile | TopEscortNetwork", "", {
       robots: "noindex, nofollow",
     });
   }, []);

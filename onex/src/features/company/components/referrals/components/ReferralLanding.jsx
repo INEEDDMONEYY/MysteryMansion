@@ -10,7 +10,7 @@ import {
 import { Link } from "react-router-dom";
 
 export default function ReferralLanding({
-  providerName = "A Mystery Mansion Provider",
+  providerName = "A TopEscortNetwork Provider",
   referralCode = "",
 }) {
   const signupHref = referralCode
@@ -39,7 +39,7 @@ export default function ReferralLanding({
           <h1 className="mt-7 text-5xl font-black tracking-tight sm:text-6xl lg:text-7xl">
             Welcome to
             <span className="block bg-gradient-to-r from-pink-400 via-pink-500 to-yellow-400 bg-clip-text text-transparent">
-              Mystery Mansion.
+              TopEscortNetwork.
             </span>
           </h1>
 
@@ -47,7 +47,7 @@ export default function ReferralLanding({
             <span className="font-semibold text-white">
               {providerName}
             </span>{" "}
-            invited you to explore Mystery Mansion and create a Client
+            invited you to explore TopEscortNetwork and create a Client
             account.
           </p>
 
@@ -83,7 +83,7 @@ export default function ReferralLanding({
             {
               title: "Personal Invitation",
               description:
-                "This invitation connects you to the Mystery Mansion experience through your referring provider.",
+                "This invitation connects you to the TopEscortNetwork experience through your referring provider.",
               icon: BadgeCheck,
             },
             {
@@ -95,7 +95,7 @@ export default function ReferralLanding({
             {
               title: "Built for the Community",
               description:
-                "Mystery Mansion is designed to help providers and clients connect through a structured platform experience.",
+                "TopEscortNetwork is designed to help providers and clients connect through a structured platform experience.",
               icon: ShieldCheck,
             },
           ].map((item) => {

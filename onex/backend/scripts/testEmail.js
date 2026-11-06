@@ -70,7 +70,7 @@ const SENDERS = {
   'welcome-provider': () => sendWelcomeEmail({ to, username: 'TestProvider', accountType: 'provider' }),
   'welcome-client': () => sendWelcomeEmail({ to, username: 'TestClient', accountType: 'client' }),
   verify: () => sendVerificationCodeEmail({ to, code: '482917' }),
-  reset: () => sendResetEmail({ to, username: 'TestUser', resetUrl: 'https://mysterymansion.app/reset?token=test123' }),
+  reset: () => sendResetEmail({ to, username: 'TestUser', resetUrl: 'https://topescortnetwork.com/reset?token=test123' }),
   deletion: () => sendAccountDeletionEmail({ to, username: 'TestUser' }),
   update: () =>
     sendPlatformUpdateEmail({
@@ -87,7 +87,7 @@ const SENDERS = {
       recipientUsername: 'TestProvider',
       senderUsername: 'TestFan',
       messageText: 'Hey! I saw your profile and would love to chat about a booking.',
-      ctaUrl: 'https://mysterymansion.app/user/messages?conv=test123',
+      ctaUrl: 'https://topescortnetwork.com/user/messages?conv=test123',
     }),
 
   // ── Account engagement ────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ const SENDERS = {
       username: 'TestProvider',
       type: 'post_liked',
       message: 'TestFan liked your post.',
-      ctaUrl: 'https://mysterymansion.app/posts/test123',
+      ctaUrl: 'https://topescortnetwork.com/posts/test123',
     }),
   'account-activity-comment': () =>
     sendAccountActivityEmail({
@@ -105,7 +105,7 @@ const SENDERS = {
       username: 'TestProvider',
       type: 'new_comment',
       message: 'TestFan commented on your post: "Looking great!"',
-      ctaUrl: 'https://mysterymansion.app/posts/test123',
+      ctaUrl: 'https://topescortnetwork.com/posts/test123',
     }),
   'account-activity-review': () =>
     sendAccountActivityEmail({
@@ -113,7 +113,7 @@ const SENDERS = {
       username: 'TestProvider',
       type: 'new_review',
       message: 'TestFan left you a review: "Amazing experience, highly recommend!"',
-      ctaUrl: 'https://mysterymansion.app/user/test123',
+      ctaUrl: 'https://topescortnetwork.com/user/test123',
     }),
   'account-inactivity': () => sendAccountInactivityEmail({ to, username: 'TestProvider', days: 30 }),
 

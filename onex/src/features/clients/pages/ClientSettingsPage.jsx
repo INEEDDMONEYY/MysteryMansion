@@ -258,7 +258,7 @@ export default function ClientSettingsPage({
           </h1>
 
           <p className="max-w-2xl text-sm leading-relaxed text-gray-500 sm:text-base">
-            Manage how Mystery Mansion communicates with you and customize
+            Manage how TopEscortNetwork communicates with you and customize
             your forum experience.
           </p>
         </motion.div>

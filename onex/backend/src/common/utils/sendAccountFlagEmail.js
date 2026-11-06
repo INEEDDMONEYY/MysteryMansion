@@ -27,7 +27,7 @@ export async function sendFlagSubmittedEmail({ to, username, targetType }) {
     ${heading('Report Received')}
     <p style="margin:0 0 20px;color:#c8c8c8;">Hi ${escapeHtml(username || 'there')},</p>
     <p style="margin:0 0 16px;color:#c8c8c8;">
-      Thanks for helping keep <strong style="color:#e2e2e2;">Mystery Mansion</strong> safe.
+      Thanks for helping keep <strong style="color:#e2e2e2;">TopEscortNetwork</strong> safe.
       We received your report about a ${targetLabel} and our team will review it shortly.
     </p>
     ${darkCard(`
@@ -43,7 +43,7 @@ export async function sendFlagSubmittedEmail({ to, username, targetType }) {
     category: EMAIL_CATEGORIES.ACCOUNT_FLAGS,
     from: FROM_ADDRESS,
     to,
-    subject: 'Mystery Mansion — We received your report',
+    subject: 'TopEscortNetwork — We received your report',
     html: buildEmail(content),
   });
 }
@@ -59,7 +59,7 @@ export async function sendFlagStatusUpdateEmail({ to, username, statusLabel, mes
     ${heading('Update on Your Report')}
     <p style="margin:0 0 20px;color:#c8c8c8;">Hi ${escapeHtml(username || 'there')},</p>
     <p style="margin:0 0 16px;color:#c8c8c8;">
-      The status of a report you submitted on <strong style="color:#e2e2e2;">Mystery Mansion</strong> has changed:
+      The status of a report you submitted on <strong style="color:#e2e2e2;">TopEscortNetwork</strong> has changed:
     </p>
     ${darkCard(`
       <p style="margin:0 0 4px;color:#d5197e;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;">New Status</p>
@@ -74,7 +74,7 @@ export async function sendFlagStatusUpdateEmail({ to, username, statusLabel, mes
     category: EMAIL_CATEGORIES.ACCOUNT_FLAGS,
     from: FROM_ADDRESS,
     to,
-    subject: `Mystery Mansion — Your report is now: ${statusLabel}`,
+    subject: `TopEscortNetwork — Your report is now: ${statusLabel}`,
     html: buildEmail(content),
   });
 }
@@ -98,7 +98,7 @@ export async function sendAccountFlaggedEmail({ to, username, targetType }) {
     <p style="margin:0 0 20px;color:#c8c8c8;">Hi ${escapeHtml(username || 'there')},</p>
     <p style="margin:0 0 16px;color:#c8c8c8;">
       A report was submitted about your ${isPost ? 'post' : 'account'} on
-      <strong style="color:#e2e2e2;">Mystery Mansion</strong> and is waiting for review by our team.
+      <strong style="color:#e2e2e2;">TopEscortNetwork</strong> and is waiting for review by our team.
     </p>
     ${darkCard(`
       <p style="margin:0;color:#e2e2e2;font-size:14px;line-height:1.7;">
@@ -115,8 +115,8 @@ export async function sendAccountFlaggedEmail({ to, username, targetType }) {
     from: FROM_ADDRESS,
     to,
     subject: isPost
-      ? 'Mystery Mansion — Your post was reported'
-      : 'Mystery Mansion — Your account was reported',
+      ? 'TopEscortNetwork — Your post was reported'
+      : 'TopEscortNetwork — Your account was reported',
     html: buildEmail(content),
   });
 }

@@ -23,7 +23,7 @@ export default function UserMessages() {
   const isClient = user?.accountType === "client";
 
   useEffect(() => {
-    setSEO("Messages | Mystery Mansion", "", { robots: "noindex, nofollow" });
+    setSEO("Messages | TopEscortNetwork", "", { robots: "noindex, nofollow" });
   }, []);
 
   useEffect(() => {

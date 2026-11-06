@@ -78,7 +78,7 @@ export default function UserMilestonesPage({ variant = "user" }) {
   const total = (data?.recent?.length ?? 0) + (data?.new?.length ?? 0);
 
   useEffect(() => {
-    setSEO("Milestones | Mystery Mansion", "", { robots: "noindex, nofollow" });
+    setSEO("Milestones | TopEscortNetwork", "", { robots: "noindex, nofollow" });
   }, []);
 
   useEffect(() => {
@@ -107,7 +107,7 @@ export default function UserMilestonesPage({ variant = "user" }) {
             </span>
           )}
         </div>
-        <p className="text-gray-500 text-sm mt-0.5">Track your progress on Mystery Mansion.</p>
+        <p className="text-gray-500 text-sm mt-0.5">Track your progress on TopEscortNetwork.</p>
       </div>
 
       {loading ? (

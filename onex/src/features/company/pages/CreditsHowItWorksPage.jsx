@@ -213,7 +213,7 @@ function CreditsHero({ data }) {
 
             <div className="mt-7 rounded-xl border border-white/[0.06] bg-black/20 p-4">
               <p className="text-xs leading-6 text-neutral-500">
-                One account-based balance for eligible Mystery Mansion features.
+                One account-based balance for eligible TopEscortNetwork features.
               </p>
             </div>
           </div>
@@ -329,7 +329,7 @@ function CreditNotice() {
 
           <p className="mt-3 text-sm leading-7 text-neutral-400 sm:text-base">
             Credit eligibility, available packages, and applicable purchase
-            conditions depend on the current Mystery Mansion offering. Review
+            conditions depend on the current TopEscortNetwork offering. Review
             the published terms and credit policies for information about
             purchase conditions, expiration, and refunds.
           </p>
@@ -375,7 +375,7 @@ function CreditsCta() {
 
         <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-neutral-400">
           Review the available credit packages and learn how credits can be
-          used with eligible Mystery Mansion features.
+          used with eligible TopEscortNetwork features.
         </p>
 
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
@@ -397,8 +397,8 @@ export default function CreditsHowItWorksPage() {
 
   useEffect(() => {
     setSEO(
-      "How Credits Work | Mystery Mansion",
-      "Learn how Mystery Mansion credits are added to your account, kept in your balance, used on eligible features, and tracked through your account."
+      "How Credits Work | TopEscortNetwork",
+      "Learn how TopEscortNetwork credits are added to your account, kept in your balance, used on eligible features, and tracked through your account."
     );
   }, []);
 

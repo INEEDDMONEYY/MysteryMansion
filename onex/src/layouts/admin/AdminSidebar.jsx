@@ -127,7 +127,7 @@ export default function AdminSidebar({
 
             <div>
               <h2 className="text-white font-semibold">
-                Mystery Mansion
+                TopEscortNetwork
               </h2>
 
               <p className="text-xs text-neutral-500">

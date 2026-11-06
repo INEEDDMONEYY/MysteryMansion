@@ -5,7 +5,7 @@ import { isEmailCategoryAllowed } from './notificationPreferences.js';
 
 const UNOSEND_API_URL = 'https://api.unosend.co/v1/emails';
 const PROVIDER_TIMEOUT_MS = 10_000;
-export const FROM_ADDRESS = 'Mystery Mansion <no-reply@mysterymansion.app>';
+export const FROM_ADDRESS = 'TopEscortNetwork <no-reply@topescortnetwork.com>';
 
 /**
  * Send a transactional email via Cloudflare when configured.

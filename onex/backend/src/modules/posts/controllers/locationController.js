@@ -10,7 +10,7 @@ import {
 import { AUTHOR_LIST_FIELDS } from './postController.js';
 import { orderBoostedFirst } from '../postBoost.js';
 
-const SITE_URL = (process.env.SITE_URL || 'https://mysterymansion.app').replace(/\/+$/, '');
+const SITE_URL = (process.env.SITE_URL || 'https://topescortnetwork.com').replace(/\/+$/, '');
 const MAX_LOCATION_POSTS = 120;
 const MAX_NEARBY = 12;
 const MAX_TOP_PROVIDERS = 12;

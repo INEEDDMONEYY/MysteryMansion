@@ -127,7 +127,7 @@ export default function UserDashboard() {
   const [credits, setCredits] = useState(null);
 
   useEffect(() => {
-    setSEO("Dashboard | Mystery Mansion", "", { robots: "noindex, nofollow" });
+    setSEO("Dashboard | TopEscortNetwork", "", { robots: "noindex, nofollow" });
     api.get("/users/me/analytics")
       .then(({ data }) => setData(data))
       .catch(() => setData(null))

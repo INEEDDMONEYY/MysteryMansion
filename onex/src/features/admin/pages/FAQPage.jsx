@@ -50,7 +50,7 @@ const FALLBACK_FAQS = [
     {
         _id: 'f7',
         question: "Is this a sister company of other platforms?",
-        answer: "No. We do not participate in the operations or business dealings of any other company or platform. Mystery Mansion is owned and monitored solely by Fantome Technologies.",
+        answer: "No. We do not participate in the operations or business dealings of any other company or platform. TopEscortNetwork is owned and monitored solely by Fantome Technologies.",
     },
     {
         _id: 'f8',

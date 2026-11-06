@@ -42,7 +42,7 @@ export async function sendAccountActivityEmail({ to, username, type, message, ct
     ${darkCard(`
       <p style="margin:0;color:#e2e2e2;font-size:14px;line-height:1.7;">${escapeHtml(message)}</p>
     `)}
-    ${ctaButton('View on Mystery Mansion', ctaUrl || env.CLIENT_URL)}
+    ${ctaButton('View on TopEscortNetwork', ctaUrl || env.CLIENT_URL)}
   `;
 
   await sendEmail({
@@ -67,7 +67,7 @@ export async function sendAccountInactivityEmail({ to, username, days }) {
     <p style="margin:0 0 20px;color:#c8c8c8;">Hi ${escapeHtml(username || 'there')},</p>
     <p style="margin:0 0 16px;color:#c8c8c8;">
       It's been <strong style="color:#e2e2e2;">${days} days</strong> since your last post on
-      <strong style="color:#e2e2e2;">Mystery Mansion</strong>. Providers who post regularly stay
+      <strong style="color:#e2e2e2;">TopEscortNetwork</strong>. Providers who post regularly stay
       visible and get more views.
     </p>
     ${ctaButton('Create a New Post', `${env.CLIENT_URL}/post`)}

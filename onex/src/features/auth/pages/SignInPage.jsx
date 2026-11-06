@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import SignInForm from "../components/SignInForm";
-import SigninLogo from "@/assets/Logo.png";
+import SigninLogo from "@/assets/logos/ten-logo.svg";
 import SigninLoader from "@/shared/components/Loaders/SigninLoader";
 
 import Navbar from "@/shared/components/Navbar";
@@ -12,7 +12,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setSEO("Sign In | Mystery Mansion", "", {
+    setSEO("Sign In | TopEscortNetwork", "", {
       robots: "noindex, nofollow",
     });
   }, []);
@@ -43,12 +43,12 @@ export default function SignIn() {
           <div className="form-bg mx-auto w-full max-w-sm rounded-lg bg-gray-300 p-4 text-center">
             <div className="flex items-center justify-center gap-2 text-center">
               <h1 className="text-center text-2xl text-black sm:text-[2rem]">
-                Mystery Mansion
+                TopEscortNetwork
               </h1>
 
               <img
                 src={SigninLogo}
-                alt="Mystery Mansion"
+                alt="TopEscortNetwork"
                 className="signin-logo"
               />
             </div>

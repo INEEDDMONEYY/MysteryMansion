@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import Logo from "@/assets/Logo.png";
+import Logo from "@/assets/logos/ten-logo.svg";
 import Partners from "/fantome.png";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 
@@ -39,10 +39,10 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 lg:grid-cols-6 lg:gap-x-6">
           <div className="col-span-2 flex flex-col items-center gap-3 sm:col-span-3 lg:col-span-1 lg:items-start">
-            <Link to="/" aria-label="Mystery Mansion home">
+            <Link to="/" aria-label="TopEscortNetwork home">
               <img
                 src={Logo}
-                alt="Mystery Mansion Logo"
+                alt="TopEscortNetwork Logo"
                 className="h-14 w-auto"
               />
             </Link>
@@ -54,7 +54,7 @@ export default function Footer() {
               }}
               className="text-center text-lg font-bold leading-tight text-white lg:text-left"
             >
-              Mystery Mansion
+              TopEscortNetwork
             </p>
 
             <p className="text-center text-xs text-gray-500 lg:text-left">
@@ -178,8 +178,7 @@ export default function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 text-center text-xs text-gray-600 sm:flex-row sm:text-left">
           <div className="flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:gap-2">
             <p>
-              Built with ❤️ for a safer experience. Designed by Mystery
-              Mansion.
+              Built with ❤️ for a safer experience. Designed by TopEscortNetwork.
             </p>
 
             <span className="hidden sm:inline">|</span>

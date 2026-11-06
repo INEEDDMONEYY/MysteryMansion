@@ -22,7 +22,7 @@ export default function ForumCategoryPage() {
     if (!category) return;
 
     setSEO(
-      `${category.name} | Mystery Mansion Forum`,
+      `${category.name} | TopEscortNetwork Forum`,
       category.description || `Discussions in ${category.name}.`,
       { robots: "index, follow", canonicalPath: `/forum/category/${category.slug}` }
     );

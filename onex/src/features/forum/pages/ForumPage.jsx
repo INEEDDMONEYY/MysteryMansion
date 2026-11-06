@@ -24,7 +24,7 @@ import useForumThreads from "../hooks/useForumThreads";
 import { setPublicPageSEO } from "@/shared/utils/seo";
 
 const LATEST_COUNT = 6;
-const SHARE_TITLE = "Join the Mystery Mansion forum";
+const SHARE_TITLE = "Join the TopEscortNetwork forum";
 
 const getForumShareUrl = () =>
   typeof window === "undefined" ? "/forum" : `${window.location.origin}/forum`;

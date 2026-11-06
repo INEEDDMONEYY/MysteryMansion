@@ -187,7 +187,7 @@ export default function UserProfileViewPage({
     if (!profile.loaded || isPrivateSEOPath(location.pathname)) return;
 
     if (!providerDetails) {
-      setSEO("Profile Unavailable | Mystery Mansion", "", {
+      setSEO("Profile Unavailable | TopEscortNetwork", "", {
         robots: "noindex, follow",
       });
       return;
@@ -300,7 +300,7 @@ export default function UserProfileViewPage({
 
         <div className="relative h-52 overflow-hidden sm:h-64 lg:h-80">
 
-          {/* Mystery Mansion gradient background */}
+          {/* TopEscortNetwork gradient background */}
 
           <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-black to-pink-500" />
 
@@ -427,7 +427,7 @@ export default function UserProfileViewPage({
                       <p className="text-sm text-gray-500">
                         {viewerIsAdmin
                           ? "Forum thread posts and thread replies by this administrator."
-                          : "This is an official Mystery Mansion administrator account."}
+                          : "This is an official TopEscortNetwork administrator account."}
                       </p>
                     </div>
                   </div>

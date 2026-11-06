@@ -10,8 +10,8 @@ export default function ForumCategoriesPage() {
 
   useEffect(() => {
     setSEO(
-      "Forum Categories | Mystery Mansion",
-      "Explore all Mystery Mansion forum categories and find your next community conversation.",
+      "Forum Categories | TopEscortNetwork",
+      "Explore all TopEscortNetwork forum categories and find your next community conversation.",
       { canonicalPath: "/forum/categories", robots: "index, follow" }
     );
   }, []);

@@ -22,7 +22,7 @@ export const providerPageData = {
     title: "Turn what you do into",
     highlightedTitle: "something people can discover.",
     description:
-      "Create your presence, showcase your work, connect with clients, and grow your reputation through Mystery Mansion.",
+      "Create your presence, showcase your work, connect with clients, and grow your reputation through TopEscortNetwork.",
     primaryCta: {
       label: "Become a Provider",
       href: "/signup",
@@ -43,10 +43,10 @@ export const providerPageData = {
   },
 
   benefits: {
-    eyebrow: "Why Mystery Mansion",
+    eyebrow: "Why TopEscortNetwork",
     title: "More than a profile. Build your presence.",
     description:
-      "Mystery Mansion gives providers the tools to showcase what they do, connect with potential clients, and become part of a growing community.",
+      "TopEscortNetwork gives providers the tools to showcase what they do, connect with potential clients, and become part of a growing community.",
     items: [
       {
         icon: UserRound,
@@ -79,7 +79,7 @@ export const providerPageData = {
     eyebrow: "Simple Process",
     title: "From provider to presence.",
     description:
-      "Getting started on Mystery Mansion is designed to be straightforward.",
+      "Getting started on TopEscortNetwork is designed to be straightforward.",
     steps: [
       {
         number: "01",
@@ -100,7 +100,7 @@ export const providerPageData = {
         icon: MessageCircle,
         title: "Connect",
         description:
-          "Respond to interested clients, answer questions, and start conversations directly through Mystery Mansion.",
+          "Respond to interested clients, answer questions, and start conversations directly through TopEscortNetwork.",
       },
       {
         number: "04",
@@ -116,7 +116,7 @@ export const providerPageData = {
     eyebrow: "Built For Providers",
     title: "The tools to help you build your business presence.",
     description:
-      "Mystery Mansion gives providers a collection of tools designed around visibility, communication, reputation, and growth.",
+      "TopEscortNetwork gives providers a collection of tools designed around visibility, communication, reputation, and growth.",
     items: [
       {
         icon: UserRound,
@@ -161,7 +161,7 @@ export const providerPageData = {
     eyebrow: "Built For Growth",
     title: "Turn visibility into opportunity.",
     description:
-      "Your presence on Mystery Mansion can become more than a profile. It can become a place where people discover your work and start conversations.",
+      "Your presence on TopEscortNetwork can become more than a profile. It can become a place where people discover your work and start conversations.",
     points: [
       {
         icon: Search,
@@ -173,7 +173,7 @@ export const providerPageData = {
         icon: Users,
         title: "Build Your Audience",
         description:
-          "Develop relationships with clients and members of the Mystery Mansion community through consistent participation.",
+          "Develop relationships with clients and members of the TopEscortNetwork community through consistent participation.",
       },
       {
         icon: TrendingUp,
@@ -211,7 +211,7 @@ export const providerPageData = {
     eyebrow: "Built Around Trust",
     title: "Your reputation matters.",
     description:
-      "Mystery Mansion is designed to give providers a place where their work, client relationships, and reputation can develop together.",
+      "TopEscortNetwork is designed to give providers a place where their work, client relationships, and reputation can develop together.",
     points: [
       {
         icon: ShieldCheck,
@@ -236,7 +236,7 @@ export const providerPageData = {
       icon: Check,
       text:
         "The goal is simple: give providers a better place to be discovered, build trust, and connect with the people they serve.",
-      label: "The Mystery Mansion provider experience",
+      label: "The TopEscortNetwork provider experience",
     },
   },
 
@@ -244,7 +244,7 @@ export const providerPageData = {
     eyebrow: "Ready to Build Your Presence?",
     title: "Your next client could be looking for you.",
     description:
-      "Create your Mystery Mansion provider account and start building a presence around the work you do.",
+      "Create your TopEscortNetwork provider account and start building a presence around the work you do.",
     primaryCta: {
       label: "Become a Provider",
       href: "/signup",

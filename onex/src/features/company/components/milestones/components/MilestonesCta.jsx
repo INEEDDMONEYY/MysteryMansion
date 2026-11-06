@@ -41,8 +41,7 @@ export default function MilestonesCta() {
               to="/home"
               className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 px-6 py-3.5 font-semibold text-white shadow-lg shadow-pink-600/20 transition-all duration-200 hover:-translate-y-0.5 hover:bg-pink-500 hover:shadow-xl hover:shadow-pink-600/30 sm:w-auto"
             >
-              Explore Mystery Mansion
-              <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+              Explore TopEscortNetwork              <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
         </motion.div>

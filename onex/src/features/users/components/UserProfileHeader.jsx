@@ -230,8 +230,8 @@ export default function UserProfileHeader({
       : "";
 
   const profileShareText = user.username
-    ? `Check out ${user.username}'s profile on Mystery Mansion.`
-    : "Check out this profile on Mystery Mansion.";
+    ? `Check out ${user.username}'s profile on TopEscortNetwork.`
+    : "Check out this profile on TopEscortNetwork.";
 
   const encodedShareUrl = encodeURIComponent(profileShareUrl);
   const encodedShareText = encodeURIComponent(
@@ -247,7 +247,7 @@ export default function UserProfileHeader({
 
     try {
       await navigator.share({
-        title: `${user.username || "User"} | Mystery Mansion`,
+        title: `${user.username || "User"} | TopEscortNetwork`,
         text: profileShareText,
         url: profileShareUrl,
       });
@@ -1143,7 +1143,7 @@ export default function UserProfileHeader({
                         </a>
 
                         <a
-                          href={`mailto:?subject=${encodeURIComponent(`Check out ${user.username || "this profile"} on Mystery Mansion`)}&body=${encodedShareText}`}
+                          href={`mailto:?subject=${encodeURIComponent(`Check out ${user.username || "this profile"} on TopEscortNetwork`)}&body=${encodedShareText}`}
                           onClick={() => setShareMenuOpen(false)}
                           className="flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-xs font-medium text-gray-200 transition hover:bg-white/10 hover:text-white"
                         >

@@ -21,7 +21,7 @@ export async function sendMilestoneAchievedEmail({ to, username, milestoneTitle,
   const content = `
     ${heading('Milestone Achieved! 🎉')}
     <p style="margin:0 0 20px;color:#c8c8c8;">Hi ${escapeHtml(username || 'there')},</p>
-    <p style="margin:0 0 16px;color:#c8c8c8;">You just reached a new milestone on <strong style="color:#e2e2e2;">Mystery Mansion</strong>:</p>
+    <p style="margin:0 0 16px;color:#c8c8c8;">You just reached a new milestone on <strong style="color:#e2e2e2;">TopEscortNetwork</strong>:</p>
     ${darkCard(`
       <p style="margin:0 0 4px;color:#d5197e;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700;">Milestone</p>
       <p style="margin:0 0 10px;color:#ffffff;font-size:17px;font-weight:700;">${escapeHtml(milestoneTitle)}</p>
@@ -35,7 +35,7 @@ export async function sendMilestoneAchievedEmail({ to, username, milestoneTitle,
     category: EMAIL_CATEGORIES.MILESTONES,
     from: FROM_ADDRESS,
     to,
-    subject: `Mystery Mansion — You reached "${milestoneTitle}"`,
+    subject: `TopEscortNetwork — You reached "${milestoneTitle}"`,
     html: buildEmail(content),
   });
 }
@@ -66,7 +66,7 @@ export async function sendMilestonesAddedEmail({ to, username, milestones }) {
     <p style="margin:0 0 20px;color:#c8c8c8;">Hi ${escapeHtml(username || 'there')},</p>
     <p style="margin:0 0 16px;color:#c8c8c8;">
       ${isBatch ? 'New milestones are' : 'A new milestone is'} now available for you to pursue on
-      <strong style="color:#e2e2e2;">Mystery Mansion</strong>:
+      <strong style="color:#e2e2e2;">TopEscortNetwork</strong>:
     </p>
     ${darkCard(listHtml)}
     ${ctaButton('View Milestones', milestonesUrl)}
@@ -78,8 +78,8 @@ export async function sendMilestonesAddedEmail({ to, username, milestones }) {
     from: FROM_ADDRESS,
     to,
     subject: isBatch
-      ? `Mystery Mansion — ${milestones.length} new milestones added`
-      : `Mystery Mansion — New milestone: "${milestones[0].title}"`,
+      ? `TopEscortNetwork — ${milestones.length} new milestones added`
+      : `TopEscortNetwork — New milestone: "${milestones[0].title}"`,
     html: buildEmail(content),
   });
 }

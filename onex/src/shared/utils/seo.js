@@ -1,5 +1,5 @@
-const DEFAULT_SITE_URL = "https://mysterymansion.app";
-const SCHEMA_SCRIPT_ID = "mystery-mansion-page-schema";
+const DEFAULT_SITE_URL = "https://topescortnetwork.com";
+const SCHEMA_SCRIPT_ID = "topescortnetwork-page-schema";
 
 const SITE_ORIGIN = (
   import.meta.env.VITE_SITE_URL?.trim() || DEFAULT_SITE_URL
@@ -8,10 +8,10 @@ const SITE_ORIGIN = (
 const DEFAULT_ROBOTS = "index, follow";
 const NOINDEX_ROBOTS = "noindex, follow";
 const PRIVATE_ROBOTS = "noindex, nofollow";
-const SITE_NAME = "Mystery Mansion";
+const SITE_NAME = "TopEscortNetwork";
 const DEFAULT_OG_IMAGE_PATH = "/MMNoBg2%20(1).png";
 const DEFAULT_DESCRIPTION =
-  "Discover provider profiles, explore listings, read member reviews, and connect with the Mystery Mansion community.";
+  "Discover escort profiles, explore listings, read member reviews, and connect with the TopEscortNetwork community.";
 
 // ─────────────────────────────────────────────────────────────
 // SAFE SEARCH
@@ -55,10 +55,10 @@ const GENERAL_AUDIENCE_PATHS = new Set([
 // Neutral wording for metadata so titles, descriptions, and snippets stay
 // descriptive without explicit terms.
 const SAFE_SEARCH_REPLACEMENTS = [
-  [/\bsex[\s-]?workers\b/gi, "providers"],
-  [/\bsex[\s-]?work(er)?\b/gi, "provider"],
-  [/\bescorts\b/gi, "providers"],
-  [/\bescort(ing)?\b/gi, "provider"],
+  [/\bsex[\s-]?workers\b/gi, "escorts"],
+  [/\bsex[\s-]?work(er)?\b/gi, "escort"],
+  [/\bescorts\b/gi, "escorts"],
+  [/\bescort(ing)?\b/gi, "escort"],
 ];
 
 const EXPLICIT_TERMS =
@@ -561,8 +561,8 @@ export function setLocationSEO(location, options = {}) {
 
   if (!place) {
     setSEO(
-      "Explore Providers by Location | Mystery Mansion",
-      "Explore provider profiles and reviews on Mystery Mansion. Browse available locations and discover local profiles.",
+      "Explore Escorts by Location | TopEscortNetwork",
+      "Explore escort profiles and reviews on TopEscortNetwork. Browse available locations and discover local profiles.",
       {
         robots: NOINDEX_ROBOTS,
         canonicalPath: options.canonicalPath || "/locations",
@@ -596,10 +596,10 @@ export function setLocationSEO(location, options = {}) {
       : qualityCheck;
 
   const pageTitle =
-    `Provider Reviews in ${place} | Mystery Mansion`;
+    `Escort Reviews in ${place} | TopEscortNetwork`;
 
   const pageDescription =
-    `Explore provider profiles in ${place} on Mystery Mansion. Browse local profiles and read member reviews to learn more about providers in your area.`;
+    `Explore escort profiles in ${place} on TopEscortNetwork. Browse local profiles and read member reviews to learn more about escorts in your area.`;
 
   const path =
     canonicalPath ||
@@ -658,7 +658,7 @@ export function setLocationSEO(location, options = {}) {
     if (items.length) {
       schema["@graph"].push({
         "@type": "ItemList",
-        name: `Providers in ${place}`,
+        name: `Escorts in ${place}`,
         numberOfItems: items.length,
         itemListElement: items,
       });
@@ -739,7 +739,7 @@ export function setProviderProfileSEO(provider, options = {}) {
     provider?.displayName ||
     provider?.username ||
     provider?.name ||
-    "Provider";
+    "Escort";
 
   const location =
     typeof provider?.location === "string"
@@ -763,8 +763,8 @@ export function setProviderProfileSEO(provider, options = {}) {
     buildProviderProfilePath(provider);
 
   const title = location
-    ? `${name} Reviews in ${location} | Mystery Mansion`
-    : `${name} Reviews & Profile | Mystery Mansion`;
+    ? `${name} Reviews in ${location} | TopEscortNetwork`
+    : `${name} Reviews & Profile | TopEscortNetwork`;
 
   // Bios are user-written; leave them out of snippets when they're explicit.
   const safeBio =
@@ -773,7 +773,7 @@ export function setProviderProfileSEO(provider, options = {}) {
       : "";
 
   const descriptionParts = [
-    `View ${name}'s provider profile on Mystery Mansion.`,
+    `View ${name}'s escort profile on TopEscortNetwork.`,
     location ? `Located in ${location}.` : "",
     reviewCount > 0
       ? `Read ${reviewCount} member review${reviewCount === 1 ? "" : "s"}.`
@@ -872,20 +872,20 @@ export function setPostSEO(post, options = {}) {
   const isProfilePost = post.postType === "profile";
 
   const baseTitle = isProfilePost
-    ? `${authorName || "Provider"} Profile`
+    ? `${authorName || "Escort"} Profile`
     : post.title || (authorName ? `Listing by ${authorName}` : "Listing");
 
   const title = place
-    ? `${baseTitle} in ${place} | Mystery Mansion`
-    : `${baseTitle} | Mystery Mansion`;
+    ? `${baseTitle} in ${place} | TopEscortNetwork`
+    : `${baseTitle} | TopEscortNetwork`;
 
   const body = String(post.description || "").trim();
   const safeBody = hasExplicitTerms(body) ? "" : body.slice(0, 140);
 
   const description = [
     authorName
-      ? `View this listing by ${authorName} on Mystery Mansion.`
-      : "View this listing on Mystery Mansion.",
+      ? `View this listing by ${authorName} on TopEscortNetwork.`
+      : "View this listing on TopEscortNetwork.",
     place ? `Located in ${place}.` : "",
     safeBody,
   ]
@@ -955,12 +955,12 @@ export function setSearchSEO({
   const cleanQuery = String(query).trim();
 
   const title = shouldIndex && cleanQuery
-    ? `${cleanQuery} | Mystery Mansion`
-    : "Search Mystery Mansion";
+    ? `${cleanQuery} | TopEscortNetwork`
+    : "Search TopEscortNetwork";
 
   const description = shouldIndex
     ? String(uniqueContent).trim().slice(0, 250)
-    : "Search Mystery Mansion for provider profiles, reviews, and listings.";
+    : "Search TopEscortNetwork for escort profiles, reviews, and listings.";
 
   setSEO(title, description, {
     canonicalPath,
@@ -976,17 +976,17 @@ export function setSearchSEO({
 
 export const PUBLIC_PAGE_SEO = {
   "/": {
-    title: "Mystery Mansion | Provider Profiles, Reviews & Community",
+    title: "TopEscortNetwork | Escort Profiles, Reviews & Community",
     description:
-      "Discover provider profiles, explore listings, read member reviews, and connect with the Mystery Mansion community.",
+      "Discover escort profiles, explore listings, read member reviews, and connect with the TopEscortNetwork community.",
     label: "Home",
     indexable: true,
   },
 
   "/locations": {
-    title: "Browse Providers by Location | Mystery Mansion",
+    title: "Browse Escorts by Location | TopEscortNetwork",
     description:
-      "Browse Mystery Mansion provider profiles and listings by city and state. Find local profiles and member reviews near you.",
+      "Browse TopEscortNetwork escort profiles and listings by city and state. Find local profiles and member reviews near you.",
     label: "Locations",
     indexable: true,
   },
@@ -994,33 +994,33 @@ export const PUBLIC_PAGE_SEO = {
   // GET STARTED
 
   "/become-a-client": {
-    title: "Become a Client | Mystery Mansion",
+    title: "Become a Client | TopEscortNetwork",
     description:
-      "Join Mystery Mansion as a client. Discover provider profiles, explore listings, connect with providers, and participate in the community.",
+      "Join TopEscortNetwork as a client. Discover escort profiles, explore listings, connect with escorts, and participate in the community.",
     label: "Become a Client",
     indexable: true,
   },
 
   "/become-a-provider": {
-    title: "Become a Provider | Mystery Mansion",
+    title: "Become an Escort | TopEscortNetwork",
     description:
-      "Create your provider presence on Mystery Mansion. Build your profile, publish listings, connect with clients, and grow your visibility.",
-    label: "Become a Provider",
+      "Create your escort presence on TopEscortNetwork. Build your profile, publish listings, connect with clients, and grow your visibility.",
+    label: "Become an Escort",
     indexable: true,
   },
 
   "/membership": {
-    title: "Mystery Mansion Membership | Membership Benefits",
+    title: "TopEscortNetwork Membership | Membership Benefits",
     description:
-      "Explore Mystery Mansion membership options, account benefits, and membership features.",
+      "Explore TopEscortNetwork membership options, account benefits, and membership features.",
     label: "Membership",
     indexable: true,
   },
 
   "/promote": {
-    title: "Promote Your Account | Mystery Mansion",
+    title: "Promote Your Account | TopEscortNetwork",
     description:
-      "Explore account promotion options on Mystery Mansion and discover ways to increase your profile visibility.",
+      "Explore account promotion options on TopEscortNetwork and discover ways to increase your profile visibility.",
     label: "Promote Account",
     indexable: true,
   },
@@ -1028,33 +1028,33 @@ export const PUBLIC_PAGE_SEO = {
   // CREDITS AND REWARDS
 
   "/credits": {
-    title: "Mystery Mansion Credits | How Credits Work",
+    title: "TopEscortNetwork Credits | How Credits Work",
     description:
-      "Learn how Mystery Mansion credits work, how they are used for messaging, and how to manage your account credit balance.",
+      "Learn how TopEscortNetwork credits work, how they are used for messaging, and how to manage your account credit balance.",
     label: "Credits",
     indexable: true,
   },
 
   "/credit-packages": {
-    title: "Credit Packages | Mystery Mansion",
+    title: "Credit Packages | TopEscortNetwork",
     description:
-      "Explore Mystery Mansion credit packages and learn how to request additional account credits.",
+      "Explore TopEscortNetwork credit packages and learn how to request additional account credits.",
     label: "Credit Packages",
     indexable: true,
   },
 
   "/review-incentives": {
-    title: "Review Incentives | Mystery Mansion",
+    title: "Review Incentives | TopEscortNetwork",
     description:
-      "Discover the Mystery Mansion review incentive program and learn how eligible members can participate.",
+      "Discover the TopEscortNetwork review incentive program and learn how eligible members can participate.",
     label: "Review Incentives",
     indexable: true,
   },
 
   "/referrals": {
-    title: "Referral Program | Mystery Mansion",
+    title: "Referral Program | TopEscortNetwork",
     description:
-      "Explore the Mystery Mansion referral program and learn how to participate in platform referrals.",
+      "Explore the TopEscortNetwork referral program and learn how to participate in platform referrals.",
     label: "Referrals",
     indexable: true,
   },
@@ -1062,33 +1062,33 @@ export const PUBLIC_PAGE_SEO = {
   // COMMUNITY
 
   "/community-guidelines": {
-    title: "Community Guidelines | Mystery Mansion",
+    title: "Community Guidelines | TopEscortNetwork",
     description:
-      "Read the Mystery Mansion community guidelines, member expectations, participation standards, and platform conduct rules.",
+      "Read the TopEscortNetwork community guidelines, member expectations, participation standards, and platform conduct rules.",
     label: "Community Guidelines",
     indexable: true,
   },
 
   "/forum": {
-    title: "Community Forums | Mystery Mansion",
+    title: "Community Forums | TopEscortNetwork",
     description:
-      "Explore Mystery Mansion community forums, participate in discussions, share experiences, and connect with other members.",
+      "Explore TopEscortNetwork community forums, participate in discussions, share experiences, and connect with other members.",
     label: "Forums",
     indexable: false,
   },
 
   "/faq": {
-    title: "Frequently Asked Questions | Mystery Mansion",
+    title: "Frequently Asked Questions | TopEscortNetwork",
     description:
-      "Find answers to common Mystery Mansion questions about accounts, provider profiles, memberships, credits, messaging, and platform features.",
+      "Find answers to common TopEscortNetwork questions about accounts, escort profiles, memberships, credits, messaging, and platform features.",
     label: "FAQ",
     indexable: true,
   },
 
   "/milestones": {
-    title: "Member Milestones & Achievements | Mystery Mansion",
+    title: "Member Milestones & Achievements | TopEscortNetwork",
     description:
-      "Discover Mystery Mansion milestones, account progression, achievements, and platform participation features.",
+      "Discover TopEscortNetwork milestones, account progression, achievements, and platform participation features.",
     label: "Milestones",
     indexable: true,
   },
@@ -1096,17 +1096,17 @@ export const PUBLIC_PAGE_SEO = {
   // LEGAL
 
   "/privacy-policy": {
-    title: "Privacy Policy | Mystery Mansion",
+    title: "Privacy Policy | TopEscortNetwork",
     description:
-      "Review the Mystery Mansion privacy policy to understand how personal information is collected, used, and handled.",
+      "Review the TopEscortNetwork privacy policy to understand how personal information is collected, used, and handled.",
     label: "Privacy Policy",
     indexable: true,
   },
 
   "/terms-policy": {
-    title: "Terms of Service | Mystery Mansion",
+    title: "Terms of Service | TopEscortNetwork",
     description:
-      "Read the Mystery Mansion terms of service, platform conditions, account responsibilities, and rules for using the platform.",
+      "Read the TopEscortNetwork terms of service, platform conditions, account responsibilities, and rules for using the platform.",
     label: "Terms of Service",
     indexable: true,
   },
@@ -1114,17 +1114,17 @@ export const PUBLIC_PAGE_SEO = {
   // UPDATES AND SUPPORT
 
   "/platform-updates": {
-    title: "Platform Updates & Release Notes | Mystery Mansion",
+    title: "Platform Updates & Release Notes | TopEscortNetwork",
     description:
-      "Explore Mystery Mansion platform updates, release notes, new features, improvements, and technical changes.",
+      "Explore TopEscortNetwork platform updates, release notes, new features, improvements, and technical changes.",
     label: "Platform Updates",
     indexable: false,
   },
 
   "/contact": {
-    title: "Contact & Support | Mystery Mansion",
+    title: "Contact & Support | TopEscortNetwork",
     description:
-      "Contact Mystery Mansion for account assistance, platform questions, technical support, and general inquiries.",
+      "Contact TopEscortNetwork for account assistance, platform questions, technical support, and general inquiries.",
     label: "Contact Support",
     indexable: true,
   },

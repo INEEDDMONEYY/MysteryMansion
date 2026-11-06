@@ -46,7 +46,7 @@ export default function CreditPackagesPage() {
 
               <p className="mt-5 text-base leading-7 text-neutral-400 sm:text-lg sm:leading-8">
                 Compare package prices and included credits to find an option
-                that suits your intended use of eligible Mystery Mansion
+                that suits your intended use of eligible TopEscortNetwork
                 features.
               </p>
             </motion.div>

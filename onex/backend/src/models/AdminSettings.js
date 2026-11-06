@@ -5,7 +5,7 @@ const AdminSettingsSchema = new mongoose.Schema(
   {
     siteName: {
       type: String,
-      default: "Mystery Mansion",
+      default: "TopEscortNetwork",
     },
     maintenanceMode: {
       type: Boolean,

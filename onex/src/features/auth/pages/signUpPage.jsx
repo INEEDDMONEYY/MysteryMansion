@@ -3,7 +3,7 @@ import { useSearchParams, useLocation, Link } from "react-router-dom";
 
 import SignupForm from "../components/SignUpForm";
 import EmailVerifyStep from "../components/EmailVerifyStep";
-import Logo from "@/assets/Logo.png";
+import Logo from "@/assets/logos/ten-logo.svg";
 
 import Navbar from "@/shared/components/Navbar";
 import Footer from "@/shared/components/Footer";
@@ -17,12 +17,12 @@ function AccountTypeSelector({ onSelect }) {
         <div className="mb-8 flex items-center justify-center gap-3">
           <img
             src={Logo}
-            alt="Mystery Mansion"
+            alt="TopEscortNetwork"
             className="signin-logo"
           />
 
           <h1 className="bg-gradient-to-r from-pink-400 via-fuchsia-400 to-pink-300 bg-clip-text text-3xl font-bold text-transparent">
-            Mystery Mansion
+            TopEscortNetwork
           </h1>
         </div>
 
@@ -31,7 +31,7 @@ function AccountTypeSelector({ onSelect }) {
         </h2>
 
         <p className="mb-8 text-center text-sm bg-gradient-to-r from-pink-300 via-fuchsia-300 to-pink-200 bg-clip-text text-transparent">
-          Choose how you want to use Mystery Mansion
+          Choose how you want to use TopEscortNetwork
         </p>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -51,7 +51,7 @@ function AccountTypeSelector({ onSelect }) {
 
               <p className="text-sm leading-relaxed text-gray-300">
                 Create and manage listings, get discovered by clients, and
-                grow your business on Mystery Mansion.
+                grow your business on TopEscortNetwork.
               </p>
             </div>
 
@@ -126,12 +126,12 @@ function SignupFormStep({
       >
         <div className="flex items-center justify-center gap-2 text-center">
           <h1 className="text-center text-2xl text-black sm:text-[2rem]">
-            Mystery Mansion
+            TopEscortNetwork
           </h1>
 
           <img
             src={Logo}
-            alt="Mystery Mansion"
+            alt="TopEscortNetwork"
             className="signin-logo"
           />
         </div>
@@ -192,7 +192,7 @@ export default function SignupPage() {
     useState(googleSignup?.verificationToken || null);
 
   useEffect(() => {
-    setSEO("Sign Up | Mystery Mansion", "", {
+    setSEO("Sign Up | TopEscortNetwork", "", {
       robots: "noindex, nofollow",
     });
   }, []);

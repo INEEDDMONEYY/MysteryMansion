@@ -1,10 +1,10 @@
 export const creditPackagesPageData = {
   hero: {
-    eyebrow: "Mystery Mansion Credits",
+    eyebrow: "TopEscortNetwork Credits",
     title: "Find the right",
     highlightedTitle: "credit package.",
     description:
-      "Explore the available Mystery Mansion credit packages and choose an option that fits your plans for using eligible platform features.",
+      "Explore the available TopEscortNetwork credit packages and choose an option that fits your plans for using eligible platform features.",
     primaryCta: {
       label: "Explore Packages",
       href: "#credit-packages",
@@ -58,12 +58,12 @@ export const creditPackagesPageData = {
     eyebrow: "Before You Choose",
     title: "Understand how your credits work.",
     description:
-      "Mystery Mansion credits are associated with your account and can be used for eligible platform features when credits are required. Check the applicable package and purchase details before completing a transaction.",
+      "TopEscortNetwork credits are associated with your account and can be used for eligible platform features when credits are required. Check the applicable package and purchase details before completing a transaction.",
   },
 
   cta: {
     eyebrow: "Getting Started",
-    title: "Ready to explore Mystery Mansion credits?",
+    title: "Ready to explore TopEscortNetwork credits?",
     description:
       "Learn how credits work, where they can be used, and how to manage your available balance.",
     primaryCta: {

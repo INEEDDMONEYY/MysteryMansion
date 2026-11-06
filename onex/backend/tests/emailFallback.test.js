@@ -94,7 +94,7 @@ test.each(['delivered', 'queued'])('Cloudflare accepts %s recipients and preserv
   expect(url).toBe(`https://api.cloudflare.com/client/v4/accounts/${'a'.repeat(32)}/email/sending/send`);
   expect(init.headers.Authorization).toBe('Bearer cf-test');
   expect(JSON.parse(init.body)).toEqual({
-    from: { address: 'no-reply@mysterymansion.app', name: 'Mystery Mansion' },
+    from: { address: 'no-reply@topescortnetwork.com', name: 'TopEscortNetwork' },
     to: [message.to], subject: message.subject, html: message.html,
   });
 });

@@ -45,7 +45,7 @@ export async function sendVerificationCodeEmail({ to, code }) {
   await sendEmail({
     from: FROM_ADDRESS,
     to,
-    subject: 'Your Mystery Mansion verification code',
+    subject: 'Your TopEscortNetwork verification code',
     html: buildEmail(content),
   });
 }

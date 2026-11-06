@@ -1,13 +1,12 @@
 /**
- * Mystery Mansion — shared email template builder
+ * TopEscortNetwork — shared email template builder
  * All transactional emails use this shell for consistent branding.
  */
 import env from '../../config/env.js';
 
 // Use EMAIL_ASSET_BASE for images — must be a non-redirecting origin.
 // CLIENT_URL is used for CTA links only (redirects are fine for those).
-export const LOGO_URL = `${env.EMAIL_ASSET_BASE}/Logo.png`;
-export const HERO_URL = `${env.EMAIL_ASSET_BASE}/mm-hero.png`;
+export const LOGO_URL = `${env.EMAIL_ASSET_BASE}/ten-logo.png`;
 export const SITE_URL = env.CLIENT_URL;
 
 const PINK    = '#d5197e';
@@ -19,33 +18,19 @@ const TEXT    = '#e2e2e2';
 const MUTED   = '#888888';
 
 /**
- * Wraps HTML content in the branded Mystery Mansion email shell.
+ * Wraps HTML content in the branded TopEscortNetwork email shell.
  *
  * @param {string}  content   – inner HTML for the body cell
- * @param {object}  opts
- * @param {boolean} [opts.showHero=false]  – include full-width mm-hero banner after header
  */
-export function buildEmail(content, { showHero = false } = {}) {
+export function buildEmail(content) {
   const year = new Date().getFullYear();
-
-  const heroRow = showHero ? `
-    <tr>
-      <td style="padding:0;line-height:0;font-size:0;">
-        <img
-          src="${HERO_URL}"
-          alt="Mystery Mansion"
-          width="580"
-          style="display:block;width:100%;max-width:580px;border:0;"
-        />
-      </td>
-    </tr>` : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Mystery Mansion</title>
+  <title>TopEscortNetwork</title>
 </head>
 <body style="margin:0;padding:0;background:${DARK_BG};font-family:Arial,Helvetica,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -61,15 +46,14 @@ export function buildEmail(content, { showHero = false } = {}) {
               <a href="${SITE_URL}" style="text-decoration:none;">
                 <img
                   src="${LOGO_URL}"
-                  alt="Mystery Mansion"
-                  width="128"
+                  alt="TopEscortNetwork"
+                  width="180"
                   height="auto"
-                  style="display:inline-block;border:0;max-width:128px;"
+                  style="display:inline-block;border:0;max-width:180px;"
                 />
               </a>
             </td>
           </tr>
-          ${heroRow}
 
           <!-- ── BODY ───────────────────────────────────────────── -->
           <tr>
@@ -82,13 +66,13 @@ export function buildEmail(content, { showHero = false } = {}) {
           <tr>
             <td style="background:${HEAD_BG};padding:18px 32px;text-align:center;border-top:1px solid ${BORDER};">
               <p style="margin:0 0 5px;font-size:12px;color:${MUTED};">
-                &copy; ${year} Mystery Mansion. All rights reserved.
+                &copy; ${year} TopEscortNetwork. All rights reserved.
               </p>
               <p style="margin:0;font-size:12px;color:${MUTED};">
                 Need help?&nbsp;
-                <a href="mailto:support.mysterymansion@gmail.com"
+                <a href="mailto:fantometechnologies@gmail.com"
                   style="color:${PINK};text-decoration:none;">
-                  support.mysterymansion@gmail.com
+                  fantometechnologies@gmail.com
                 </a>
               </p>
             </td>

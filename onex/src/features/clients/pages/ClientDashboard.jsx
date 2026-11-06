@@ -57,7 +57,7 @@ export default function ClientDashboard() {
   const [loading, setLoading]           = useState(true);
 
   useEffect(() => {
-    setSEO('My Dashboard | Mystery Mansion', '', { robots: 'noindex, nofollow' });
+    setSEO('My Dashboard | TopEscortNetwork', '', { robots: 'noindex, nofollow' });
 
     Promise.allSettled([
       api.get('/users/me/liked-posts'),

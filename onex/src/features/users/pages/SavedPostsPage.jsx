@@ -334,7 +334,7 @@ export default function SavedPostsPage() {
   const [toast, setToast] = useState('');
 
   useEffect(() => {
-    setSEO('Saved Posts | Mystery Mansion', '', { robots: 'noindex, nofollow' });
+    setSEO('Saved Posts | TopEscortNetwork', '', { robots: 'noindex, nofollow' });
     fetchTemplates();
   }, []);
 

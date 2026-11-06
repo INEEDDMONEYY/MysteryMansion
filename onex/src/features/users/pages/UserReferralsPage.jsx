@@ -35,7 +35,7 @@ export default function UserReferralsPage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    setSEO("Referrals | Mystery Mansion", "", { robots: "noindex, nofollow" });
+    setSEO("Referrals | TopEscortNetwork", "", { robots: "noindex, nofollow" });
   }, []);
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function UserReferralsPage() {
   const handleShare = async () => {
     if (!referralUrl) return;
     if (navigator.share) {
-      navigator.share({ title: "Join me on Mystery Mansion", url: referralUrl }).catch(() => {});
+      navigator.share({ title: "Join me on TopEscortNetwork", url: referralUrl }).catch(() => {});
     } else {
       handleCopy();
     }
@@ -81,7 +81,7 @@ export default function UserReferralsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Referrals</h1>
         <p className="text-gray-500 text-sm mt-0.5">
-          Invite potential clients to Mystery Mansion with your personal referral link.
+          Invite potential clients to TopEscortNetwork with your personal referral link.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export default function UserReferralsPage() {
           </div>
           <h2 className="text-lg font-semibold text-gray-900">Referral links are for providers</h2>
           <p className="text-sm text-gray-500 max-w-sm">
-            Referral links let providers invite potential clients to Mystery Mansion. Switch to a provider account to start referring.
+            Referral links let providers invite potential clients to TopEscortNetwork. Switch to a provider account to start referring.
           </p>
         </div>
       ) : loading ? (
@@ -130,7 +130,7 @@ export default function UserReferralsPage() {
               </button>
             </div>
             <p className="text-xs text-gray-500 mt-3">
-              Share this link with a potential client. When they open it, Mystery Mansion shows them a welcome page inviting them to sign up — and it's tied back to your account.
+              Share this link with a potential client. When they open it, TopEscortNetwork shows them a welcome page inviting them to sign up — and it's tied back to your account.
             </p>
           </div>
 

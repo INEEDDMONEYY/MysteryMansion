@@ -17,7 +17,7 @@ export const reviewIncentivesPageData = {
     title: "Share your link.",
     highlightedTitle: "Earn as you grow.",
     description:
-      "Build your presence on Mystery Mansion, share your unique signup link, and earn credit rewards as eligible new users join through your referrals. Eligible milestones may also unlock monetary incentives through supported payout methods.",
+      "Build your presence on TopEscortNetwork, share your unique signup link, and earn credit rewards as eligible new users join through your referrals. Eligible milestones may also unlock monetary incentives through supported payout methods.",
     primaryCta: {
       label: "Become a Provider",
       href: "/become-a-provider",
@@ -83,7 +83,7 @@ export const reviewIncentivesPageData = {
         number: "02",
         title: "Share Your Link",
         description:
-          "Share your link with people who may be interested in joining Mystery Mansion. Use appropriate channels and follow platform rules.",
+          "Share your link with people who may be interested in joining TopEscortNetwork. Use appropriate channels and follow platform rules.",
         icon: Users,
       },
       {
@@ -260,7 +260,7 @@ export const reviewIncentivesPageData = {
 
   cta: {
     eyebrow: "Start Growing",
-    title: "Build your network on Mystery Mansion.",
+    title: "Build your network on TopEscortNetwork.",
     description:
       "Get started as a provider, share your referral signup link, and track your progress toward eligible incentive milestones.",
     primaryCta: {

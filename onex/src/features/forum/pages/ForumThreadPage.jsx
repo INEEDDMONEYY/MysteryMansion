@@ -48,7 +48,7 @@ export default function ForumThreadPage() {
     if (!thread) return;
 
     setSEO(
-      `${thread.title} | Mystery Mansion Forum`,
+      `${thread.title} | TopEscortNetwork Forum`,
       thread.excerpt || thread.title,
       { robots: "index, follow", canonicalPath: `/forum/thread/${thread.id}` }
     );
