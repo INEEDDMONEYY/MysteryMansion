@@ -5,6 +5,10 @@ import { MessageCircle } from "lucide-react";
 import ForumReply from "./ForumReply";
 import { buildReplyTree } from "../../utils/replyUtils";
 
+// Past this depth replies stop indenting so they don't squeeze on small screens.
+const MAX_NEST_DEPTH = 8;
+const NESTED_CLASS = "ml-3 border-l-2 border-gray-200 pl-3 sm:ml-6 sm:pl-4";
+
 export default function ForumReplyList({
   replies = [],
   loading = false,
@@ -63,16 +67,30 @@ export default function ForumReplyList({
     onRequireAuth,
   };
 
+  const renderReplies = (nodes, parentReply, depth) =>
+    nodes.map((reply) => {
+      const nested = depth < MAX_NEST_DEPTH;
+
+      return (
+        <ForumReply
+          key={reply.id}
+          reply={reply}
+          parentReply={parentReply}
+          canReply={canReply}
+          {...shared}
+        >
+          {reply.children.length > 0 && (
+            <div className={nested ? NESTED_CLASS : ""}>
+              {renderReplies(reply.children, reply, depth + 1)}
+            </div>
+          )}
+        </ForumReply>
+      );
+    });
+
   return (
     <div className="divide-y divide-gray-200">
-      {tree.map((reply) => (
-        <ForumReply key={reply.id} reply={reply} canReply={canReply} {...shared}>
-          {reply.children.length > 0 &&
-            reply.children.map((child) => (
-              <ForumReply key={child.id} reply={child} parentReply={reply} canReply={canReply} isChild {...shared} />
-            ))}
-        </ForumReply>
-      ))}
+      {renderReplies(tree, null, 0)}
 
       {hasMore && (
         <div className="flex justify-center pt-2">

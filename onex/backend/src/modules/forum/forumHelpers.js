@@ -47,6 +47,7 @@ export const serializeThread = (thread) => {
     author,
     tags: thread.tags || [],
     borderColor: thread.borderColor || '',
+    textColor: thread.textColor || '',
     attachments: serializeAttachments(thread.attachments),
     pinned: thread.pinned,
     isPinned: thread.pinned,

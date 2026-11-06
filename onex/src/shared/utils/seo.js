@@ -2,7 +2,7 @@ const DEFAULT_SITE_URL = "https://topescortnetwork.com";
 const SCHEMA_SCRIPT_ID = "topescortnetwork-page-schema";
 
 const SITE_ORIGIN = (
-  import.meta.env.VITE_SITE_URL?.trim() || DEFAULT_SITE_URL
+  import.meta.env?.VITE_SITE_URL?.trim() || DEFAULT_SITE_URL
 ).replace(/\/+$/, "");
 
 const DEFAULT_ROBOTS = "index, follow";

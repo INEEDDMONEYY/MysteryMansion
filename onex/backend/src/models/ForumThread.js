@@ -11,6 +11,8 @@ const ForumThreadSchema = new mongoose.Schema(
     attachments: { type: [AttachmentSchema], default: [] },
     // Gradient border chosen with the Elite perk ('' = default).
     borderColor: { type: String, default: '' },
+    // Title and description colour pair chosen with the forumTextColors perk ('' = default).
+    textColor: { type: String, default: '' },
     pinned: { type: Boolean, default: false },
     // True when a member pinned their own thread with a membership perk (admin pins stay put).
     pinnedByMember: { type: Boolean, default: false },

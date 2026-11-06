@@ -18,8 +18,8 @@ import { attachmentUpload, saveAttachments } from '../../common/utils/attachment
 import { deleteBackupCopy } from '../../common/utils/backupStorage.js';
 import { awardCredits } from '../credits/creditEarnService.js';
 import { syncRpInBackground } from '../progression/rpEngine.js';
-import { BOOST_DURATION_MS, CATEGORY_CREATE_LIMIT, FORUM_BORDER_COLORS } from '../membership/membershipCatalog.js';
-import { getUserPerks } from '../membership/membershipService.js';
+import { BOOST_DURATION_MS, CATEGORY_CREATE_LIMIT, FORUM_BORDER_COLORS, FORUM_TEXT_COLOR_IDS } from '../membership/membershipCatalog.js';
+import { consumeBoost, getUserPerks, notifyBoostApplied } from '../membership/membershipService.js';
 import {
   AUTHOR_SELECT,
   escapeRegex,
@@ -448,6 +448,14 @@ router.post('/threads', authMiddleware, blockSuspended, enforceRestriction('post
       }
     }
 
+    const textColor = req.body.textColor ? String(req.body.textColor).trim().toLowerCase() : '';
+    if (textColor) {
+      if (!FORUM_TEXT_COLOR_IDS.includes(textColor)) return res.status(400).json({ error: 'Choose a valid text colour.' });
+      if (!isAdmin(req.user) && !(await getUserPerks(req.user)).perks.forumTextColors?.includes(textColor)) {
+        return perkDenied(res, 'That title and description colour is not included in your membership.');
+      }
+    }
+
     const thread = await ForumThread.create({
       title,
       content,
@@ -456,6 +464,7 @@ router.post('/threads', authMiddleware, blockSuspended, enforceRestriction('post
       tags: cleanTags(req.body.tags),
       attachments,
       borderColor,
+      textColor,
     });
 
     if (borderRequested) {
@@ -674,14 +683,14 @@ router.post('/threads/:id/replies', authMiddleware, blockSuspended, enforceRestr
     if (!thread || thread.archived) return res.status(404).json({ error: 'Thread not found' });
     if (thread.locked) return res.status(403).json({ error: 'This thread is locked.' });
 
-    // Replies nest one level deep: replying to a reply attaches to its parent.
+    // Replies store their direct parent so the thread can nest to any depth.
     let parentReplyId = null;
     let parentAuthorId = null;
     if (req.body.parentReplyId) {
       if (!isId(req.body.parentReplyId)) return res.status(400).json({ error: 'Invalid parent reply.' });
       const parent = await ForumReply.findOne({ _id: req.body.parentReplyId, threadId: thread._id }).lean();
       if (!parent) return res.status(400).json({ error: 'Parent reply not found in this thread.' });
-      parentReplyId = parent.parentReplyId || parent._id;
+      parentReplyId = parent._id;
       parentAuthorId = parent.authorId;
     }
 

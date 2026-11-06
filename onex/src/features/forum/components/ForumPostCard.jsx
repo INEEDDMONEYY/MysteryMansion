@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle2, Eye, LockKeyhole, Pencil, Pin, Rocket, Trash2 } from "lucide-react";
+import { Check, CheckCircle2, Eye, LockKeyhole, Pencil, Pin, Rocket, Share2, Trash2 } from "lucide-react";
 
 import ForumVoteButton from "./interactions/ForumVoteButton";
-import ForumBookmarkButton from "./interactions/ForumBookmarkButton";
 import ForumBorderFrame from "./ForumBorderFrame";
+import { getForumTextColor } from "../utils/forumTextColor";
 import ForumFollowControls from "./interactions/ForumFollowControls";
 import ForumAuthor from "./ForumAuthor";
 import ForumFollowers from "./ForumFollowers";
@@ -47,9 +47,11 @@ export default function ForumPostCard({
 }) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(thread.title);
+  const textPair = getForumTextColor(thread.textColor);
   const [content, setContent] = useState(thread.content);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const signedIn = Boolean(user?._id);
   const isAdmin = user?.role === "admin";
@@ -64,6 +66,28 @@ export default function ForumPostCard({
     setContent(thread.content);
     setError("");
     setEditing(true);
+  };
+
+  const shareThread = async () => {
+    const url = `${window.location.origin}/forum/thread/${encodeURIComponent(thread.id)}`;
+    const title = thread.title || "Forum thread";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch (err) {
+        if (err?.name === "AbortError") return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
   };
 
   const save = async (event) => {
@@ -185,7 +209,10 @@ export default function ForumPostCard({
             </form>
           ) : (
             <>
-              <h1 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight text-gray-950 sm:text-3xl">
+              <h1
+                className="mt-4 break-words text-2xl font-black leading-tight tracking-tight text-gray-950 sm:text-3xl"
+                style={textPair ? { color: textPair.title } : undefined}
+              >
                 {thread.title}
               </h1>
 
@@ -200,7 +227,10 @@ export default function ForumPostCard({
                 </span>
               </div>
 
-              <p className="mt-6 whitespace-pre-wrap break-words text-base leading-8 text-gray-700">
+              <p
+                className="mt-6 whitespace-pre-wrap break-words text-base leading-8 text-gray-700"
+                style={textPair ? { color: textPair.description } : undefined}
+              >
                 {thread.content}
               </p>
 
@@ -223,12 +253,14 @@ export default function ForumPostCard({
 
           {!editing && (
             <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-4">
-              <ForumBookmarkButton
-                threadId={thread.id}
-                bookmarked={thread.viewer?.bookmarked}
-                canBookmark={signedIn}
-                onRequireAuth={onRequireAuth}
-              />
+              <button
+                type="button"
+                onClick={shareThread}
+                className={actionClass}
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
+                {copied ? "Copied" : "Share"}
+              </button>
 
               {canEdit && canUseEdit && (
                 <button

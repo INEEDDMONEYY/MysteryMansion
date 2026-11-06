@@ -62,6 +62,7 @@ export const createForumThread = async ({
   tags = [],
   attachments = [],
   borderColor,
+  textColor,
 } = {}) => {
   if (!title?.trim()) throw new Error("A thread title is required.");
   if (!content?.trim()) throw new Error("Thread content is required.");
@@ -71,7 +72,7 @@ export const createForumThread = async ({
     method: "post",
     url: "/forum/threads",
     data: toRequestData(
-      { title: title.trim(), content: content.trim(), categoryId, tags, borderColor },
+      { title: title.trim(), content: content.trim(), categoryId, tags, borderColor, textColor },
       attachments
     ),
   });

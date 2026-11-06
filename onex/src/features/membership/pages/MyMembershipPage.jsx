@@ -90,6 +90,12 @@ const PERK_ROWS = [
     detail: () => "Pick a gradient border colour when you start a discussion",
   },
   {
+    key: "forumTextColors",
+    label: "Forum title and description colours",
+    enabled: (p) => p.forumTextColors?.length > 0,
+    detail: (p) => `${p.forumTextColors?.length || 0} title and description colour${p.forumTextColors?.length === 1 ? "" : "s"} for thread titles and descriptions`,
+  },
+  {
     key: "profileBadge",
     label: "Membership badge on your profile",
     enabled: (p) => p.profileBadge,

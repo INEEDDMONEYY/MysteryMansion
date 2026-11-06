@@ -11,6 +11,7 @@ import { createForumThread } from "../services/forumThreadService";
 import { createForumCategory } from "../services/forumService";
 import AttachmentPicker from "@/shared/components/attachments/AttachmentPicker";
 import ForumBorderPicker from "../components/ForumBorderPicker";
+import ForumTextColorPicker from "../components/ForumTextColorPicker";
 import MentionTextarea from "../components/MentionTextarea";
 
 const inputClass =
@@ -36,6 +37,8 @@ export default function CreateThreadPage() {
   // undefined until the member picks one; the saved choice is used meanwhile and stays for the next thread.
   const [pickedBorder, setPickedBorder] = useState(undefined);
   const borderColor = pickedBorder ?? membership.forumBorderColor ?? "";
+  // Text colour is per thread (not remembered); only the perk's allowed pairs can be chosen.
+  const [textColor, setTextColor] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -103,6 +106,7 @@ export default function CreateThreadPage() {
         tags: tagText.split(",").map((t) => t.trim()).filter(Boolean),
         attachments: files,
         borderColor: perks.forumBorderColor ? borderColor : undefined,
+        textColor: perks.forumTextColors?.length ? textColor : undefined,
       });
 
       if (perks.forumBorderColor) window.dispatchEvent(new Event(MEMBERSHIP_UPDATED_EVENT));
@@ -284,6 +288,27 @@ export default function CreateThreadPage() {
             ) : (
               <p className="text-xs text-gray-500">
                 Image and GIF uploads are an Elite membership perk.{" "}
+                <Link to="/membership" className="font-semibold text-pink-600 underline underline-offset-4">
+                  See membership
+                </Link>
+              </p>
+            )}
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-semibold text-gray-800">
+              Title and description colours <span className="font-normal text-gray-400">(optional, this thread only)</span>
+            </p>
+            {perks.forumTextColors?.length ? (
+              <ForumTextColorPicker
+                value={textColor}
+                onChange={setTextColor}
+                allowedIds={perks.forumTextColors}
+                disabled={submitting}
+              />
+            ) : (
+              <p className="text-xs text-gray-500">
+                Title and description colours are a membership perk.{" "}
                 <Link to="/membership" className="font-semibold text-pink-600 underline underline-offset-4">
                   See membership
                 </Link>

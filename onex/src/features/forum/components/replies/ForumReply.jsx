@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CornerDownRight } from "lucide-react";
 import ForumAuthor from "../ForumAuthor";
 
 import ForumReplyActions from "./ForumReplyActions";
@@ -30,7 +29,6 @@ export default function ForumReply({
   canReply = true,
   canEditPosts = true,
   allowAttachments = true,
-  isChild = false,
   parentReply,
   onReply,
   onEdit,
@@ -96,9 +94,6 @@ export default function ForumReply({
 
         <div className="min-w-0 flex-1">
           <header className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
-            {isChild && (
-              <CornerDownRight size={20} className="shrink-0 text-gray-400" aria-hidden="true" />
-            )}
             <ForumAuthor author={reply.author} />
 
             {reply.author?.role && (
@@ -196,11 +191,7 @@ export default function ForumReply({
         </div>
       </div>
 
-      {children && (
-        <div className="mt-2 pl-2 sm:ml-12 sm:pl-2">
-          {children}
-        </div>
-      )}
+      {children && <div className="mt-1">{children}</div>}
     </article>
   );
 }

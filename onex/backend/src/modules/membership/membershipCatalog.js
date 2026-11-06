@@ -5,6 +5,23 @@ export const BOOST_DURATION_MS = 24 * 60 * 60 * 1000;
 export const CATEGORY_CREATE_LIMIT = { count: 3, windowMs: 30 * 24 * 60 * 60 * 1000 };
 export const FORUM_BORDER_COLORS = ['pink', 'yellow', 'green', 'blue', 'red', 'orange', 'purple', 'gray'];
 
+// Forum title and description colour pairs (title, description). Ids are shared with forumTextColors.js.
+export const FORUM_TEXT_COLORS = Object.freeze({
+  'raspberry-lime': { label: 'Raspberry & Lime', title: '#DB2763', description: '#B0DB43' },
+  'ember-lemon': { label: 'Ember & Lemon', title: '#E43D00', description: '#FFE900' },
+  'mint-sky': { label: 'Mint & Sky', title: '#E4F3E3', description: '#5CA9B9' },
+  'midnight-plum': { label: 'Midnight & Plum', title: '#212130', description: '#39304A' },
+  'frost-orchid': { label: 'Frost & Orchid', title: '#BCE7FC', description: '#C491B1' },
+  'solid-black': { label: 'Black', title: '#000000', description: '#000000' },
+  'solid-green': { label: 'Green', title: '#22C55E', description: '#22C55E' },
+  'solid-yellow': { label: 'Yellow', title: '#FACC15', description: '#FACC15' },
+  'solid-red': { label: 'Red', title: '#EF4444', description: '#EF4444' },
+  'solid-orange': { label: 'Orange', title: '#F97316', description: '#F97316' },
+  'solid-purple': { label: 'Purple', title: '#A855F7', description: '#A855F7' },
+  'solid-pink': { label: 'Pink', title: '#EC4899', description: '#EC4899' },
+});
+export const FORUM_TEXT_COLOR_IDS = Object.keys(FORUM_TEXT_COLORS);
+
 // Progression ring colors. Ids are shared with the frontend palette (progressionColors.js).
 export const PROGRESSION_SOLID_COLOR_IDS = ['orange', 'yellow', 'pink', 'blue', 'green', 'purple', 'brown', 'peach'];
 export const PROGRESSION_GRADIENT_COLOR_IDS = [
@@ -18,6 +35,10 @@ export const PROGRESSION_GRADIENT_COLOR_IDS = [
 ];
 export const PROGRESSION_COLOR_IDS = [...PROGRESSION_SOLID_COLOR_IDS, ...PROGRESSION_GRADIENT_COLOR_IDS];
 const STANDARD_PROGRESSION_COLOR_IDS = ['orange', 'yellow', 'pink', 'blue'];
+// Standard and Premium text colour sets were drawn at random; Elite gets all of them.
+// Solid colours are split 2 / 2 across Standard and Premium; the other 3 are Elite-only.
+const STANDARD_FORUM_TEXT_COLOR_IDS = ['midnight-plum', 'frost-orchid', 'solid-black', 'solid-green'];
+const PREMIUM_FORUM_TEXT_COLOR_IDS = ['midnight-plum', 'frost-orchid', 'raspberry-lime', 'solid-red', 'solid-orange'];
 
 export const NO_PERKS = Object.freeze({
   boostsPerMonth: 0,
@@ -26,6 +47,7 @@ export const NO_PERKS = Object.freeze({
   forumUploads: false,
   createForumCategories: false,
   forumBorderColor: false,
+  forumTextColors: [],
   profileBadge: false,
   betterSearchFilters: false,
   progressionColors: [],
@@ -39,6 +61,7 @@ export const ADMIN_PERKS = Object.freeze({
   forumUploads: true,
   createForumCategories: true,
   forumBorderColor: true,
+  forumTextColors: FORUM_TEXT_COLOR_IDS,
   profileBadge: true,
   betterSearchFilters: true,
   progressionColors: PROGRESSION_COLOR_IDS,
@@ -61,6 +84,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
       editForumPosts: true,
       profileBadge: true,
       progressionColors: STANDARD_PROGRESSION_COLOR_IDS,
+      forumTextColors: STANDARD_FORUM_TEXT_COLOR_IDS,
     },
     benefits: [
       '200 monthly coin allocation',
@@ -68,6 +92,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
       '4 post boosts',
       'Membership status on your profile',
       '4 progression ring colors',
+      '4 forum title and description colors (2 pairs, 2 solids)',
     ],
   },
   Premium: {
@@ -85,6 +110,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
       profileBadge: true,
       betterSearchFilters: true,
       progressionColors: PROGRESSION_SOLID_COLOR_IDS,
+      forumTextColors: PREMIUM_FORUM_TEXT_COLOR_IDS,
     },
     benefits: [
       'Access to better search filter options',
@@ -94,6 +120,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
       'Pin forum thread',
       'Membership status on your profile',
       '8 solid progression ring colors',
+      '5 forum title and description colors (3 pairs, 2 solids)',
     ],
   },
   Elite: {
@@ -110,6 +137,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
       forumUploads: true,
       createForumCategories: true,
       forumBorderColor: true,
+      forumTextColors: FORUM_TEXT_COLOR_IDS,
       profileBadge: true,
       betterSearchFilters: true,
       progressionColors: PROGRESSION_COLOR_IDS,
@@ -126,6 +154,7 @@ export const MEMBERSHIP_TIERS = Object.freeze({
       'Forum card border customization',
       'Access to create forum categories',
       'All progression ring colors, including gradients',
+      'All 12 forum title and description colors (5 pairs, 7 solids)',
     ],
   },
 });

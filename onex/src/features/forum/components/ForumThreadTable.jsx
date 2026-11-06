@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { MoreVertical, Pin } from "lucide-react";
+import { MoreVertical, Pin, Rocket } from "lucide-react";
 
 import { isNewForumThread } from "../utils/forumUtils";
 
@@ -114,6 +114,13 @@ export default function ForumThreadTable({ threads = [] }) {
                       <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300">
                         <Pin size={11} aria-hidden="true" />
                         Pinned
+                      </span>
+                    )}
+
+                    {thread?.isBoosted && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-fuchsia-300">
+                        <Rocket size={11} aria-hidden="true" />
+                        Boosted
                       </span>
                     )}
                   </div>

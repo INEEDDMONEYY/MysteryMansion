@@ -12,6 +12,7 @@ export const NO_PERKS = Object.freeze({
   forumUploads: false,
   createForumCategories: false,
   forumBorderColor: false,
+  forumTextColors: [],
   profileBadge: false,
   betterSearchFilters: false,
   progressionColors: [],

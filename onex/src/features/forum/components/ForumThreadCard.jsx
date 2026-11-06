@@ -16,6 +16,7 @@ import {
 import ForumBorderFrame from "./ForumBorderFrame";
 import ForumFollowControls from "./interactions/ForumFollowControls";
 import ForumVoteButton from "./interactions/ForumVoteButton";
+import { getForumTextColor } from "../utils/forumTextColor";
 // import ForumBookmarkButton from "./interactions/ForumBookmarkButton";
 import ForumAuthor from "./ForumAuthor";
 import ForumFollowers from "./ForumFollowers";
@@ -61,6 +62,7 @@ export default function ForumThreadCard({ thread, showPinned = false }) {
     thread.id || thread._id || thread.slug;
 
   const title = thread.title || "Untitled discussion";
+  const textPair = getForumTextColor(thread.textColor);
 
   const excerpt =
     thread.excerpt ||
@@ -218,12 +220,18 @@ export default function ForumThreadCard({ thread, showPinned = false }) {
         </div>
       ) : null}
 
-      <h3 className="mt-4 text-lg font-bold leading-snug text-gray-950 transition-colors group-hover:text-pink-600 sm:text-xl">
+      <h3
+        className="mt-4 text-lg font-bold leading-snug text-gray-950 transition-colors group-hover:text-pink-600 sm:text-xl"
+        style={textPair ? { color: textPair.title } : undefined}
+      >
         <Link to={threadHref}>{title}</Link>
       </h3>
 
       {excerpt && (
-        <p className="mt-2 line-clamp-4 whitespace-pre-line text-sm leading-7 text-gray-600">
+        <p
+          className="mt-2 line-clamp-4 whitespace-pre-line text-sm leading-7 text-gray-600"
+          style={textPair ? { color: textPair.description } : undefined}
+        >
           {excerpt}
         </p>
       )}

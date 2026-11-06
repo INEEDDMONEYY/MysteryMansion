@@ -81,7 +81,7 @@ test('admin perks are at least as generous as every tier on every perk', async (
       if (typeof value === 'boolean') {
         expect([key, perks[key]]).toEqual([key, perks[key] || !value]);
       } else if (Array.isArray(value)) {
-        expect(value.every((id) => perks.progressionColors.includes(id))).toBe(true);
+        expect(value.every((id) => perks[key].includes(id))).toBe(true);
       } else {
         expect([key, perks[key] >= value]).toEqual([key, true]);
       }

@@ -4,7 +4,10 @@ const isAuthor = (item, user) =>
   Boolean(user?._id) &&
   String(item?.authorId) === String(user._id);
 
-/** Groups a flat reply list into top-level replies with their children. */
+/**
+ * Groups a flat reply list into a nested tree. Replies whose parent is not
+ * loaded (for example, on another page) are treated as top-level.
+ */
 export const buildReplyTree = (replies = []) => {
   const ids = new Set(replies.map((reply) => reply.id));
   const childrenByParent = new Map();
@@ -20,10 +23,12 @@ export const buildReplyTree = (replies = []) => {
     }
   });
 
-  return roots.map((reply) => ({
+  const attachChildren = (reply) => ({
     ...reply,
-    children: childrenByParent.get(reply.id) || [],
-  }));
+    children: (childrenByParent.get(reply.id) || []).map(attachChildren),
+  });
+
+  return roots.map(attachChildren);
 };
 
 export const canEditReply = ({ reply, user } = {}) =>
